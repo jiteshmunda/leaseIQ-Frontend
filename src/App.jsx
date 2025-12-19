@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
-import AddProperty from "./pages/Addproperty";
+import AddProperty from "./pages/AddProperty";
 import AddUnitSuite from "./pages/AddUnitSuite";
 import UploadLease from "./pages/UploadLease";
 import AnalyzingLease from "./pages/AnalyzingLease";
