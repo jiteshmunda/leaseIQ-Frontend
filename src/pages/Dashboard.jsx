@@ -274,9 +274,7 @@ const Dashboard = () => {
       ))}
 
     </Container>
-     {showAddUnit && (
-      <AddUnit onClose={() => setShowAddUnit(false)} />
-    )}
+     
     {showAddTenant && (
       <AddTenant onClose={() => setShowAddTenant(false)} />
     )}

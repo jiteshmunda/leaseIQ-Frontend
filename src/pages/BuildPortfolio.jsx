@@ -24,40 +24,56 @@ const BuildPortfolio = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async ({ file, docType }) => {
-    try {
-      setLoading(true);
-      setStep("analyzing");
+  try {
+    setLoading(true);
+    setStep("analyzing");
 
-      const form = new FormData();
-      form.append("assets", file);
+    const analysisForm = new FormData();
+    analysisForm.append("assets", file);
 
-      await runLeaseAnalysis({
-        formData: form,
-        onStepChange: setAnalyzingStep,
-      });
+    const leaseDetails = await runLeaseAnalysis({
+      formData: analysisForm,
+      onStepChange: setAnalyzingStep,
+    });
 
-      const portfolioForm = new FormData();
-      portfolioForm.append("property_name", propertyData.propertyName);
-      portfolioForm.append("address", propertyData.address);
-      portfolioForm.append("unit_number", unitData.unitNumber);
-      portfolioForm.append("tenant_name", unitData.tenantName);
-      portfolioForm.append("square_ft", unitData.squareFootage);
-      portfolioForm.append("document_type", docType);
-      portfolioForm.append("assets", file);
+    const portfolioForm = new FormData();
 
-      await axios.post(`${BASE_URL}/api/portfolio/`, portfolioForm, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    portfolioForm.append("property_name", propertyData.propertyName);
+    portfolioForm.append("address", propertyData.address);
+    portfolioForm.append("unit_number", unitData.unitNumber);
+    portfolioForm.append("tenant_name", unitData.tenantName);
+    portfolioForm.append("square_ft", unitData.squareFootage);
+    portfolioForm.append("document_type", docType);
 
-      navigate("/analysis-success");
-    } catch (err) {
-      console.error(err);
-      alert("Lease analysis failed");
-      setStep(3);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // ✅ REQUIRED by backend
+    portfolioForm.append(
+      "lease_details",
+      JSON.stringify(leaseDetails)
+    );
+    portfolioForm.append("assets", file);
+
+    await axios.post(
+      `${BASE_URL}/api/portfolio/`,
+      portfolioForm,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    navigate("/analysis-success");
+  } catch (err) {
+    console.error(err);
+    alert("Lease analysis failed");
+    setStep(3);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <>

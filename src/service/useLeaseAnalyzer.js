@@ -3,23 +3,32 @@ import axios from "axios";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const LEASE_ANALYSIS_STEPS = [
-  { step: 0, endpoint: "/api/debug/cam-single" },
-  { step: 1, endpoint: "/api/debug/info" },
-  { step: 2, endpoint: "/api/debug/space" },
-  { step: 3, endpoint: "/api/debug/charge-schedules" },
-  { step: 4, endpoint: "/api/debug/misc" },
+  { key: "cam-single", endpoint: "/api/debug/cam-single" },
+  { key: "info", endpoint: "/api/debug/info" },
+  { key: "space", endpoint: "/api/debug/space" },
+  { key: "charge-schedules", endpoint: "/api/debug/charge-schedules" },
+  { key: "misc", endpoint: "/api/debug/misc" },
 ];
 
 export const useLeaseAnalyzer = () => {
   const runLeaseAnalysis = async ({ formData, onStepChange }) => {
-    for (const item of LEASE_ANALYSIS_STEPS) {
-      onStepChange(item.step);
+    const leaseDetails = {};
 
-      // allow UI repaint
-      await new Promise((res) => setTimeout(res, 300));
+    for (let i = 0; i < LEASE_ANALYSIS_STEPS.length; i++) {
+      const step = LEASE_ANALYSIS_STEPS[i];
 
-      await axios.post(`${BASE_URL}${item.endpoint}`, formData);
+      onStepChange?.(i);
+
+
+      const res = await axios.post(
+        `${BASE_URL}${step.endpoint}`,
+        formData
+      );
+
+      leaseDetails[step.key] = res.data;
     }
+
+    return leaseDetails;
   };
 
   return { runLeaseAnalysis };
