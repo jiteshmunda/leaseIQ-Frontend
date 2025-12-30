@@ -36,8 +36,17 @@ const LeaseMainContent = ({
   const camSingle = leaseDetails?.["cam-single"]?.data;
 
   const rawAudit = leaseDetails?.audit;
+  const auditObject =
+    rawAudit && typeof rawAudit === "object" && rawAudit.audit && typeof rawAudit.audit === "object"
+      ? rawAudit.audit
+      : rawAudit;
+
   const auditSource =
-    rawAudit?.identified_risks || rawAudit?.audit_checklist || [];
+    auditObject?.risk_register ||
+    auditObject?.identified_risks ||
+    auditObject?.audit_checklist ||
+    auditObject?.risks ||
+    [];
 
   const auditRisks = Array.isArray(auditSource)
     ? auditSource.map((item) => {
@@ -343,7 +352,7 @@ const LeaseMainContent = ({
           />
         )}
 
-        {activeTab === "Audit" && <AuditTab risks={auditRisks} />}
+        {activeTab === "Audit" && <AuditTab audit={auditObject} risks={auditRisks} />}
 
         {activeTab === "CAM" && (
           <CamTab
