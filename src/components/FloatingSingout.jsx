@@ -44,7 +44,7 @@ const FloatingSignOut = () => {
   };
 
   const handleClick = () => {
-    if (didDrag.current) return; // ❌ block logout on drag
+    if (didDrag.current) return; 
 
     sessionStorage.clear();
     navigate("/");

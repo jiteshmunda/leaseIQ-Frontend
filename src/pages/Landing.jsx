@@ -1,12 +1,45 @@
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
 import FloatingSignOut from "../components/FloatingSingout";
+import axios from "axios";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 
 const Landing = () => {
-  
   const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
+  const [tenants, setTenants] = useState([]);
 
+  const fetchTenants = useCallback(async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/tenants`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setTenants(res.data.data || []);
+    } catch (err) {
+      console.error("Failed to fetch tenants", err);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.resolve().then(async () => {
+      if (cancelled) return;
+      await fetchTenants();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchTenants]);
+
+  const portfolioTitle = tenants.length === 0 ? "Build My Portfolio" : "Go to Portfolio";
+  const portfolioRoute = tenants.length === 0 ? "/build-portfolio" : "/dashboard";
+  const portfolionavigation = tenants.length === 0 ? "Set up Portfolio" : "View Portfolio";
   return (
     <div className="landing-page">
       <FloatingSignOut />
@@ -39,17 +72,17 @@ const Landing = () => {
             </svg>
           </div>
 
-          <h3>Build My Portfolio</h3>
+          <h3>{portfolioTitle}</h3>
           <p>I want to organize my properties and track multiple leases</p>
 
           <a
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              navigate("/build-portfolio");
+              navigate(portfolioRoute);
             }}
           >
-            Set Up Portfolio →
+            {portfolionavigation} →
           </a>
 
         </div>

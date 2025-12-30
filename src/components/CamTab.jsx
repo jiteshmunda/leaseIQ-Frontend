@@ -4,9 +4,29 @@ const CamTab = ({
   resolvedCamRules,
   openCam,
   onToggleCam,
-  onAddRule,
   onEditRule,
 }) => {
+  const formatLabel = (key) =>
+    String(key)
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (c) => c.toUpperCase());
+
+  const formatValue = (value) => {
+    if (value == null) return "";
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      return String(value);
+    }
+    if (typeof value === "object") {
+      // Keep it simple for nested objects (like leaseReference)
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return String(value);
+      }
+    }
+    return String(value);
+  };
+
   return (
     <div className="cam">
       {/* Overview */}
@@ -19,85 +39,85 @@ const CamTab = ({
       <div className="cam-card">
         <div className="cam-card-header">
           <h4>Rules</h4>
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={onAddRule}
-          >
-            + Add Rule
-          </button>
         </div>
 
         <ul className="cam-list">
-          {resolvedCamRules.map((rule) => (
-            <li className="cam-item" key={rule.key}>
-              <div className="cam-row" onClick={() => onToggleCam(rule.key)}>
-                <div className="cam-left">
-                  {openCam === rule.key ? <FiChevronDown /> : <FiChevronRight />}
-                  <span>{rule.title}</span>
+          {resolvedCamRules.length ? (
+            resolvedCamRules.map((rule) => (
+              <li className="cam-item" key={rule.key}>
+                <div className="cam-row" onClick={() => onToggleCam(rule.key)}>
+                  <div className="cam-left">
+                    {openCam === rule.key ? <FiChevronDown /> : <FiChevronRight />}
+                    <span>{rule.title}</span>
+                  </div>
+
+                  <div className="cam-right">
+                    <span className="count">{rule.count}</span>
+                    <span className={`status ${rule.statusClass}`}>
+                      {rule.status}
+                    </span>
+
+                    <FiEdit
+                      className="icon edit"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditRule(rule);
+                      }}
+                    />
+                    <FiTrash2 className="icon delete" />
+                  </div>
                 </div>
 
-                <div className="cam-right">
-                  <span className="count">{rule.count}</span>
-                  <span className={`status ${rule.statusClass}`}>
-                    {rule.status}
-                  </span>
+                {openCam === rule.key && (
+                  <div className="cam-content">
+                    {rule.content && <p style={{ whiteSpace: "pre-wrap" }}>{rule.content}</p>}
 
-                  <FiEdit
-                    className="icon edit"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditRule(rule);
-                    }}
-                  />
-                  <FiTrash2 className="icon delete" />
+                    {(rule.data?.leaseReference?.section || (rule.citations && rule.citations.length > 0)) && (
+                      <div className="cam-tags">
+                        {rule.data?.leaseReference?.section && (
+                          <span className="tag">{rule.data.leaseReference.section}</span>
+                        )}
+                        {rule.citations &&
+                          rule.citations.length > 0 &&
+                          rule.citations.map((c, i) => (
+                            <span className="tag" key={i}>
+                              {c}
+                            </span>
+                          ))}
+                      </div>
+                    )}
+
+                    {rule.data && typeof rule.data === "object" && (
+                      <div style={{ marginTop: 12 }}>
+                        <ul style={{ margin: 0, paddingLeft: 18 }}>
+                          {Object.entries(rule.data)
+                            .filter(([k]) => k !== "tables")
+                            // Page is already shown as a pill via citations (e.g., "Page 39").
+                            .filter(([k]) => k !== "pageNumber")
+                            // Section is shown as a pill; avoid repeating it in JSON.
+                            .filter(([k]) => k !== "leaseReference")
+                            .filter(([, v]) => v != null && v !== "")
+                            .map(([k, v]) => (
+                              <li key={k}>
+                                <strong>{formatLabel(k)}:</strong> {formatValue(v)}
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </li>
+            ))
+          ) : (
+            <li className="cam-item">
+              <div className="cam-row" style={{ cursor: "default" }}>
+                <div className="cam-left">
+                  <span>No CAM rules available.</span>
                 </div>
               </div>
-
-              {openCam === rule.key && (
-                <div className="cam-content">
-                  {rule.content && <p>{rule.content}</p>}
-
-                  {rule.citations && rule.citations.length > 0 && (
-                    <div className="cam-tags">
-                      {rule.citations.map((c, i) => (
-                        <span className="tag" key={i}>
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {rule.tables && rule.tables.length > 0 && (
-                    <div className="cam-tables">
-                      {rule.tables.map((table, idx) => (
-                        <div
-                          className="cam-table"
-                          key={table.tableId ?? idx}
-                        >
-                          {table.header && (
-                            <div className="cam-table-header">
-                              {Object.entries(table.header).map(([k, v]) => (
-                                <span key={k}>{v ?? k}</span>
-                              ))}
-                            </div>
-                          )}
-                          {table.rows && table.rows.length > 0 && (
-                            <ul className="cam-table-rows">
-                              {table.rows.map((row, rowIdx) => (
-                                <li key={rowIdx}>
-                                  {Object.values(row).join(" | ")}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </li>
-          ))}
+          )}
         </ul>
       </div>
 

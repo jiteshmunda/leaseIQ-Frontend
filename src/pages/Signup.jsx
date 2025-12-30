@@ -10,7 +10,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function Signup() {
   const navigate = useNavigate();
-
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,15 +27,60 @@ function Signup() {
     formData.password.trim();
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
+
+    if (errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
   };
+  const validate = () => {
+  const newErrors = {};
+
+  const name = formData.name_user.trim();
+  const email = formData.email.trim();
+  const username = formData.username.trim();
+  const password = String(formData.password ?? "");
+
+  if (!name)
+    newErrors.name_user = "Name is required";
+  else if (name.length < 2 || name.length > 25)
+    newErrors.name_user = "Name must be between 2 and 25 characters";
+
+  if (!email)
+    newErrors.email = "Email is required";
+  else if (!/^\S+@\S+\.\S+$/.test(email))
+    newErrors.email = "Invalid email format";
+
+  if (!username)
+    newErrors.username = "Username is required";
+  else if (username.length < 4 || username.length > 20)
+    newErrors.username = "Username must be between 4 and 20 characters";
+
+  if (!password.trim())
+    newErrors.password = "Password is required";
+  else if (password.length < 8)
+    newErrors.password = "Minimum 8 characters";
+  else if (!/[A-Za-z]/.test(password))
+    newErrors.password = "Must contain a letter";
+  else if (!/[0-9]/.test(password))
+    newErrors.password = "Must contain a number";
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
 
   const handleSignup = async (e) => {
     e.preventDefault();
-
+    if (!validate()) return;
     try {
       setLoading(true);
 
@@ -80,7 +125,11 @@ function Signup() {
               placeholder="Enter your name"
               value={formData.name_user}
               onChange={handleChange}
+              isInvalid={!!errors.name_user}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.name_user}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -91,7 +140,11 @@ function Signup() {
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
+              isInvalid={!!errors.email}
             />
+            <Form.Control.Feedback type="invalid" >
+              {errors.email}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -102,27 +155,35 @@ function Signup() {
               placeholder="Enter your username"
               value={formData.username}
               onChange={handleChange}
+              isInvalid={!!errors.username}
             />
+            <Form.Control.Feedback type="invalid" >
+              {errors.username}
+            </Form.Control.Feedback>
           </Form.Group>
 
           <Form.Group className="mb-3">
   <Form.Label>Password</Form.Label>
 
-  <InputGroup>
+            <InputGroup hasValidation>
     <Form.Control
       type={showPassword ? "text" : "password"}
       name="password"
       placeholder="Enter your password"
       value={formData.password}
       onChange={handleChange}
+      isInvalid={!!errors.password}
     />
-
     <InputGroup.Text
       style={{ cursor: "pointer" }}
       onClick={() => setShowPassword(!showPassword)}
     >
       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
     </InputGroup.Text>
+
+              <Form.Control.Feedback type="invalid">
+                {errors.password}
+              </Form.Control.Feedback>
   </InputGroup>
 </Form.Group>
 

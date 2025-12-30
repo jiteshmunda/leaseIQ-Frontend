@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FiChevronRight } from "react-icons/fi";
+import "../styles/tab.css";
 
 const AuditTab = ({ risks = [] }) => {
   const [expandedIndexes, setExpandedIndexes] = useState([]);

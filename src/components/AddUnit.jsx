@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Form, Button, Modal, Row, Col } from "react-bootstrap";
 import api from "../service/api";
 import "../styles/addUnit.css";
@@ -11,7 +11,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
   const token = sessionStorage.getItem("token");
   const { runLeaseAnalysis } = useLeaseAnalyzer();
-
+  
   const [properties, setProperties] = useState([]);
   const [useExistingProperty, setUseExistingProperty] = useState(true);
   const [document, setDocument] = useState(null);
@@ -26,27 +26,120 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
     monthly_rent: "",
   });
 
+  const [errors, setErrors] = useState({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (show) fetchProperties();
-  }, [show]);
+  const buildInitialForm = useCallback(
+    () => ({
+      property_id: "",
+      property_name: "",
+      address: "",
+      tenant_name: tenantName || "",
+      unit_number: "",
+      square_ft: "",
+      monthly_rent: "",
+    }),
+    [tenantName]
+  );
 
-  const fetchProperties = async () => {
+  const resetState = useCallback(() => {
+    setUseExistingProperty(true);
+    setDocument(null);
+    setErrors({});
+    setSubmitAttempted(false);
+    setForm(buildInitialForm());
+  }, [buildInitialForm]);
+
+  const fetchProperties = useCallback(async () => {
     const res = await api.get(`${BASE_URL}/api/properties`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setProperties(res.data.data || []);
+  }, [token]);
+
+  useEffect(() => {
+    if (show) fetchProperties();
+  }, [show, fetchProperties]);
+
+  useEffect(() => {
+    // When the modal closes, clear local state so next open is fresh.
+    if (!show) resetState();
+  }, [show, resetState]);
+
+  const handleClose = () => {
+    if (loading) return;
+    resetState();
+    onClose();
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => {
+      if (!prev[name]) return prev;
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+  };
+
+  const validate = () => {
+    const nextErrors = {};
+
+    if (useExistingProperty) {
+      if (!String(form.property_id || "").trim()) {
+        nextErrors.property_id = "Please select a property.";
+      }
+    } else {
+      if (!String(form.property_name || "").trim()) {
+        nextErrors.property_name = "Property name is required.";
+      }
+      // Address is optional per current UI label.
+    }
+
+    if (!tenantId) {
+      if (!String(form.tenant_name || "").trim()) {
+        nextErrors.tenant_name = "Tenant name is required.";
+      }
+    }
+
+    if (!String(form.unit_number || "").trim()) {
+      nextErrors.unit_number = "Unit number is required.";
+    }
+
+    const squareFeet = Number(form.square_ft);
+    if (!Number.isFinite(squareFeet) || squareFeet <= 0) {
+      nextErrors.square_ft = "Square feet must be greater than 0.";
+    }
+
+    const monthlyRent = Number(form.monthly_rent);
+    if (!Number.isFinite(monthlyRent) || monthlyRent <= 0) {
+      nextErrors.monthly_rent = "Monthly rent must be greater than 0.";
+    }
+
+    if (!document) {
+      nextErrors.document = "Please upload the lease document (PDF).";
+    } else {
+      const name = String(document.name || "");
+      const isPdf =
+        document.type === "application/pdf" || name.toLowerCase().endsWith(".pdf");
+      if (!isPdf) {
+        nextErrors.document = "Only PDF files are allowed.";
+      }
+    }
+
+    return nextErrors;
   };
 
   /* ---------- SUBMIT ---------- */
   const handleSubmit = async () => {
-    if (!document) {
-      alert("Please upload the lease document");
+    setSubmitAttempted(true);
+    const nextErrors = validate();
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
+      showError("Please fix the highlighted fields.");
       return;
     }
 
@@ -105,7 +198,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
 
   /* ---------- UI ---------- */
   return (
-    <Modal show={show} onHide={onClose} centered size="lg">
+    <Modal show={show} onHide={handleClose} centered size="lg">
       <Modal.Header closeButton>
         <Modal.Title>Add New Unit</Modal.Title>
       </Modal.Header>
@@ -120,7 +213,17 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                 type="checkbox"
                 label="Use Existing Property"
                 checked={useExistingProperty}
-                onChange={(e) => setUseExistingProperty(e.target.checked)}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setUseExistingProperty(checked);
+                  setSubmitAttempted(false);
+                  setErrors({});
+                  setForm((prev) =>
+                    checked
+                      ? { ...prev, property_name: "", address: "" }
+                      : { ...prev, property_id: "" }
+                  );
+                }}
               />
             </Col>
           </Row>
@@ -136,6 +239,8 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                   <Form.Select
                     name="property_id"
                     onChange={handleChange}
+                    value={form.property_id}
+                    isInvalid={submitAttempted && !!errors.property_id}
                   >
                     <option value="">Select</option>
                     {properties.map((p) => (
@@ -144,6 +249,9 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                       </option>
                     ))}
                   </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {errors.property_id}
+                  </Form.Control.Feedback>
                 </Form.Group>
               ) : (
                 <>
@@ -152,7 +260,12 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                     <Form.Control
                       name="property_name"
                       onChange={handleChange}
+                      value={form.property_name}
+                      isInvalid={submitAttempted && !!errors.property_name}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.property_name}
+                    </Form.Control.Feedback>
                   </Form.Group>
 
                   <Form.Group className="mb-3">
@@ -160,6 +273,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                     <Form.Control
                       name="address"
                       onChange={handleChange}
+                      value={form.address}
                     />
                   </Form.Group>
                 </>
@@ -173,13 +287,16 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                 <Form.Label>Tenant Name</Form.Label>
                 <Form.Control
                   type="text"
+                  name="tenant_name"
                   placeholder="Enter tenant name"
                   value={form.tenant_name}
                   disabled={Boolean(tenantId)}   // 🔒 IMPORTANT
-                  onChange={(e) =>
-                    setForm({ ...form, tenant_name: e.target.value })
-                  }
+                  onChange={handleChange}
+                  isInvalid={submitAttempted && !!errors.tenant_name}
                 />
+                <Form.Control.Feedback type="invalid">
+                  {errors.tenant_name}
+                </Form.Control.Feedback>
 
               </Form.Group>
             </Col>
@@ -195,7 +312,12 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                 <Form.Control
                   name="unit_number"
                   onChange={handleChange}
+                  value={form.unit_number}
+                  isInvalid={submitAttempted && !!errors.unit_number}
                 />
+                <Form.Control.Feedback type="invalid">
+                  {errors.unit_number}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
 
@@ -206,7 +328,12 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                   type="number"
                   name="square_ft"
                   onChange={handleChange}
+                  value={form.square_ft}
+                  isInvalid={submitAttempted && !!errors.square_ft}
                 />
+                <Form.Control.Feedback type="invalid">
+                  {errors.square_ft}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
 
@@ -217,7 +344,12 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                   type="number"
                   name="monthly_rent"
                   onChange={handleChange}
+                  value={form.monthly_rent}
+                  isInvalid={submitAttempted && !!errors.monthly_rent}
                 />
+                <Form.Control.Feedback type="invalid">
+                  {errors.monthly_rent}
+                </Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
@@ -229,9 +361,22 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
             <Form.Label>Upload Main Lease (PDF)</Form.Label>
             <Form.Control
               type="file"
-              accept=".pdf"
-              onChange={(e) => setDocument(e.target.files[0])}
+              accept=".pdf,application/pdf"
+              onChange={(e) => {
+                const nextFile = e.target.files?.[0] ?? null;
+                setDocument(nextFile);
+                setErrors((prev) => {
+                  if (!prev.document) return prev;
+                  const next = { ...prev };
+                  delete next.document;
+                  return next;
+                });
+              }}
+              isInvalid={submitAttempted && !!errors.document}
             />
+            <Form.Control.Feedback type="invalid">
+              {errors.document}
+            </Form.Control.Feedback>
             <small className="text-muted">
               Document type will be saved as <b>Main Lease</b>
             </small>
@@ -241,7 +386,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="secondary" onClick={onClose}>
+        <Button variant="secondary" onClick={handleClose}>
           Cancel
         </Button>
         <Button type="button" onClick={handleSubmit} disabled={loading}>

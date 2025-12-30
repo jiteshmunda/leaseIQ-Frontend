@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { FiUpload, FiFileText } from "react-icons/fi";
 import InfoTab from "./InfoTab";
 import SpaceTab from "./SpaceTab";
 import RentSchedulesTab from "./RentSchedulesTab";
@@ -9,60 +8,6 @@ import CamTab from "./CamTab";
 
 const TABS = ["Info", "Space", "Rent Schedules", "Provisions", "Audit", "CAM"];
 
-const CAM_RULES = [
-  {
-    key: "recon",
-    title: "Reconciliations & Adjustments",
-    statusClass: "purple",
-    status: "Active",
-    count: "1 rules",
-    content: `Tenant is responsible for a FOUR (4)% share as a tenant of the
-Premises, subject to adjustment as a result of (1) Occupancy/load factor
-changes, (2) Change in the size of the Premises, or (3) Expansion in the
-gross leasable square feet of the Building. Operating Expenses shall be
-calculated annually and shall reconcile for payment by the same method as
-calculating the tenant's rent, with payment allowed in the next successive
-billing period.`,
-    citations: ["Section 4.2", "Page 8"],
-  },
-  {
-    key: "lease",
-    title: "LEASE TAKINGS",
-    statusClass: "blue",
-    status: "Active",
-    count: "1 rules",
-    content: `After intent described taxes are allocated (such as ad-valorem charges or public assessments) depending on size and actual use.`,
-    citations: ["Section 7.4"],
-  },
-  {
-    key: "exclusions",
-    title: "Exclusions",
-    statusClass: "green",
-    status: "Active",
-    count: "1 rules",
-    content: "All Expense not stated here are excluded from CAM recoveries. Items specifically excluded from CAM include, but are not limited to: (a) rent payable under any equipment leases, (b) principal and interest of any financing undertaken for the landlord, (c) Costs incurred in operating/equipping the rental office, or in advertising and promotion of the Building, (d) Legal and judgment/settlement of any landlord obligations, (e) Landlord's income tax or franchise tax, (f) Expenses specifically billed to other tenants but not to tenant's proportionate share due to non-use or custom-built facilities, (g) Tenant improvement costs or capital improvements unless pre-approved/amortized (see Capital Expenditure clause below), (h) Expenses directly attributable to another leasable space.",
-    citations: ["Section 4.3", "Page 10"],
-  },
-  {
-    key: "payment",
-    title: "Payment Schedule",
-    statusClass: "orange",
-    status: "Active",
-    count: "1 rules",
-    content: "Tenant's proportionate share of operating expenses estimated at $8.50/sqft annually, payable monthly. Monthly payments based on landlord's estimate, subject to annual reconciliation.",
-    citations: ["Section 4.1"],
-  },
-  {
-    key: "audit",
-    title: "Audit Rights",
-    statusClass: "orange",
-    status: "Active",
-    count: "1 rules",
-    content: "Tenant has right to audit landlord's books and records related to operating expenses upon 30 days written notice. Audit must be conducted within 180 days of receiving annual reconciliation statement. If audit reveals overcharge greater than 5%, landlord pays audit costs.",
-    citations: ["Section 4.4", "Page 11"],
-  },
-];
-
 const LeaseMainContent = ({
   activeTab,
   setActiveTab,
@@ -70,22 +15,19 @@ const LeaseMainContent = ({
   leaseDetails,
   onUpdateLeaseDetails,
 }) => {
-  const [showAddCategory, setShowAddCategory] = useState(false);
-  const [showAddItem, setShowAddItem] = useState(false);
   const [showEditCategory, setShowEditCategory] = useState(false);
+  const [editCategoryKey, setEditCategoryKey] = useState(null);
   const [editCategoryName, setEditCategoryName] = useState("");
+  const [isUpdatingCategory, setIsUpdatingCategory] = useState(false);
   const [openCam, setOpenCam] = useState(null);
   const [showEditCam, setShowEditCam] = useState(false);
   const [editCamRule, setEditCamRule] = useState(null);
-  const [showAddCam, setShowAddCam] = useState(false);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [docType, setDocType] = useState("main");
-
-  const [newCamRule, setNewCamRule] = useState({
+  const [editCamForm, setEditCamForm] = useState({
     title: "",
     content: "",
-    citations: "",
+    citationsText: "",
   });
+  const [isUpdatingCamRule, setIsUpdatingCamRule] = useState(false);
 
   const leaseInfo = leaseDetails?.info?.leaseInformation;
   const spaceInfo = leaseDetails?.space?.space;
@@ -115,11 +57,36 @@ const LeaseMainContent = ({
       })
     : [];
 
+  const normalizeCitationsText = (citations) => {
+    if (Array.isArray(citations)) return citations.filter(Boolean).join(", ");
+    if (citations == null) return "";
+    return String(citations);
+  };
+
+  const parseCitationsText = (text) =>
+    String(text ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+  const mergeUnique = (arr) => {
+    const seen = new Set();
+    const out = [];
+    for (const item of arr) {
+      const key = String(item ?? "").trim();
+      if (!key) continue;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(key);
+    }
+    return out;
+  };
+
   const resolvedCamRules = camSingle
     ? [
         {
           key: "cam-single",
-          title: camSingle.sectionTitle || "CAM Clause",
+          title: camSingle.sectionTitle || camSingle.title || "CAM Clause",
           statusClass: "orange",
           status: "Active",
           count: "1 rule",
@@ -127,13 +94,17 @@ const LeaseMainContent = ({
             camSingle.textContent ||
             camSingle.executionClause ||
             "CAM clause details extracted from the lease.",
-          citations: camSingle.pageNumber
-            ? [`Page ${camSingle.pageNumber}`]
-            : [],
+          citations: mergeUnique([
+            ...(Array.isArray(camSingle.citations) ? camSingle.citations : []),
+            ...(camSingle.pageNumber ? [`Page ${camSingle.pageNumber}`] : []),
+          ]),
+          // Keep the raw object available for UI rendering.
+          data: camSingle,
+          // Tables exist in data but are intentionally not shown in the UI.
           tables: camSingle.tables || [],
         },
       ]
-    : CAM_RULES;
+    : [];
 
   const getFieldValue = (field) => (field?.value ? String(field.value) : "");
 
@@ -186,9 +157,133 @@ const LeaseMainContent = ({
   };
 
   const handleEditCategory = (categoryName) => {
-    setEditCategoryName(categoryName);
+    setEditCategoryKey(categoryName);
+    setEditCategoryName(formatProvisionTitle(categoryName));
     setShowEditCategory(true);
   };
+
+  const handleOpenEditCamRule = (rule) => {
+    setEditCamRule(rule);
+    setEditCamForm({
+      title: String(rule?.title ?? ""),
+      content: String(rule?.content ?? ""),
+      citationsText: normalizeCitationsText(rule?.citations),
+    });
+    setShowEditCam(true);
+  };
+
+  const handleUpdateCamRule = async () => {
+    if (!editCamRule) return;
+
+    // Only persist edits for the extracted CAM single block.
+    if (editCamRule.key !== "cam-single" || typeof onUpdateLeaseDetails !== "function") {
+      setShowEditCam(false);
+      return;
+    }
+
+    setIsUpdatingCamRule(true);
+    try {
+      const updated = cloneLeaseDetails(leaseDetails);
+      updated["cam-single"] = updated["cam-single"] ?? {};
+      updated["cam-single"].data = updated["cam-single"].data ?? {};
+
+      const nextTitle = editCamForm.title.trim();
+      const nextContent = editCamForm.content;
+      const nextCitations = parseCitationsText(editCamForm.citationsText);
+
+      // Keep multiple known fields in sync so the UI and backend stay compatible.
+      updated["cam-single"].data.sectionTitle = nextTitle;
+      updated["cam-single"].data.title = nextTitle;
+      updated["cam-single"].data.textContent = nextContent;
+      updated["cam-single"].data.executionClause = nextContent;
+      updated["cam-single"].data.citations = nextCitations;
+
+      await onUpdateLeaseDetails(updated);
+      setShowEditCam(false);
+      setEditCamRule(null);
+    } finally {
+      setIsUpdatingCamRule(false);
+    }
+  };
+
+  const cloneLeaseDetails = (details) => {
+    if (!details) return {};
+    try {
+      return typeof structuredClone === "function"
+        ? structuredClone(details)
+        : JSON.parse(JSON.stringify(details));
+    } catch {
+      return JSON.parse(JSON.stringify(details));
+    }
+  };
+
+  const toProvisionCategoryKey = (name) => {
+    const cleaned = String(name ?? "")
+      .trim()
+      .replace(/[^a-zA-Z0-9]+/g, " ")
+      .trim();
+    if (!cleaned) return "";
+
+    const parts = cleaned.split(/\s+/).filter(Boolean);
+    const [first, ...rest] = parts;
+    const camel =
+      first.toLowerCase() +
+      rest
+        .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+        .join("");
+
+    if (!camel) return "";
+    return /^[a-zA-Z]/.test(camel)
+      ? camel
+      : `category${camel.charAt(0).toUpperCase()}${camel.slice(1)}`;
+  };
+
+
+  const handleUpdateCategory = async () => {
+    if (!editCategoryKey || typeof onUpdateLeaseDetails !== "function") {
+      setShowEditCategory(false);
+      return;
+    }
+
+    const nextName = editCategoryName.trim();
+    const nextKey = toProvisionCategoryKey(nextName);
+    if (!nextKey) return;
+
+    if (nextKey === editCategoryKey) {
+      setShowEditCategory(false);
+      return;
+    }
+
+    setIsUpdatingCategory(true);
+    try {
+      const updated = cloneLeaseDetails(leaseDetails);
+      updated.misc = updated.misc ?? {};
+      updated.misc.otherLeaseProvisions = updated.misc.otherLeaseProvisions ?? {};
+
+      const provisions = updated.misc.otherLeaseProvisions;
+
+      if (!provisions[editCategoryKey]) {
+        setShowEditCategory(false);
+        return;
+      }
+
+      if (provisions[nextKey]) {
+        // Avoid overwriting an existing category.
+        window.alert("A category with this name already exists.");
+        return;
+      }
+
+      provisions[nextKey] = provisions[editCategoryKey];
+      delete provisions[editCategoryKey];
+
+      await onUpdateLeaseDetails(updated);
+      setShowEditCategory(false);
+      setEditCategoryKey(null);
+    } finally {
+      setIsUpdatingCategory(false);
+    }
+  };
+
 
   return (
      <>
@@ -242,9 +337,9 @@ const LeaseMainContent = ({
           <ProvisionsTab
             miscProvisions={miscProvisions}
             formatProvisionTitle={formatProvisionTitle}
-            onAddCategory={() => setShowAddCategory(true)}
-            onAddItem={() => setShowAddItem(true)}
             onEditCategory={handleEditCategory}
+            leaseDetails={leaseDetails}
+            onUpdateLeaseDetails={onUpdateLeaseDetails}
           />
         )}
 
@@ -255,110 +350,13 @@ const LeaseMainContent = ({
             resolvedCamRules={resolvedCamRules}
             openCam={openCam}
             onToggleCam={toggleCam}
-            onAddRule={() => setShowAddCam(true)}
             onEditRule={(rule) => {
-              setEditCamRule(rule);
-              setShowEditCam(true);
+              handleOpenEditCamRule(rule);
             }}
           />
         )}
 
       </div>
-      {showAddCategory && (
-  <div
-    className="modal fade show"
-    style={{ display: "block", backgroundColor: "rgba(0,0,0,.4)" }}
-  >
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content">
-
-        {/* Header */}
-        <div className="modal-header">
-          <h5 className="modal-title">Add New Category</h5>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowAddCategory(false)}
-          />
-        </div>
-
-        {/* Body */}
-        <div className="modal-body">
-          <div className="mb-3">
-            <label className="form-label">Category Name</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="e.g. Parking and Access"
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="modal-footer">
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => setShowAddCategory(false)}
-          >
-            Cancel
-          </button>
-          <button className="btn btn-primary btn-sm">
-            Add Category
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-)}
-
-{showAddItem && (
-  <div
-    className="modal fade show"
-    style={{ display: "block", backgroundColor: "rgba(0,0,0,.4)" }}
-  >
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content">
-
-        {/* Header */}
-        <div className="modal-header">
-          <h5 className="modal-title">Add Provision Item</h5>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowAddItem(false)}
-          />
-        </div>
-
-        {/* Body */}
-        <div className="modal-body">
-          <div className="mb-3">
-            <label className="form-label">Item Text</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Enter provision item..."
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="modal-footer">
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => setShowAddItem(false)}
-          >
-            Cancel
-          </button>
-          <button className="btn btn-primary btn-sm">
-            Add
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-)}
 
 {showEditCategory && (
   <div
@@ -396,10 +394,15 @@ const LeaseMainContent = ({
           <button
             className="btn btn-secondary btn-sm"
             onClick={() => setShowEditCategory(false)}
+            disabled={isUpdatingCategory}
           >
             Cancel
           </button>
-          <button className="btn btn-primary btn-sm">
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={handleUpdateCategory}
+            disabled={isUpdatingCategory}
+          >
             Update
           </button>
         </div>
@@ -417,7 +420,6 @@ const LeaseMainContent = ({
     <div className="modal-dialog modal-dialog-centered modal-lg cam-edit-modal">
       <div className="modal-content">
 
-        {/* Header */}
         <div className="modal-header">
           <h5 className="modal-title">Edit CAM Rule</h5>
           <button
@@ -427,15 +429,15 @@ const LeaseMainContent = ({
           />
         </div>
 
-        {/* Body */}
         <div className="modal-body">
           <div className="mb-3">
             <label className="form-label">Rule Title</label>
             <input
               type="text"
               className="form-control"
-              value={editCamRule.title}
-              readOnly
+              value={editCamForm.title}
+              onChange={(e) => setEditCamForm((s) => ({ ...s, title: e.target.value }))}
+              disabled={isUpdatingCamRule}
             />
           </div>
 
@@ -443,10 +445,12 @@ const LeaseMainContent = ({
   <label className="form-label">Rule Content</label>
   <textarea
     className="form-control"
-    defaultValue={editCamRule.content}
+    value={editCamForm.content}
     style={{
-      resize: "none",
-      overflow: "hidden",
+      height: "auto",
+      minHeight: 140,
+      resize: "vertical",
+      overflow: "auto",
     }}
     onInput={(e) => {
       e.target.style.height = "auto";
@@ -458,6 +462,8 @@ const LeaseMainContent = ({
         el.style.height = el.scrollHeight + "px";
       }
     }}
+    onChange={(e) => setEditCamForm((s) => ({ ...s, content: e.target.value }))}
+    disabled={isUpdatingCamRule}
   />
 </div>
 
@@ -469,7 +475,9 @@ const LeaseMainContent = ({
             <input
               type="text"
               className="form-control"
-              defaultValue={editCamRule.citations}
+              value={editCamForm.citationsText}
+              onChange={(e) => setEditCamForm((s) => ({ ...s, citationsText: e.target.value }))}
+              disabled={isUpdatingCamRule}
             />
           </div>
         </div>
@@ -479,10 +487,15 @@ const LeaseMainContent = ({
           <button
             className="btn btn-secondary btn-sm"
             onClick={() => setShowEditCam(false)}
+            disabled={isUpdatingCamRule}
           >
             Cancel
           </button>
-          <button className="btn btn-primary btn-sm">
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={handleUpdateCamRule}
+            disabled={isUpdatingCamRule}
+          >
             Update Rule
           </button>
         </div>
@@ -493,167 +506,7 @@ const LeaseMainContent = ({
 )}
 
 
-{showAddCam && (
-  <div
-    className="modal fade show"
-    style={{ display: "block", backgroundColor: "rgba(0,0,0,.4)" }}
-  >
-    <div className="modal-dialog modal-dialog-centered cam-add-modal">
-      <div className="modal-content">
 
-        {/* Header */}
-        <div className="modal-header">
-          <div>
-            <h5 className="modal-title">Add New CAM Rule</h5>
-            <p className="modal-subtitle">
-              Add a new rule to the CAM tab.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowAddCam(false)}
-          />
-        </div>
-
-        {/* Body */}
-        <div className="modal-body cam-modal-body">
-
-          <div className="mb-3">
-            <label className="form-label">Rule Title</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="e.g., Capital Improvements"
-              value={newCamRule.title}
-              onChange={(e) =>
-                setNewCamRule({ ...newCamRule, title: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Rule Content</label>
-            <textarea
-              className="form-control"
-              placeholder="Enter the detailed rule content..."
-              value={newCamRule.content}
-              style={{
-                resize: "none",
-                overflow: "hidden",
-              }}
-              onInput={(e) => {
-                e.target.style.height = "auto";
-                e.target.style.height = e.target.scrollHeight + "px";
-              }}
-              onChange={(e) =>
-                setNewCamRule({ ...newCamRule, content: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">
-              Citations (comma-separated)
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="e.g., Section 4.5, Page 12"
-              value={newCamRule.citations}
-              onChange={(e) =>
-                setNewCamRule({ ...newCamRule, citations: e.target.value })
-              }
-            />
-          </div>
-
-        </div>
-
-        {/* Footer */}
-        <div className="modal-footer">
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => setShowAddCam(false)}
-          >
-            Cancel
-          </button>
-          <button className="btn btn-primary btn-sm">
-            Add Rule
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-)}
-
-
-{showUploadModal && (
-  <div
-    className="modal fade show"
-    style={{ display: "block", backgroundColor: "rgba(0,0,0,.4)" }}
-  >
-    <div className="modal-dialog modal-dialog-centered upload-modal">
-      <div className="modal-content">
-
-        {/* Header */}
-        <div className="modal-header">
-          <div>
-            <h5 className="modal-title">Upload Document</h5>
-            <p className="modal-subtitle">
-              Select the type of document you want to upload.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowUploadModal(false)}
-          />
-        </div>
-
-        {/* Body */}
-        <div className="modal-body">
-
-          {/* Document Type */}
-          <label className="form-label">Document Type</label>
-
-          <div className="doc-type-grid">
-            <div
-              className={`doc-type-card ${
-                docType === "main" ? "active" : ""
-              }`}
-              onClick={() => setDocType("main")}
-            >
-              <FiFileText size={20} />
-              <span>Main Lease</span>
-            </div>
-
-            <div
-              className={`doc-type-card ${
-                docType === "amendment" ? "active" : ""
-              }`}
-              onClick={() => setDocType("amendment")}
-            >
-              <FiFileText size={20} />
-              <span>Amendment</span>
-            </div>
-          </div>
-
-          {/* Upload Area */}
-          <div className="upload-dropzone">
-            <FiUpload size={22} />
-            <p>Drag and drop your PDF here</p>
-
-            <button className="btn btn-primary btn-sm">
-              Browse Files
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-)}
 
     </>
 

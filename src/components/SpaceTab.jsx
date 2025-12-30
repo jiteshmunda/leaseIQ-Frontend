@@ -2,10 +2,17 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
   return (
     <section className="card">
       <div className="card-header">
-        <h3>Space Details</h3>
-      </div>
-
+                <h3>Lease Information</h3>
+                <button
+                  type="button"
+                  className="edit-btn"
+                  
+                >
+                  
+                </button>
+              </div>
       <div className="info-grid">
+        
         <div>
           <label>Premises</label>
           <p>{getFieldValue(spaceInfo?.premises) || "N/A"}</p>

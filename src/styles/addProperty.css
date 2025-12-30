@@ -157,3 +157,6 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
   background: linear-gradient(90deg, #5a3df0, #8a2be2);
   cursor: pointer;
 }
+.step-text{
+  color: #5a3df0;
+}
