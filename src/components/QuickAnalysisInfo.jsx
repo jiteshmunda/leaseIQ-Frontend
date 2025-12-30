@@ -49,7 +49,7 @@ const QuickAnalysisInfo = () => {
             />
 
             <Download className="qai-header-icon" />
-            <X className="qai-header-icon" />
+            <X className="qai-header-icon" onClick={() => navigate("/landing")} />
           </div>
         </div>
 

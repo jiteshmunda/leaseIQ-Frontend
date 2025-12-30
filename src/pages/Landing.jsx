@@ -1,41 +1,29 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
 import FloatingSignOut from "../components/FloatingSingout";
-import axios from "axios";
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import api from "../service/api.js";
 
 
 const Landing = () => {
   const navigate = useNavigate();
-  const token = sessionStorage.getItem("token");
   const [tenants, setTenants] = useState([]);
-
-  const fetchTenants = useCallback(async () => {
-    try {
-      const res = await axios.get(`${BASE_URL}/api/tenants`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      setTenants(res.data.data || []);
-    } catch (err) {
-      console.error("Failed to fetch tenants", err);
-    }
-  }, [token]);
 
   useEffect(() => {
     let cancelled = false;
-    Promise.resolve().then(async () => {
-      if (cancelled) return;
-      await fetchTenants();
-    });
+    (async () => {
+      try {
+        const res = await api.get("/api/tenants");
+        if (cancelled) return;
+        setTenants(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch tenants", err);
+      }
+    })();
     return () => {
       cancelled = true;
     };
-  }, [fetchTenants]);
+  }, []);
 
   const portfolioTitle = tenants.length === 0 ? "Build My Portfolio" : "Go to Portfolio";
   const portfolioRoute = tenants.length === 0 ? "/build-portfolio" : "/dashboard";
@@ -98,7 +86,7 @@ const Landing = () => {
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M13 2L3 14H11L9 22L21 10H13L13 2Z"
+                d="M 13 2L3 14H11L9 22L21 10H13L13 2Z"
                 stroke="#8A2BE2"
                 strokeWidth="2"
                 fill="none"

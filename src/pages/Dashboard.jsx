@@ -56,7 +56,7 @@ const filteredTenants = tenants.filter((tenant) =>
       <FloatingSignOut />
      <Container fluid>
       <Navbar.Brand className="d-flex align-items-center gap-2">
-         <Home /> <span>Sage Portfolio</span>
+         <Home /> <span>Portfolio</span>
       </Navbar.Brand>
 
       <Button

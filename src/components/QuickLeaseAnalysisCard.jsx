@@ -16,13 +16,28 @@ const QuickLeaseAnalysisCard = ({
 
   return (
     <div className="quick-lease-page">
-      {/* Back button */}
-      <div className="quick-lease-back" onClick={() => navigate("/landing")}>
-        ← Back
-      </div>
-
+      
       {/* Centered card */}
       <div className="quick-lease-wrapper">
+        <div className="back-link" onClick={() => navigate("/landing")}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="back-icon"
+          >
+            <path
+              d="M15 18L9 12L15 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span>Back</span>
+        </div>
         <div className="upload-card">
           <h2>Quick Lease Analysis</h2>
           <p className="subtitle-uploadlease">
@@ -65,7 +80,7 @@ const QuickLeaseAnalysisCard = ({
             <p className="upload-title">
               {uploadedFile ? uploadedFile.name : "Click to upload or drag and drop"}
             </p>
-            <p className="upload-sub">PDF, DOC, or DOCX up to 50MB</p>
+            <p className="upload-sub">PDF up to 50MB</p>
           </label>
 
           {/* Lease name */}
@@ -88,7 +103,7 @@ const QuickLeaseAnalysisCard = ({
             <button
               className={`btn-upload ${uploadedFile ? "active" : ""}`}
               disabled={!uploadedFile}
-              onClick={() => navigate("/analyzing-lease", { state: { source: "quick" } })}
+              onClick={() => navigate("/quick-analysis-info", { state: { source: "quick" } })}
             >
               Analyze Lease →
             </button>

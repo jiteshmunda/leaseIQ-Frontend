@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { FiEdit, FiPlus, FiTrash2 } from "react-icons/fi";
+import { useMemo, useState } from "react";
+import { FiEdit } from "react-icons/fi";
 
 const InfoTab = ({
   leaseInfo,
@@ -13,6 +13,102 @@ const InfoTab = ({
   leaseDetails,
   onUpdateLeaseDetails,
 }) => {
+  const keyDatesCount = useMemo(() => {
+    const seen = new Set();
+
+    const looksLikeDate = (s) => {
+      const text = String(s ?? "").trim();
+      if (!text) return false;
+      // ISO-ish: 2025-12-30 or 2025-12-30T...
+      if (/^\d{4}-\d{2}-\d{2}(?:[T\s].*)?$/.test(text)) return true;
+      // Common US: 12/30/2025 or 12/30/25
+      if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(text)) return true;
+      return false;
+    };
+
+    const visit = (value) => {
+      if (value == null) return;
+      if (Array.isArray(value)) {
+        value.forEach(visit);
+        return;
+      }
+      if (typeof value === "object") {
+        Object.values(value).forEach(visit);
+        return;
+      }
+      if (typeof value === "string") {
+        if (!looksLikeDate(value)) return;
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return;
+        const day = d.toISOString().slice(0, 10);
+        seen.add(day);
+      }
+    };
+
+    visit(leaseDetails);
+    return seen.size;
+  }, [leaseDetails]);
+
+  const obligationsCount = useMemo(() => {
+    const audit = leaseDetails?.audit;
+    const totalItems = audit?.totalItems ?? audit?.total_items ?? audit?.summary?.totalItems;
+    if (typeof totalItems === "number" && Number.isFinite(totalItems)) {
+      return totalItems;
+    }
+    const source = audit?.identified_risks || audit?.audit_checklist;
+    return Array.isArray(source) ? source.length : 0;
+  }, [leaseDetails]);
+
+  const keyTermsCount = useMemo(() => {
+    const info = leaseDetails?.info?.leaseInformation;
+    if (!info || typeof info !== "object") return 0;
+
+    const isNonEmpty = (v) => {
+      if (v == null) return false;
+      if (typeof v === "string") return v.trim().length > 0;
+      if (typeof v === "number") return Number.isFinite(v);
+      if (typeof v === "boolean") return true;
+      if (typeof v === "object" && "value" in v) {
+        const inner = v.value;
+        if (inner == null) return false;
+        return String(inner).trim().length > 0;
+      }
+      return false;
+    };
+
+    return Object.values(info).filter(isNonEmpty).length;
+  }, [leaseDetails]);
+
+  const overviewCards = useMemo(
+    () => [
+      {
+        key: "liabilities",
+        color: "red",
+        label: "Liabilities",
+        value: leaseDetails?.audit ? "Hidden" : "N/A",
+      },
+      {
+        key: "keyDates",
+        color: "blue",
+        label: "Key Dates",
+        value: keyDatesCount,
+      },
+      {
+        key: "obligations",
+        color: "green",
+        label: "Obligations",
+        value: obligationsCount,
+      },
+      {
+        key: "keyTerms",
+        color: "orange",
+        label: "Key Terms",
+        value: keyTermsCount,
+      },
+    ],
+    [leaseDetails, keyDatesCount, obligationsCount, keyTermsCount]
+  );
+
   const [isEditingInfo, setIsEditingInfo] = useState(false);
   const [infoForm, setInfoForm] = useState({
     lease: getFieldValue(leaseInfo?.lease) || "",
@@ -150,22 +246,12 @@ const InfoTab = ({
     <>
       {/* Overview */}
       <section className="overview">
-        <div className="overview-card red">
-          <span>Liabilities</span>
-          <strong>Hidden</strong>
-        </div>
-        <div className="overview-card blue">
-          <span>Key Dates</span>
-          <strong>26</strong>
-        </div>
-        <div className="overview-card green">
-          <span>Obligations</span>
-          <strong>8</strong>
-        </div>
-        <div className="overview-card orange">
-          <span>Key Terms</span>
-          <strong>12</strong>
-        </div>
+        {overviewCards.map((card) => (
+          <div key={card.key} className={`overview-card ${card.color}`}>
+            <span>{card.label}</span>
+            <strong>{card.value}</strong>
+          </div>
+        ))}
       </section>
 
       {/* Lease Info */}

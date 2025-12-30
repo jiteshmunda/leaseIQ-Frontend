@@ -25,16 +25,6 @@
   opacity: 0.85;
 }
 
-/* =========================
-   Center Wrapper
-========================= */
-.quick-lease-wrapper {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
 
 /* =========================
    Upload Card
@@ -198,7 +188,9 @@
 .quick-lease-wrapper {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
   padding: 24px;
 }
