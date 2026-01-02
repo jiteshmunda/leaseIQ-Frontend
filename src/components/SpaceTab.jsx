@@ -19,7 +19,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
         </div>
         <div>
           <label>Unit</label>
-          <p>{leaseMeta?.unit?.unit_number || getFieldValue(spaceInfo?.unit)}</p>
+          <p>{getFieldValue(spaceInfo?.unit) || "N/A"}</p>
         </div>
         <div>
           <label>Building</label>
@@ -54,8 +54,8 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           <p>{getFieldValue(spaceInfo?.city) || "N/A"}</p>
         </div>
         <div>
-          <label>Status</label>
-          <p>{getFieldValue(spaceInfo?.status) || "N/A"}</p>
+          <label>State</label>
+          <p>{getFieldValue(spaceInfo?.state) || "N/A"}</p>
         </div>
         <div>
           <label>Notes</label>
@@ -66,8 +66,20 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           <p>{getFieldValue(spaceInfo?.commonArea) || "N/A"}</p>
         </div>
         <div>
+          <label>Parking Spaces</label>
+          <p>{getFieldValue(spaceInfo?.parking?.value) || "N/A"}</p>
+        </div>
+        <div>
           <label>Parking Type</label>
           <p>{getFieldValue(spaceInfo?.parking?.type) || "N/A"}</p>
+        </div>
+        <div>
+          <label>Storage Area</label>
+          <p>{getFieldValue(spaceInfo?.storageArea) || "N/A"}</p>
+        </div>
+        <div>
+          <label>Status</label>
+          <p>{getFieldValue(spaceInfo?.status) || "N/A"}</p>
         </div>
       </div>
     </section>

@@ -14,6 +14,16 @@ const QuickLeaseAnalysisCard = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzingStep, setAnalyzingStep] = useState(0);
 
+  // Convert file to base64 for storage
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleAnalyze = async () => {
     if (!uploadedFile || isAnalyzing) return;
 
@@ -29,11 +39,21 @@ const QuickLeaseAnalysisCard = () => {
         onStepChange: setAnalyzingStep,
       });
 
+      // Convert file to base64 and store
+      const base64File = await fileToBase64(uploadedFile);
+      
+      // Store everything in sessionStorage
       sessionStorage.setItem(
         "quickLeaseAnalysis",
         JSON.stringify({
           leaseName: String(leaseName || "").trim() || uploadedFile.name,
           leaseDetails,
+          uploadedFile: {
+            name: uploadedFile.name,
+            type: uploadedFile.type,
+            size: uploadedFile.size,
+            base64: base64File,
+          },
         })
       );
 

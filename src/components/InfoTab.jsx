@@ -362,15 +362,16 @@ const InfoTab = ({
                 placeholder="Enter base rent (per month)"
               />
             ) : (
-              <p>
-                {chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value
-                  ? `${
-                      chargeSchedules.baseRent[0].monthlyAmount.value
-                    } / month`
-                  : leaseMeta?.unit?.monthly_rent
-                  ? `${leaseMeta.unit.monthly_rent} / month`
-                  : "N/A"}
-              </p>
+              <p>{getFieldValue(leaseInfo?.baseRent) || "N/A"}</p>
+              // <p>
+              //   {chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value
+              //     ? `${
+              //         chargeSchedules.baseRent[0].monthlyAmount.value
+              //       } / month`
+              //     : leaseMeta?.unit?.monthly_rent
+              //     ? `${leaseMeta.unit.monthly_rent} / month`
+              //     : "N/A"}
+              // </p>
             )}
           </div>
           <div>
@@ -405,7 +406,7 @@ const InfoTab = ({
                 placeholder="Enter renewal options"
               />
             ) : (
-              <p>{getFieldValue(premisesAndTerm?.synopsis) || "N/A"}</p>
+              <p>{getFieldValue(leaseInfo?.renewalOptions) || "N/A"}</p>
             )}
           </div>
         </div>

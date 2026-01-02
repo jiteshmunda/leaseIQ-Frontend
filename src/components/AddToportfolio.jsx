@@ -17,9 +17,13 @@ function AddToportfolio({ show, onClose, onSuccess }) {
   const [tenantId, setTenantId] = useState("");
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(false);
-  const leaseDetail = JSON.parse(
+  
+  // Parse the stored lease analysis data
+  const storedLeaseData = JSON.parse(
     sessionStorage.getItem("quickLeaseAnalysis") || "{}"
-  ).leaseDetails || {};
+  );
+  const leaseDetail = storedLeaseData.leaseDetails || {};
+  
   const [form, setForm] = useState({
     property_id: "",
     property_name: "",
@@ -32,6 +36,29 @@ function AddToportfolio({ show, onClose, onSuccess }) {
 
   const [errors, setErrors] = useState({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  // Helper function to convert base64 back to File object
+  const base64ToFile = (base64Data, filename) => {
+    if (!base64Data) return null;
+    
+    try {
+      // Extract content type and base64 data
+      const arr = base64Data.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      
+      return new File([u8arr], filename, { type: mime });
+    } catch (error) {
+      console.error("Error converting base64 to file:", error);
+      return null;
+    }
+  };
 
   const resetState = useCallback(() => {
     setUseExistingProperty(true);
@@ -54,6 +81,20 @@ function AddToportfolio({ show, onClose, onSuccess }) {
   useEffect(() => {
     if (!show) return;
 
+    // Only set document if not already set
+    if (!document && storedLeaseData.uploadedFile?.base64) {
+      const file = base64ToFile(
+        storedLeaseData.uploadedFile.base64,
+        storedLeaseData.uploadedFile.name
+      );
+      if (file) {
+        setDocument(file);
+      } else {
+        showError("Failed to load stored lease file");
+      }
+    }
+
+    // Fetch properties and tenants
     api.get(`${BASE_URL}/api/properties`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(res => setProperties(res.data.data || []));
@@ -110,10 +151,12 @@ function AddToportfolio({ show, onClose, onSuccess }) {
     try {
       setLoading(true);
 
-      const analysisForm = new FormData();
-      analysisForm.append("assets", document);
-
-      const leaseDetails = leaseDetail;
+      // Use the stored document
+      if (!document) {
+        showError("Lease document is required");
+        setLoading(false);
+        return;
+      }
 
       const payload = new FormData();
 
@@ -135,7 +178,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
       }
 
       payload.append("document_type", "main lease");
-      payload.append("lease_details", JSON.stringify(leaseDetails));
+      payload.append("lease_details", JSON.stringify(leaseDetail));
       payload.append("assets", document);
 
       await api.post(`${BASE_URL}/api/units/with-lease`, payload, {
@@ -155,6 +198,14 @@ function AddToportfolio({ show, onClose, onSuccess }) {
     }
   };
 
+  // Handle file upload separately (optional manual upload)
+//   const handleFileUpload = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       setDocument(file);
+//     }
+//   };
+
   return (
     <Modal show={show} onHide={onClose} centered size="lg">
       <Modal.Header closeButton>
@@ -163,103 +214,154 @@ function AddToportfolio({ show, onClose, onSuccess }) {
 
       <Modal.Body>
         <Form>
+          <Row className="mb-3">
+            {/* PROPERTY COLUMN */}
+            <Col md={6}>
+              <h6>Property</h6>
 
-         <Row className="mb-3">
-  {/* PROPERTY COLUMN */}
-  <Col md={6}>
-    <h6>Property</h6>
+              <Form.Check
+                className="mb-2"
+                label="Use Existing Property"
+                checked={useExistingProperty}
+                onChange={(e) => setUseExistingProperty(e.target.checked)}
+              />
 
-    <Form.Check
-      className="mb-2"
-      label="Use Existing Property"
-      checked={useExistingProperty}
-      onChange={(e) => setUseExistingProperty(e.target.checked)}
-    />
-
-    {useExistingProperty ? (
-      <Form.Select
-        name="property_id"
-        value={form.property_id}
-        onChange={handleChange}
-        isInvalid={submitAttempted && errors.property_id}
-      >
-        <option value="">Select Property</option>
-        {properties.map((p) => (
-          <option key={p._id} value={p._id}>
-            {p.property_name}
-          </option>
-        ))}
-      </Form.Select>
-    ) : (
-      <>
-        <Form.Control
-          className="mb-2"
-          name="property_name"
-          placeholder="Property name"
-          onChange={handleChange}
-        />
-        <Form.Control
-          name="address"
-          placeholder="Address"
-          onChange={handleChange}
-        />
-      </>
-    )}
-  </Col>
-
-  {/* TENANT COLUMN */}
-  <Col md={6}>
-    <h6>Tenant</h6>
-
-    <Form.Check
-      className="mb-2"
-      label="Use Existing Tenant"
-      checked={useExistingTenant}
-      onChange={(e) => {
-        setUseExistingTenant(e.target.checked);
-        setTenantId("");
-        setForm((prev) => ({ ...prev, tenant_name: "" }));
-      }}
-    />
-
-    {useExistingTenant ? (
-      <Form.Select
-        value={tenantId}
-        onChange={(e) => setTenantId(e.target.value)}
-        isInvalid={submitAttempted && errors.tenant_id}
-      >
-        <option value="">Select Tenant</option>
-        {tenants.map((t) => (
-          <option key={t._id} value={t._id}>
-            {t.tenant_name}
-          </option>
-        ))}
-      </Form.Select>
-    ) : (
-      <Form.Control
-        name="tenant_name"
-        placeholder="Tenant name"
-        onChange={handleChange}
-        value={form.tenant_name}
-        isInvalid={submitAttempted && errors.tenant_name}
-      />
-    )}
-  </Col>
-</Row>
-
-          {/* UNIT */}
-          <Row>
-            <Col>
-              <Form.Control name="unit_number" placeholder="Unit No" onChange={handleChange} />
+              {useExistingProperty ? (
+                <Form.Select
+                  name="property_id"
+                  value={form.property_id}
+                  onChange={handleChange}
+                  isInvalid={submitAttempted && errors.property_id}
+                >
+                  <option value="">Select Property</option>
+                  {properties.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.property_name}
+                    </option>
+                  ))}
+                </Form.Select>
+              ) : (
+                <>
+                  <Form.Control
+                    className="mb-2"
+                    name="property_name"
+                    placeholder="Property name"
+                    onChange={handleChange}
+                    isInvalid={submitAttempted && errors.property_name}
+                  />
+                  <Form.Control
+                    name="address"
+                    placeholder="Address"
+                    onChange={handleChange}
+                    isInvalid={submitAttempted && errors.address}
+                  />
+                </>
+              )}
+              {submitAttempted && errors.property_id && (
+                <Form.Text className="text-danger">{errors.property_id}</Form.Text>
+              )}
             </Col>
-            <Col>
-              <Form.Control type="number" name="square_ft" placeholder="Sqft" onChange={handleChange} />
-            </Col>
-            <Col>
-              <Form.Control type="number" name="monthly_rent" placeholder="Rent" onChange={handleChange} />
+
+            {/* TENANT COLUMN */}
+            <Col md={6}>
+              <h6>Tenant</h6>
+
+              <Form.Check
+                className="mb-2"
+                label="Use Existing Tenant"
+                checked={useExistingTenant}
+                onChange={(e) => {
+                  setUseExistingTenant(e.target.checked);
+                  setTenantId("");
+                  setForm((prev) => ({ ...prev, tenant_name: "" }));
+                }}
+              />
+
+              {useExistingTenant ? (
+                <Form.Select
+                  value={tenantId}
+                  onChange={(e) => setTenantId(e.target.value)}
+                  isInvalid={submitAttempted && errors.tenant_id}
+                >
+                  <option value="">Select Tenant</option>
+                  {tenants.map((t) => (
+                    <option key={t._id} value={t._id}>
+                      {t.tenant_name}
+                    </option>
+                  ))}
+                </Form.Select>
+              ) : (
+                <Form.Control
+                  name="tenant_name"
+                  placeholder="Tenant name"
+                  onChange={handleChange}
+                  value={form.tenant_name}
+                  isInvalid={submitAttempted && errors.tenant_name}
+                />
+              )}
+              {submitAttempted && errors.tenant_id && (
+                <Form.Text className="text-danger">{errors.tenant_id}</Form.Text>
+              )}
+              {submitAttempted && errors.tenant_name && (
+                <Form.Text className="text-danger">{errors.tenant_name}</Form.Text>
+              )}
             </Col>
           </Row>
 
+          {/* UNIT DETAILS */}
+          <Row className="mb-3">
+            <Col>
+              <Form.Control 
+                name="unit_number" 
+                placeholder="Unit No" 
+                onChange={handleChange}
+                isInvalid={submitAttempted && errors.unit_number}
+              />
+              {submitAttempted && errors.unit_number && (
+                <Form.Text className="text-danger">{errors.unit_number}</Form.Text>
+              )}
+            </Col>
+            <Col>
+              <Form.Control 
+                type="number" 
+                name="square_ft" 
+                placeholder="Sqft" 
+                onChange={handleChange}
+                isInvalid={submitAttempted && errors.square_ft}
+              />
+              {submitAttempted && errors.square_ft && (
+                <Form.Text className="text-danger">{errors.square_ft}</Form.Text>
+              )}
+            </Col>
+            <Col>
+              <Form.Control 
+                type="number" 
+                name="monthly_rent" 
+                placeholder="Rent" 
+                onChange={handleChange}
+                isInvalid={submitAttempted && errors.monthly_rent}
+              />
+              {submitAttempted && errors.monthly_rent && (
+                <Form.Text className="text-danger">{errors.monthly_rent}</Form.Text>
+              )}
+            </Col>
+          </Row>
+
+          {/* DOCUMENT UPLOAD (Already pre-filled, but allows override) */}
+          <Row className="mb-3">
+            <Col>
+              <h6>Lease Document</h6>
+              
+              {document && (
+                <Form.Text className="text-muted">
+                  Using file: {document.name}
+                </Form.Text>
+              )}
+              {submitAttempted && errors.document && (
+                <Form.Text className="text-danger">{errors.document}</Form.Text>
+              )}
+            </Col>
+          </Row>
         </Form>
       </Modal.Body>
 

@@ -89,25 +89,23 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
               <th>End Date</th>
               <th>Monthly Rent</th>
               <th>Annual Rent</th>
-              <th>$/Sqft</th>
+              <th>Area Rentable</th>
+              <th>Amount Per Area</th>
             </tr>
           </thead>
           <tbody>
             {chargeSchedules?.baseRent?.length ? (
               chargeSchedules.baseRent.map((item, index) => {
-                const periodLabel =
-                  item.description?.value ||
-                  item.chargeCode?.value ||
-                  `Period ${index + 1}`;
 
                 return (
                   <tr key={index}>
-                    <td>{periodLabel}</td>
-                    <td>{getFieldValue(item.dateFrom)}</td>
-                    <td>{getFieldValue(item.dateTo)}</td>
-                    <td>{getFieldValue(item.monthlyAmount)}</td>
-                    <td>{getFieldValue(item.annualAmount)}</td>
-                    <td>{getFieldValue(item.amountPerArea)}</td>
+                    <td>{getFieldValue(item.period) || "-"}</td>
+                    <td>{getFieldValue(item.dateFrom) || "-"}</td>
+                    <td>{getFieldValue(item.dateTo) || "-"}</td>
+                    <td>{getFieldValue(item.monthlyAmount) || "-"}</td>
+                    <td>{getFieldValue(item.annualAmount) || "-"}</td>
+                    <td>{getFieldValue(item.areaRentable) || "-"}</td>
+                    <td>{getFieldValue(item.amountPerArea) || "-"}</td>
                   </tr>
                 );
               })

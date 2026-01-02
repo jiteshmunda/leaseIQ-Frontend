@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect,useCallback, useRef } from "react";
 import api from "../service/api.js";
 import {
   FiArrowLeft,
@@ -6,6 +6,7 @@ import {
   FiDownload,
   FiUpload,
   FiFileText,
+  FiEye,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import AiLeaseAssistant from "../components/AiLeaseAssistant";
@@ -20,6 +21,7 @@ const LeaseDetails = () => {
   const navigate = useNavigate();
   const { leaseId } = useParams();
   const token = sessionStorage.getItem("token");
+  const userId = sessionStorage.getItem("userId");
 
   const [activeTab, setActiveTab] = useState("Info");
   const [showAiAssistant, setShowAiAssistant] = useState(false);
@@ -32,13 +34,40 @@ const LeaseDetails = () => {
   const [lease, setLease] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchLease = useCallback(async () => {
-    const res = await api.get(
-      `${BASE_URL}/api/leases/${leaseId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setLease(res.data.data);
-  }, [leaseId, token]);
+  const [selectedDocId, setSelectedDocId] = useState(null);
+
+  const openDocumentUrl = async (documentId) => {
+    if (!documentId) return;
+
+    try {
+      const res = await api.get(`${BASE_URL}/api/leases/document/${documentId}`);
+        const url = res?.data?.url || res?.data?.data?.url;
+      window.open(url, "_blank", "noopener,noreferrer");
+    if (!url) {
+      throw new Error("Missing URL in response");
+    } else {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+    }  catch (error) {
+    const msg =
+      error?.response?.data?.message ||
+      "Failed to open document";
+    showError(msg);
+  }
+};
+
+    const fetchLease = useCallback(async () => {
+      const res = await api.get(
+        `${BASE_URL}/api/leases/${leaseId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data?.data?.lease_details) {
+        console.log('Fetched lease_details:', res.data.data.lease_details);
+      } else {
+        console.log('Fetched lease_details: not found in response', res.data?.data);
+      }
+      setLease(res.data.data);
+    }, [leaseId, token]);
 
   useEffect(() => {
     const run = async () => {
@@ -50,6 +79,26 @@ const LeaseDetails = () => {
     };
     run();
   }, [fetchLease]);
+
+  useEffect(() => {
+    const docs = lease?.documents ?? [];
+    if (!Array.isArray(docs) || docs.length === 0) {
+      setSelectedDocId(null);
+      return;
+    }
+
+    setSelectedDocId((current) => {
+      if (current && docs.some((d) => d?._id === current)) return current;
+
+      const mainDoc = docs.find((d) =>
+        String(d?.document_type ?? "")
+          .toLowerCase()
+          .includes("main")
+      );
+
+      return (mainDoc?._id || docs[0]?._id) ?? null;
+    });
+  }, [lease?.documents]);
 
 
   const closeUploadModal = () => {
@@ -76,31 +125,43 @@ const LeaseDetails = () => {
 
     try {
 
-      let derivedLeaseDetails;
 
+      let derivedLeaseDetails;
       try {
         const debugBody = new FormData();
-        debugBody.append("assets", file);
-
+        debugBody.append("assets", file); // PDF
         const debugRes = await api.post(
           `${BASE_URL}/api/debug/amendments`,
-          debugBody
+          debugBody,
+          {
+            headers: {
+              "x-user-id": userId,
+              "x-lease-id": leaseId,
+            },
+          }
         );
 
-        derivedLeaseDetails =
+        // Get the lease_details object from the response
+        let rawDetails =
           debugRes?.data?.lease_details ||
           debugRes?.data?.data?.lease_details;
 
-        if (!derivedLeaseDetails) {
+        // If not found, but data exists, use the whole data
+        if (!rawDetails && debugRes?.data) {
+          rawDetails = debugRes.data;
+        }
+
+        if (!rawDetails) {
           throw new Error("Invalid amendment response");
         }
+
+        derivedLeaseDetails = rawDetails;
       } catch (err) {
         console.error("Failed to analyze amendment document", err);
         showError("Failed to analyze amendment document");
         setIsUploadingDocument(false);
-        return; 
+        return;
       }
-
 
       const body = new FormData();
       body.append("assets", file);
@@ -159,6 +220,25 @@ const LeaseDetails = () => {
     );
   }
 
+  const selectedDoc = lease?.documents?.find((doc) => doc?._id === selectedDocId) || null;
+
+  const selectedLeaseDetails = (() => {
+    const docLeaseDetails =
+      selectedDoc?.lease_details ||
+      selectedDoc?.document_details ||
+      selectedDoc?.details ||
+      null;
+
+    const docDetails = docLeaseDetails?.details || docLeaseDetails;
+
+    return (
+      docDetails ||
+      lease?.lease_details?.details ||
+      lease?.lease_details ||
+      null
+    );
+  })();
+
 
   return (
     <div className="lease-page">
@@ -207,8 +287,34 @@ const LeaseDetails = () => {
 
           <div className="doc-list">
             {lease?.documents?.map((doc) => (
-              <div key={doc._id} className="doc-item">
-                <div className="doc-name">{doc.document_name}</div>
+              <div
+                key={doc._id}
+                className={`doc-item ${doc._id === selectedDocId ? "active" : ""}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedDocId(doc._id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedDocId(doc._id);
+                  }
+                }}
+              >
+                <div className="doc-row">
+                  <div className="doc-name">{doc.document_name}</div>
+
+                  <button
+                    type="button"
+                    className="doc-action"
+                    title="View document"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDocumentUrl(doc._id);
+                    }}
+                  >
+                    <FiEye size={10} className="eye-btn"/>
+                  </button>
+                </div>
                 <span>
                   {doc.document_type} ·{" "}
                   {new Date(doc.created_at).toLocaleDateString()}
@@ -223,7 +329,7 @@ const LeaseDetails = () => {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             leaseMeta={lease}
-            leaseDetails={lease?.lease_details?.details}
+            leaseDetails={selectedLeaseDetails}
             onUpdateLeaseDetails={handleLeaseDetailsUpdate}
           />
 

@@ -31,7 +31,24 @@ const LeaseMainContent = ({
 
   const leaseInfo = leaseDetails?.info?.leaseInformation;
   const spaceInfo = leaseDetails?.space?.space;
-  const chargeSchedules = leaseDetails?.["charge-schedules"]?.chargeSchedules;
+  const normalizeChargeSchedules = (raw = {}) => {
+  const cs = raw["charge-schedules"] || {};
+
+  const chargeSchedulesBlock = cs.chargeSchedules || {};
+
+  return {
+    baseRent: Array.isArray(chargeSchedulesBlock.baseRent)
+      ? chargeSchedulesBlock.baseRent
+      : [],
+
+    lateFee:
+      cs.lateFee ||
+      chargeSchedulesBlock.lateFee ||
+      {}
+  };
+};
+  const chargeSchedules = normalizeChargeSchedules(leaseDetails);
+
   const miscProvisions = leaseDetails?.misc?.otherLeaseProvisions;
   const camSingle = leaseDetails?.["cam-single"]?.data;
 

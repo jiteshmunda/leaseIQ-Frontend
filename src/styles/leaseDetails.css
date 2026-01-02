@@ -118,6 +118,29 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
   cursor: pointer;
 }
 
+.doc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.doc-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: rgba(109, 93, 252, 0.12);
+  color: #6d5dfc;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.doc-action:hover {
+  background: rgba(109, 93, 252, 0.18);
+}
+
 .doc-name {
   display: block;
   max-width: 100%;
@@ -1081,4 +1104,8 @@ details:not([open]) .accordion-summary::after {
   .info-grid {
     grid-template-columns: 1fr;
   }
+}
+.eye-btn{
+  color: #181818;
+  cursor: pointer;
 }

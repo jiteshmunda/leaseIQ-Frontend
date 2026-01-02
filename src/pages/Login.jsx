@@ -12,7 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
-
+  const[loading,setLoading]=useState(false);
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -32,6 +32,7 @@ const Login = () => {
   e.preventDefault();
 
   try {
+    setLoading(true);
     const res = await axios.post(
       `${BASE_URL}/api/auth/login`,
       {
@@ -50,6 +51,8 @@ const Login = () => {
     navigate("/landing");
   } catch (err) {
     showError(err.response?.data?.message || "Login failed");
+  }finally {
+    setLoading(false);
   }
 };
 
@@ -111,8 +114,8 @@ const Login = () => {
             />
           </Form.Group> */}
 
-          <Button className="login-btn" type="submit" disabled={!isFormValid}>
-            Login
+          <Button className="login-btn" type="submit" disabled={!isFormValid || loading}>
+            {loading ? "Signing In..." : "Sign In"}
           </Button>
           <div className="signup-link mt-3 text-center" >
             <p>

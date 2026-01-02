@@ -5,12 +5,13 @@ import "../styles/tab.css";
 const AuditTab = ({ audit, risks = [] }) => {
   const [expandedIndexes, setExpandedIndexes] = useState([]);
 
-  const isPlainObject = (value) => {
-    if (value == null) return false;
-    if (typeof value !== "object") return false;
-    if (Array.isArray(value)) return false;
-    return true;
-  };
+  /* ─────────────────────────
+     BASIC TYPE HELPERS
+  ───────────────────────── */
+  const isPlainObject = (value) =>
+    value != null &&
+    typeof value === "object" &&
+    !Array.isArray(value);
 
   const isPrimitive = (value) => {
     const t = typeof value;
@@ -24,38 +25,37 @@ const AuditTab = ({ audit, risks = [] }) => {
       .trim()
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
+  /* ─────────────────────────
+     RESOLVE AUDIT ROOT
+     (supports nested audit.audit)
+  ───────────────────────── */
   const resolveAuditObject = (value) => {
-    if (Array.isArray(value)) return { risk_register: value };
+    if (Array.isArray(value)) return { audit_items: value };
     if (!isPlainObject(value)) return null;
-
-    // Some backends nest under "audit".
     if (isPlainObject(value.audit)) return value.audit;
     return value;
   };
 
   const auditObject = resolveAuditObject(audit);
 
-  const resolveRisks = () => {
-    if (Array.isArray(risks) && risks.length) return risks;
-    if (!auditObject) return [];
-
-    const candidates = [
-      auditObject.risk_register,
-      auditObject.risks,
-      auditObject.identified_risks,
-      auditObject.audit_checklist,
-    ];
-
-    for (const candidate of candidates) {
-      if (Array.isArray(candidate)) return candidate;
-    }
-
-    return [];
+  const detectArrayOfObjects = (obj) => {
+    if (!isPlainObject(obj)) return [];
+    return Object.values(obj).filter(
+      (value) =>
+        Array.isArray(value) &&
+        value.length > 0 &&
+        value.every((item) => isPlainObject(item))
+    );
   };
 
-  const resolvedRisks = resolveRisks();
+ 
+  const resolvedRisks = (() => {
+    if (Array.isArray(risks) && risks.length) return risks;
+    if (!auditObject) return [];
+    return detectArrayOfObjects(auditObject).flat();
+  })();
 
-  const totalItems = Array.isArray(resolvedRisks) ? resolvedRisks.length : 0;
+  const totalItems = resolvedRisks.length;
 
   const toggleIndex = (index) => {
     setExpandedIndexes((prev) =>
@@ -68,7 +68,7 @@ const AuditTab = ({ audit, risks = [] }) => {
   const renderValue = (value, depth = 0) => {
     if (value == null) return <span>-</span>;
 
-    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    if (isPrimitive(value)) {
       return <span>{String(value)}</span>;
     }
 
@@ -96,7 +96,9 @@ const AuditTab = ({ audit, risks = [] }) => {
     }
 
     if (isPlainObject(value)) {
-      const entries = Object.entries(value).filter(([, v]) => v != null && v !== "");
+      const entries = Object.entries(value).filter(
+        ([, v]) => v != null && v !== ""
+      );
       if (entries.length === 0) return <span>-</span>;
       if (depth >= 2) return <span>{JSON.stringify(value)}</span>;
 
@@ -104,7 +106,8 @@ const AuditTab = ({ audit, risks = [] }) => {
         <ul className="audit-sublist">
           {entries.map(([k, v]) => (
             <li key={k}>
-              <strong>{labelizeKey(k)}:</strong> {renderValue(v, depth + 1)}
+              <strong>{labelizeKey(k)}:</strong>{" "}
+              {renderValue(v, depth + 1)}
             </li>
           ))}
         </ul>
@@ -115,8 +118,6 @@ const AuditTab = ({ audit, risks = [] }) => {
   };
 
   const resolvePages = (risk) => {
-    if (!risk) return null;
-
     const candidates = [
       risk.page_numbers,
       risk.page_reference,
@@ -125,21 +126,45 @@ const AuditTab = ({ audit, risks = [] }) => {
       risk.pageNumbers,
     ];
 
-    for (const candidate of candidates) {
-      if (Array.isArray(candidate) && candidate.length) return candidate;
+    for (const c of candidates) {
+      if (Array.isArray(c) && c.length) return c;
     }
 
     if (risk.page_number != null) return [risk.page_number];
     if (risk.pageNumber != null) return [risk.pageNumber];
-
     return null;
   };
 
   const resolveCertainty = (risk) =>
-    risk?.certainty ?? risk?.certainty_level ?? risk?.certaintyLevel ?? null;
+    risk?.certainty ??
+    risk?.certainty_level ??
+    risk?.certaintyLevel ??
+    risk?.severity ??
+    null;
 
   const getRiskTitle = (risk) =>
-    risk?.category || risk?.title || risk?.type || "Uncategorized Risk";
+    risk?.category ||
+    risk?.title ||
+    risk?.type ||
+    "Uncategorized Risk";
+const EXCLUDED_EXPANDED_KEYS = new Set([
+  "category",
+  "title",
+  "type",
+
+  "page_number",
+  "page_numbers",
+  "page_reference",
+  "page_references",
+  "pages",
+  "pageNumber",
+  "pageNumbers",
+
+  "certainty",
+  "certainty_level",
+  "certaintyLevel",
+  "severity",
+]);
 
   return (
     <div className="audit">
@@ -151,48 +176,23 @@ const AuditTab = ({ audit, risks = [] }) => {
         </h3>
 
         {totalItems === 0 ? (
-          <div className="audit-empty">Audit analysis has not reported any risks.</div>
+          <div className="audit-empty">
+            Audit analysis has not reported any risks.
+          </div>
         ) : (
           <ul className="audit-list">
             {resolvedRisks.map((risk, index) => {
               const isExpanded = expandedIndexes.includes(index);
-
               const pages = resolvePages(risk);
               const certainty = resolveCertainty(risk);
-              const certaintyClass = certainty ? String(certainty).toLowerCase() : "";
-
-              const excludedDetailKeys = new Set([
-                "category",
-                "title",
-                "type",
-                "issue_description",
-                "affected_clause",
-                "recommended_action",
-                "citation",
-                "page_numbers",
-                "page_reference",
-                "page_references",
-                "page_number",
-                "pages",
-                "pageNumbers",
-                "pageNumber",
-                "certainty",
-                "certainty_level",
-                "certaintyLevel",
-              ]);
-
-              const extraDetails = isPlainObject(risk)
-                ? Object.fromEntries(
-                    Object.entries(risk).filter(
-                      ([k, v]) => !excludedDetailKeys.has(k) && v != null && v !== ""
-                    )
-                  )
-                : null;
+              const certaintyClass = certainty
+                ? String(certainty).toLowerCase()
+                : "";
 
               return (
                 <li
-                  className={`audit-item ${isExpanded ? "expanded" : ""}`}
                   key={index}
+                  className={`audit-item ${isExpanded ? "expanded" : ""}`}
                 >
                   <button
                     type="button"
@@ -209,12 +209,11 @@ const AuditTab = ({ audit, risks = [] }) => {
                     </div>
 
                     <div className="audit-right">
-                      {pages && pages.length > 0 && (
+                      {pages && (
                         <span className="audit-pill audit-pill-page">
                           Page {pages.join(", ")}
                         </span>
                       )}
-
                       {certainty && (
                         <span
                           className={`audit-pill audit-pill-certainty ${certaintyClass}`}
@@ -222,49 +221,25 @@ const AuditTab = ({ audit, risks = [] }) => {
                           {String(certainty)}
                         </span>
                       )}
-
                       <span className="count">1 item</span>
                     </div>
                   </button>
 
                   {isExpanded && (
-                    <div className="audit-details">
-                      {risk.issue_description && (
-                        <div className="audit-subsection">
-                          <h4>Issue</h4>
-                          <p>{risk.issue_description}</p>
-                        </div>
-                      )}
+  <div className="audit-details">
+    {renderValue(
+      Object.fromEntries(
+        Object.entries(risk || {}).filter(
+          ([key, value]) =>
+            !EXCLUDED_EXPANDED_KEYS.has(key) &&
+            value != null &&
+            value !== ""
+        )
+      )
+    )}
+  </div>
+)}
 
-                      {risk.affected_clause && (
-                        <div className="audit-subsection">
-                          <h4>Affected Clause</h4>
-                          <p>{risk.affected_clause}</p>
-                        </div>
-                      )}
-
-                      {risk.recommended_action && (
-                        <div className="audit-subsection">
-                          <h4>Recommended Action</h4>
-                          <p>{risk.recommended_action}</p>
-                        </div>
-                      )}
-
-                      {risk.citation && (
-                        <div className="audit-subsection">
-                          <h4>Citation</h4>
-                          <p>{risk.citation}</p>
-                        </div>
-                      )}
-
-                      {extraDetails && Object.keys(extraDetails).length > 0 && (
-                        <div className="audit-subsection">
-                          <h4>Other Details</h4>
-                          {renderValue(extraDetails)}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </li>
               );
             })}
