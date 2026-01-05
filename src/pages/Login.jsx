@@ -78,6 +78,7 @@ const Login = () => {
               placeholder="Enter your username or email"
               value={formData.username}
               onChange={handleChange}
+              disabled={loading}
             />
           </Form.Group>
 
@@ -91,13 +92,15 @@ const Login = () => {
       placeholder="Enter your password"
       value={formData.password}
       onChange={handleChange}
+      disabled={loading}
     />
 
     <InputGroup.Text
       style={{ cursor: "pointer" }}
       onClick={() => setShowPassword(!showPassword)}
+      disabled={loading}
     >
-      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+      {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
     </InputGroup.Text>
   </InputGroup>
 </Form.Group>

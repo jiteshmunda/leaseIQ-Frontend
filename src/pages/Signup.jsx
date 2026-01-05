@@ -126,6 +126,7 @@ function Signup() {
               value={formData.name_user}
               onChange={handleChange}
               isInvalid={!!errors.name_user}
+              disabled={loading}
             />
             <Form.Control.Feedback type="invalid">
               {errors.name_user}
@@ -141,6 +142,7 @@ function Signup() {
               value={formData.email}
               onChange={handleChange}
               isInvalid={!!errors.email}
+              disabled={loading}
             />
             <Form.Control.Feedback type="invalid" >
               {errors.email}
@@ -156,6 +158,7 @@ function Signup() {
               value={formData.username}
               onChange={handleChange}
               isInvalid={!!errors.username}
+              disabled={loading}
             />
             <Form.Control.Feedback type="invalid" >
               {errors.username}
@@ -173,12 +176,13 @@ function Signup() {
       value={formData.password}
       onChange={handleChange}
       isInvalid={!!errors.password}
+      disabled={loading}
     />
     <InputGroup.Text
       style={{ cursor: "pointer" }}
       onClick={() => setShowPassword(!showPassword)}
     >
-      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+      {showPassword ? <Eye size={18} /> : <EyeOff size={18} /> }
     </InputGroup.Text>
 
               <Form.Control.Feedback type="invalid">

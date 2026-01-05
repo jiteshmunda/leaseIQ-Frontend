@@ -224,6 +224,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                       : { ...prev, property_id: "" }
                   );
                 }}
+                disabled={loading}
               />
             </Col>
           </Row>
@@ -241,6 +242,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                     onChange={handleChange}
                     value={form.property_id}
                     isInvalid={submitAttempted && !!errors.property_id}
+                    disabled={loading}
                   >
                     <option value="">Select</option>
                     {properties.map((p) => (
@@ -262,6 +264,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                       onChange={handleChange}
                       value={form.property_name}
                       isInvalid={submitAttempted && !!errors.property_name}
+                      disabled={loading}
                     />
                     <Form.Control.Feedback type="invalid">
                       {errors.property_name}
@@ -274,6 +277,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                       name="address"
                       onChange={handleChange}
                       value={form.address}
+                      disabled={loading}
                     />
                   </Form.Group>
                 </>
@@ -290,9 +294,10 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                   name="tenant_name"
                   placeholder="Enter tenant name"
                   value={form.tenant_name}
-                  disabled={Boolean(tenantId)}   // 🔒 IMPORTANT
+                 //disabled={Boolean(tenantId)}   // 🔒 IMPORTANT
                   onChange={handleChange}
                   isInvalid={submitAttempted && !!errors.tenant_name}
+                  disabled={Boolean(tenantId) || loading}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.tenant_name}
@@ -314,6 +319,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                   onChange={handleChange}
                   value={form.unit_number}
                   isInvalid={submitAttempted && !!errors.unit_number}
+                  disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.unit_number}
@@ -330,6 +336,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                   onChange={handleChange}
                   value={form.square_ft}
                   isInvalid={submitAttempted && !!errors.square_ft}
+                  disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.square_ft}
@@ -346,6 +353,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                   onChange={handleChange}
                   value={form.monthly_rent}
                   isInvalid={submitAttempted && !!errors.monthly_rent}
+                  disabled={loading}
                 />
                 <Form.Control.Feedback type="invalid">
                   {errors.monthly_rent}
@@ -373,6 +381,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                 });
               }}
               isInvalid={submitAttempted && !!errors.document}
+              disabled={loading}
             />
             <Form.Control.Feedback type="invalid">
               {errors.document}

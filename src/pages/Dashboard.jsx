@@ -7,7 +7,7 @@ import AddUnit from "../components/AddUnit";
 import AddTenant from "../components/AddTenant";
 import {Home, Plus,CalendarDays, Users, DollarSign, AlertCircle, Building } from "lucide-react";
 import FloatingSignOut from "../components/FloatingSingout";
-import axios from "axios";
+import api from "../service/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const criticalItems = [];
 const Dashboard = () => {
@@ -21,7 +21,7 @@ const Dashboard = () => {
 
   const fetchTenants = useCallback(async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/tenants`, {
+      const res = await api.get(`${BASE_URL}/api/tenants`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",

@@ -294,12 +294,14 @@ function AddToportfolio({ show, onClose, onSuccess }) {
                     placeholder="Property name"
                     onChange={handleChange}
                     isInvalid={submitAttempted && errors.property_name}
+                    disabled={loading}
                   />
                   <Form.Control
                     name="address"
                     placeholder="Address"
                     onChange={handleChange}
                     isInvalid={submitAttempted && errors.address}
+                    disabled={loading}
                   />
                 </>
               )}
@@ -343,6 +345,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
                   onChange={handleChange}
                   value={form.tenant_name}
                   isInvalid={submitAttempted && errors.tenant_name}
+                  disabled={loading}
                 />
               )}
               {submitAttempted && errors.tenant_id && (
@@ -362,6 +365,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
                 placeholder="Unit No" 
                 onChange={handleChange}
                 isInvalid={submitAttempted && errors.unit_number}
+                disabled={loading}
               />
               {submitAttempted && errors.unit_number && (
                 <Form.Text className="text-danger">{errors.unit_number}</Form.Text>
@@ -374,6 +378,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
                 placeholder="Sqft" 
                 onChange={handleChange}
                 isInvalid={submitAttempted && errors.square_ft}
+                disabled={loading}
               />
               {submitAttempted && errors.square_ft && (
                 <Form.Text className="text-danger">{errors.square_ft}</Form.Text>
@@ -386,6 +391,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
                 placeholder="Rent" 
                 onChange={handleChange}
                 isInvalid={submitAttempted && errors.monthly_rent}
+                disabled={loading}
               />
               {submitAttempted && errors.monthly_rent && (
                 <Form.Text className="text-danger">{errors.monthly_rent}</Form.Text>
@@ -412,7 +418,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="secondary" onClick={onClose}>Cancel</Button>
+        <Button variant="secondary" onClick={onClose} disabled={loading}>Cancel</Button>
         <Button onClick={handleSubmit} disabled={loading}>
           {loading ? "Adding..." : "Add Portfolio"}
         </Button>
