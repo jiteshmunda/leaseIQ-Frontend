@@ -358,7 +358,12 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
   border-radius: 10px;
   padding: 12px 14px;
 }
-
+.info-item label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+}
 .info-item p {
   margin: 6px 0 0;
   font-size: 14px;
@@ -781,9 +786,15 @@ details:not([open]) .accordion-summary::after {
 }
 
 .audit-pill-page {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  border-color: #bfdbfe;
+  background-color: #f3f4f6;
+  color: #374151;
+  border-color: #e5e7eb;
+  text-decoration: none;
+}
+
+.audit-pill-page a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .audit-pill-certainty.high {

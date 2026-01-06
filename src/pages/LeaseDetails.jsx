@@ -36,6 +36,7 @@ const LeaseDetails = () => {
   const [loading, setLoading] = useState(true);
 
   const [selectedDocId, setSelectedDocId] = useState(null);
+  const [currentVersionId, setCurrentVersionId] = useState(null);
 
   const openDocumentUrl = async (documentId) => {
     if (!documentId) return;
@@ -70,12 +71,15 @@ const fetchDocumentDetails = useCallback(
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const details =
+      const payload =
         res?.data?.data ||
         res?.data?.lease_details ||
         res?.data;
 
-      setDocumentDetails(details.details ?? details);
+      // Preserve version metadata (if present) alongside the
+      // actual extracted lease details.
+      setCurrentVersionId(payload?.version ?? null);
+      setDocumentDetails(payload?.details ?? payload);
 
     } catch (err) {
       showError("Failed to load document details", err);
@@ -142,6 +146,7 @@ const fetchDocumentDetails = useCallback(
   useEffect(() => {
   if (!selectedDocId) {
     setDocumentDetails(null);
+    setCurrentVersionId(null);
     return;
   }
 
@@ -153,7 +158,9 @@ const fetchDocumentDetails = useCallback(
       headers: { Authorization: `Bearer ${token}` },
     })
     .then((res) => {
-      setDocumentDetails(res.data.data.details); // ✅ ONLY details
+      const payload = res?.data?.data || res?.data;
+      setCurrentVersionId(payload?.version ?? null);
+      setDocumentDetails(payload?.details ?? payload.details); // ✅ details for UI
     })
     .catch(() => {
       setDocumentDetails(null);
@@ -244,10 +251,11 @@ const fetchDocumentDetails = useCallback(
   };
   const handleLeaseDetailsUpdate = async (updatedLeaseDetails) => {
     try {
-      await api.patch(
-        `${BASE_URL}/api/leases/${leaseId}/details`,
-        { lease_details: updatedLeaseDetails }
-      );
+      const patchUrl = currentVersionId
+        ? `${BASE_URL}/api/leases/${leaseId}/details/version/${currentVersionId}`
+        : `${BASE_URL}/api/leases/${leaseId}/details`;
+
+      await api.patch(patchUrl, { lease_details: updatedLeaseDetails });
 
       setLease((prev) =>
         prev
@@ -260,6 +268,10 @@ const fetchDocumentDetails = useCallback(
             }
           : prev
       );
+
+          // Keep the currently viewed document details in sync so
+          // the UI reflects the latest edits immediately.
+          setDocumentDetails(updatedLeaseDetails);
 
       showSuccess("Lease details updated successfully");
     } catch {
@@ -300,9 +312,9 @@ const fetchDocumentDetails = useCallback(
         </div>
 
         <div className="header-right">
-          <button className="ai-btn" onClick={() => setShowAiAssistant(true)}>
+          {/* <button className="ai-btn" onClick={() => setShowAiAssistant(true)}>
             <FiMessageSquare /> AI Assistant
-          </button>
+          </button> */}
           <button className="ai-btn">
             <FiDownload />
           </button>

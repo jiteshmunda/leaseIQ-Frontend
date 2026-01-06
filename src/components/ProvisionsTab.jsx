@@ -1,6 +1,15 @@
 import { useMemo, useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 
+const getFieldCitation = (field) => {
+  if (!field || typeof field !== "object") return "";
+  if (typeof field.citation === "string") return field.citation;
+  if (field.citation && typeof field.citation === "object") {
+    if (typeof field.citation.value === "string") return field.citation.value;
+  }
+  return "";
+};
+
 const ProvisionsTab = ({
   miscProvisions,
   formatProvisionTitle,
@@ -63,7 +72,7 @@ const ProvisionsTab = ({
     setIsSaving(true);
     try {
       const updated = cloneLeaseDetails(leaseDetails);
-      updated.misc = updated.misc ?? {};
+      updated.misc = JSON.parse(updated.misc.content) ?? {};
       updated.misc.otherLeaseProvisions = updated.misc.otherLeaseProvisions ?? {};
       updated.misc.otherLeaseProvisions[editing.categoryKey] =
         updated.misc.otherLeaseProvisions[editing.categoryKey] ?? {};
@@ -137,6 +146,8 @@ const ProvisionsTab = ({
               const raw = field?.value;
               if (raw === undefined || raw === null || raw === "") return null;
 
+              const citation = getFieldCitation(field);
+
               if (typeof raw === "string") {
                 const segments = splitProvisionText(raw);
                 if (segments.length <= 1) {
@@ -146,6 +157,7 @@ const ProvisionsTab = ({
                     fieldKey,
                     raw,
                     display: normalizeValue(raw),
+                    citation,
                     canEdit: true,
                     segmentIndex: null,
                   };
@@ -157,6 +169,7 @@ const ProvisionsTab = ({
                   fieldKey,
                   raw: segment,
                   display: segment,
+                  citation,
                   canEdit: true,
                   segmentIndex: idx,
                 }));
@@ -168,6 +181,7 @@ const ProvisionsTab = ({
                 fieldKey,
                 raw,
                 display: normalizeValue(raw),
+                citation,
                 canEdit: false,
                 segmentIndex: null,
               };
@@ -232,6 +246,9 @@ const ProvisionsTab = ({
                       ) : (
                         <>
                           {item.display}
+                          {item.citation ? (
+                            <span className="citation">Citation : {item.citation}</span>
+                          ) : null}
                           <span className="item-actions">
                             {item.canEdit && (
                               <FiEdit

@@ -8,6 +8,7 @@ import {
   FiHome,
 } from "react-icons/fi";
 import FloatingSignOut from "../components/FloatingSingout";
+import Gif from "../assets/icon-with-3d-house-financial-bill-clock-coins.jpg";
 
 const AnalysisSuccess = () => {
   const navigate = useNavigate();
@@ -25,8 +26,9 @@ const AnalysisSuccess = () => {
         </div>
 
         <h2>Lease Analyzed Successfully!</h2>
+        <img src={Gif} sizes="" alt="Lease analyzed" className="success-gif" />
 
-        <div className="stats-grid">
+        {/* <div className="stats-grid">
           <div className="stat-box blue">
             <FiCalendar className="stat-icon" />
             <h3>26</h3>
@@ -50,7 +52,7 @@ const AnalysisSuccess = () => {
             <h3>4</h3>
             <p>CAM provisions found</p>
           </div>
-        </div>
+        </div> */}
 
         <div className="secondary-actions">
           <button

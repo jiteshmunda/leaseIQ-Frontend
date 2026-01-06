@@ -8,7 +8,7 @@ import "../styles/quickLease.css";
 
 const QuickLeaseAnalysisCard = () => {
   const navigate = useNavigate();
-  const { runLeaseAnalysis } = useLeaseAnalyzer();
+  const { runLeaseAnalysis, totalSteps: analyzerSteps } = useLeaseAnalyzer();
 
   const [uploadedFile, setUploadedFile] = useState(null);
   const [leaseName, setLeaseName] = useState("");
@@ -27,7 +27,18 @@ const QuickLeaseAnalysisCard = () => {
 
       const leaseDetails = await runLeaseAnalysis({
         formData: analysisForm,
-        onStepChange: setAnalyzingStep,
+        onStepChange: (currentIndex, total) => {
+          const totalAnalyzer = total || analyzerSteps || 1;
+          const uiSteps = 6; // number of steps in AnalyzingLease
+
+          const fraction = (currentIndex + 1) / totalAnalyzer;
+          const uiIndex = Math.min(
+            uiSteps - 1,
+            Math.max(0, Math.floor(fraction * uiSteps) - 1)
+          );
+
+          setAnalyzingStep(uiIndex);
+        },
       });
 
       // Store the raw file in IndexedDB (avoid putting large blobs in sessionStorage)

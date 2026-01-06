@@ -21,7 +21,7 @@ const BuildPortfolio = () => {
   const [loading, setLoading] = useState(false);
 
   const token = sessionStorage.getItem("token");
-  const { runLeaseAnalysis } = useLeaseAnalyzer();
+  const { runLeaseAnalysis, totalSteps: analyzerSteps } = useLeaseAnalyzer();
   const navigate = useNavigate();
 
   const handleSubmit = async ({ file, docType }) => {
@@ -34,7 +34,18 @@ const BuildPortfolio = () => {
 
     const leaseDetails = await runLeaseAnalysis({
       formData: analysisForm,
-      onStepChange: setAnalyzingStep,
+      onStepChange: (currentIndex, total) => {
+        const totalAnalyzer = total || analyzerSteps || 1;
+        const uiSteps = 6; // number of steps in AnalyzingLease
+
+        const fraction = (currentIndex + 1) / totalAnalyzer;
+        const uiIndex = Math.min(
+          uiSteps - 1,
+          Math.max(0, Math.floor(fraction * uiSteps) - 1)
+        );
+
+        setAnalyzingStep(uiIndex);
+      },
     });
 
     const portfolioForm = new FormData();

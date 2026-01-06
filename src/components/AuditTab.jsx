@@ -5,9 +5,6 @@ import "../styles/tab.css";
 const AuditTab = ({ audit, risks = [] }) => {
   const [expandedIndexes, setExpandedIndexes] = useState([]);
 
-  /* ─────────────────────────
-     BASIC TYPE HELPERS
-  ───────────────────────── */
   const isPlainObject = (value) =>
     value != null &&
     typeof value === "object" &&
@@ -221,7 +218,6 @@ const EXCLUDED_EXPANDED_KEYS = new Set([
                           {String(certainty)}
                         </span>
                       )}
-                      <span className="count">1 item</span>
                     </div>
                   </button>
 

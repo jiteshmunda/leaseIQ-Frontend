@@ -119,9 +119,9 @@ const CamTab = ({
         </ul>
       </div>
 
-      <div className="cam-summary">
-        <div className="cam-summary-card green">
-          <h4>Key Tenant Protections</h4>
+      {/* <div className="cam-summary">
+        <div className="cam-summary-card green"> */}
+          {/* <h4>Key Tenant Protections</h4>
           <ul>
             <li>
               All deductible cap on building operating expenses, with such
@@ -152,11 +152,11 @@ const CamTab = ({
               with supporting documentation and no "bundled" costs
             </li>
           </ul>
-        </div>
+        </div> */}
 
         {/* RIGHT PANEL */}
-        <div className="cam-summary-card orange">
-          <h4>Key Tenant Expenses</h4>
+        {/* <div className="cam-summary-card orange"> */}
+          {/* <h4>Key Tenant Expenses</h4>
           <ul>
             <li>
               Tenant in BUID in accordance with applicable management contract
@@ -183,9 +183,9 @@ const CamTab = ({
               of early event or repairs/building costs tied to either premature
               occupancy or an insurance event
             </li>
-          </ul>
-        </div>
-      </div>
+      //     </ul> 
+      //   </div> 
+      // </div> */}
     </div>
   );
 };

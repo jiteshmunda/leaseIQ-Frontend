@@ -361,7 +361,7 @@ const InfoTab = ({
 
         <div className="info-grid">
           <div className="info-item">
-            <label>Lease</label>
+            <label>LEASE</label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -378,7 +378,7 @@ const InfoTab = ({
             ) : null}
           </div>
           <div className="info-item">
-            <label>Property</label>
+            <label>PROPERTY</label>
             <p>{getFieldValue(leaseInfo?.property) || "N/A"}</p>
 
             {getFieldCitation(leaseInfoSource?.property) ? (
@@ -388,7 +388,7 @@ const InfoTab = ({
           </div>
           
           <div className="info-item">
-            <label>Lease From</label>
+            <label>LEASE FROM</label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -405,7 +405,7 @@ const InfoTab = ({
             ) : null}
           </div>
           <div className="info-item">
-            <label>Lease To</label>
+            <label>LEASE TO</label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -422,7 +422,7 @@ const InfoTab = ({
             ) : null}
           </div>
           <div className="info-item">
-            <label>Square Feet</label>
+            <label>SQUARE FEET</label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -442,7 +442,7 @@ const InfoTab = ({
             ) : null}
           </div>
           <div className="info-item">
-            <label>Base Rent</label>
+            <label>BASE RENT</label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -468,7 +468,7 @@ const InfoTab = ({
             ) : null}
           </div>
           <div className="info-item">
-            <label>Security Deposit</label>
+            <label>SECURITY DEPOSIT</label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -490,7 +490,7 @@ const InfoTab = ({
             ) : null}
           </div>
           <div className="info-item">
-            <label>Renewal Options</label>
+            <label>RENEWAL OPTIONS</label>
             {isEditingInfo ? (
               <textarea
                 className="form-control"
@@ -540,7 +540,7 @@ const InfoTab = ({
               className="edit-btn"
               onClick={startEditExecutiveSummary}
             >
-              <FiEdit /> {isEditingSummary ? "Editing" : "Edit"}
+              {/* <FiEdit /> {isEditingSummary ? "Editing" : "Edit"} */}
             </button>
           </div>
 

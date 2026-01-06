@@ -69,10 +69,12 @@ const LeaseMainContent = ({
       ? rawAudit.audit
       : rawAudit;
 
+  // Prefer the flat checklist/identified_risks arrays; fall back to
+  // grouped risk_register only when no issue list is present.
   const auditSource =
-    auditObject?.risk_register ||
-    auditObject?.identified_risks ||
     auditObject?.audit_checklist ||
+    auditObject?.identified_risks ||
+    auditObject?.risk_register ||
     auditObject?.risks ||
     [];
 

@@ -2,6 +2,27 @@ import { FiChevronDown } from "react-icons/fi";
 import "../styles/RentSchedulesTab.css";
 
 const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
+  const getFieldCitation = (field) => {
+    if (!field || typeof field !== "object") return "";
+    if (typeof field.citation === "string") return field.citation;
+    if (field.citation && typeof field.citation === "object") {
+      if (typeof field.citation.value === "string") return field.citation.value;
+    }
+    return "";
+  };
+
+  const renderField = (field, fallback = "-") => {
+    const value = getFieldValue?.(field) || fallback;
+    const citation = getFieldCitation(field);
+
+    return (
+      <>
+        <div>{value}</div>
+        {citation ? <span className="citation">Citation : {citation}</span> : null}
+      </>
+    );
+  };
+
   return (
     <div className="rent-schedules">
       <h3 className="section-title">Charge Schedules</h3>
@@ -19,30 +40,32 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
           <div className="latefee-grid">
             <div className="latefee-card">
               <label>Calculation Type</label>
-              <p>
-                {getFieldValue(chargeSchedules?.lateFee?.calculationType) ||
-                  "N/A"}
-              </p>
-              {chargeSchedules?.lateFee?.calculationType?.citation && (
+              <p>{getFieldValue(chargeSchedules?.lateFee?.calculationType) || "N/A"}</p>
+              {getFieldCitation(chargeSchedules?.lateFee?.calculationType) ? (
                 <span className="citation">
-                  Citation: {chargeSchedules.lateFee.calculationType.citation}
+                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.calculationType)}
                 </span>
-              )}
+              ) : null}
             </div>
 
             <div className="latefee-card">
               <label>Grace Days</label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.graceDays) || "N/A"}</p>
+              {getFieldCitation(chargeSchedules?.lateFee?.graceDays) ? (
+                <span className="citation">
+                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.graceDays)}
+                </span>
+              ) : null}
             </div>
 
             <div className="latefee-card">
               <label>Percent</label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.percent) || "N/A"}</p>
-              {chargeSchedules?.lateFee?.percent?.citation && (
+              {getFieldCitation(chargeSchedules?.lateFee?.percent) ? (
                 <span className="citation">
-                  Citation: {chargeSchedules.lateFee.percent.citation}
+                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.percent)}
                 </span>
-              )}
+              ) : null}
             </div>
 
             <div className="latefee-card">
@@ -52,6 +75,11 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   chargeSchedules?.lateFee?.secondFeeCalculationType
                 ) || "N/A"}
               </p>
+              {getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType) ? (
+                <span className="citation">
+                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType)}
+                </span>
+              ) : null}
             </div>
 
             <div className="latefee-card">
@@ -60,6 +88,11 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                 {getFieldValue(chargeSchedules?.lateFee?.secondFeeGrace) ||
                   "N/A"}
               </p>
+              {getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace) ? (
+                <span className="citation">
+                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace)}
+                </span>
+              ) : null}
             </div>
 
             <div className="latefee-card">
@@ -68,11 +101,21 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                 {getFieldValue(chargeSchedules?.lateFee?.secondFeePercent) ||
                   "N/A"}
               </p>
+              {getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent) ? (
+                <span className="citation">
+                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent)}
+                </span>
+              ) : null}
             </div>
 
             <div className="latefee-card">
               <label>Per Day Fee</label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.perDayFee) || "N/A"}</p>
+              {getFieldCitation(chargeSchedules?.lateFee?.perDayFee) ? (
+                <span className="citation">
+                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.perDayFee)}
+                </span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -100,13 +143,13 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
 
                 return (
                   <tr key={index}>
-                    <td>{getFieldValue(item.period) || "-"}</td>
-                    <td>{getFieldValue(item.dateFrom) || "-"}</td>
-                    <td>{getFieldValue(item.dateTo) || "-"}</td>
-                    <td>{getFieldValue(item.monthlyAmount) || "-"}</td>
-                    <td>{getFieldValue(item.annualAmount) || "-"}</td>
-                    <td>{getFieldValue(item.areaRentable) || "-"}</td>
-                    <td>{getFieldValue(item.amountPerArea) || "-"}</td>
+                    <td>{renderField(item.period) || "-"}</td>
+                    <td>{renderField(item.dateFrom) || "-"}</td>
+                    <td>{renderField(item.dateTo) || "-"}</td>
+                    <td>{renderField(item.monthlyAmount) || "-"}</td>
+                    <td>{renderField(item.annualAmount) || "-"}</td>
+                    <td>{renderField(item.areaRentable) || "-"}</td>
+                    <td>{renderField(item.amountPerArea) || "-"}</td>
                   </tr>
                 );
               })

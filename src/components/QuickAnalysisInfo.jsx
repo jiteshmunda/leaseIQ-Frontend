@@ -81,16 +81,16 @@ const handleAnalyzeAnotherLease = async () => {
             Analyze Another Lease
             </button>
 
-            <MessageSquare
+            {/* <MessageSquare
             className="qai-header-icon"
             onClick={() => setShowAiAssistant(true)}
-            />
+            /> */}
 
             <Download className="qai-header-icon" />
             <X className="qai-header-icon" onClick={() => navigate("/landing")} />
           </div>
         </div>
-        <div className="qai-summary">
+        {/* <div className="qai-summary">
           <div className="qai-summary-card">
             <Calendar className="qai-summary-icon blue" />
             <strong>26</strong>
@@ -114,7 +114,7 @@ const handleAnalyzeAnotherLease = async () => {
             <strong>4</strong>
             <p>CAM provisions found</p>
           </div>
-        </div>
+        </div> */}
 
         </div> 
         <LeaseMainContent

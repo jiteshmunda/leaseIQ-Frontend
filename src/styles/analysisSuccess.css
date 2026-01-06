@@ -40,6 +40,15 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
   margin-bottom: 6px;
 }
 
+.success-gif {
+  display: block;
+  max-width: 320px;
+  width: 70%;
+  height: auto;
+  margin: 16px auto 24px;
+  border-radius: 12px;
+}
+
 .success-subtitle {
   font-size: 14px;
   color: #666;

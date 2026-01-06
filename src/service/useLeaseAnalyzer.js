@@ -2,7 +2,9 @@ import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const LEASE_ANALYSIS_STEPS = [
+// Exported so callers can know how many backend
+// analysis steps are run, for progress mapping.
+export const LEASE_ANALYSIS_STEPS = [
   { key: "cam-single", endpoint: "/api/debug/cam-single" },
   { key: "info", endpoint: "/api/debug/info" },
   { key: "space", endpoint: "/api/debug/space" },
@@ -13,19 +15,21 @@ const LEASE_ANALYSIS_STEPS = [
 ];
 
 export const useLeaseAnalyzer = () => {
+  const totalSteps = LEASE_ANALYSIS_STEPS.length;
+
   const runLeaseAnalysis = async ({ formData, onStepChange }) => {
     const leaseDetails = {};
 
-    for (let i = 0; i < LEASE_ANALYSIS_STEPS.length; i++) {
+    for (let i = 0; i < totalSteps; i++) {
       const step = LEASE_ANALYSIS_STEPS[i];
 
-      onStepChange?.(i);
+      // Report both the current index and total number of
+      // analysis steps so callers can normalize progress.
+      if (onStepChange) {
+        onStepChange(i, totalSteps);
+      }
 
-
-      const res = await axios.post(
-        `${BASE_URL}${step.endpoint}`,
-        formData
-      );
+      const res = await axios.post(`${BASE_URL}${step.endpoint}`, formData);
 
       leaseDetails[step.key] = res.data;
     }
@@ -33,5 +37,5 @@ export const useLeaseAnalyzer = () => {
     return leaseDetails;
   };
 
-  return { runLeaseAnalysis };
+  return { runLeaseAnalysis, totalSteps };
 };
