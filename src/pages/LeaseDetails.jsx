@@ -22,7 +22,8 @@ const LeaseDetails = () => {
   const { leaseId } = useParams();
   const token = sessionStorage.getItem("token");
   const userId = sessionStorage.getItem("userId");
-
+  const [documentDetails, setDocumentDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("Info");
   const [showAiAssistant, setShowAiAssistant] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -55,6 +56,37 @@ const LeaseDetails = () => {
     showError(msg);
   }
 };
+const fetchDocumentDetails = useCallback(
+  async (docId) => {
+    if (!docId) {
+      setDocumentDetails(null);
+      return;
+    }
+
+    setDetailsLoading(true);
+    try {
+      const res = await api.get(
+        `${BASE_URL}/api/leases/${leaseId}/details/${docId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const details =
+        res?.data?.data ||
+        res?.data?.lease_details ||
+        res?.data;
+
+      setDocumentDetails(details.details ?? details);
+
+    } catch (err) {
+      showError("Failed to load document details", err);
+      setDocumentDetails(null);
+    } finally {
+      setDetailsLoading(false);
+    }
+  },
+  [leaseId, token]
+);
+
 
     const fetchLease = useCallback(async () => {
       const res = await api.get(
@@ -81,6 +113,13 @@ const LeaseDetails = () => {
   }, [fetchLease]);
 
   useEffect(() => {
+  if (selectedDocId) {
+    fetchDocumentDetails(selectedDocId);
+  }
+}, [selectedDocId, fetchDocumentDetails]);
+
+
+  useEffect(() => {
     const docs = lease?.documents ?? [];
     if (!Array.isArray(docs) || docs.length === 0) {
       setSelectedDocId(null);
@@ -99,7 +138,28 @@ const LeaseDetails = () => {
       return (mainDoc?._id || docs[0]?._id) ?? null;
     });
   }, [lease?.documents]);
+  
+  useEffect(() => {
+  if (!selectedDocId) {
+    setDocumentDetails(null);
+    return;
+  }
 
+  setDetailsLoading(true);
+  setDocumentDetails(null); // 🔴 CLEAR OLD DATA
+
+  api
+    .get(`${BASE_URL}/api/leases/${leaseId}/details/${selectedDocId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then((res) => {
+      setDocumentDetails(res.data.data.details); // ✅ ONLY details
+    })
+    .catch(() => {
+      setDocumentDetails(null);
+    })
+    .finally(() => setDetailsLoading(false));
+}, [leaseId, selectedDocId, token]);
 
   const closeUploadModal = () => {
     if (isUploadingDocument) return;
@@ -216,25 +276,6 @@ const LeaseDetails = () => {
     );
   }
 
-  const selectedDoc = lease?.documents?.find((doc) => doc?._id === selectedDocId) || null;
-
-  const selectedLeaseDetails = (() => {
-    const docLeaseDetails =
-      selectedDoc?.lease_details ||
-      selectedDoc?.document_details ||
-      selectedDoc?.details ||
-      null;
-
-    const docDetails = docLeaseDetails?.details || docLeaseDetails;
-
-    return (
-      docDetails ||
-      lease?.lease_details?.details ||
-      lease?.lease_details ||
-      null
-    );
-  })();
-
 
   return (
     <div className="lease-page">
@@ -321,13 +362,21 @@ const LeaseDetails = () => {
         </aside>
 
         <main className="lease-content">
-          <LeaseMainContent
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            leaseMeta={lease}
-            leaseDetails={selectedLeaseDetails}
-            onUpdateLeaseDetails={handleLeaseDetailsUpdate}
-          />
+  {detailsLoading || !documentDetails ? (
+    <div className="lease-content-loading">
+      Loading document details…
+    </div>
+  ) : (
+    <LeaseMainContent
+  key={selectedDocId}               // 🔑 force remount
+  leaseMeta={null}                  // ❌ block old fallback bugs
+  leaseDetails={documentDetails}    // ✅ ONLY document API
+  activeTab={activeTab}
+  setActiveTab={setActiveTab}
+  onUpdateLeaseDetails={handleLeaseDetailsUpdate}
+/>
+  )}
+
 
           <AiLeaseAssistant
             open={showAiAssistant}

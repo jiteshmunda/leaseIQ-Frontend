@@ -17,7 +17,6 @@ const CamTab = ({
       return String(value);
     }
     if (typeof value === "object") {
-      // Keep it simple for nested objects (like leaseReference)
       try {
         return JSON.stringify(value);
       } catch {
@@ -120,9 +119,7 @@ const CamTab = ({
         </ul>
       </div>
 
-      {/* ===== CAM SUMMARY PANELS ===== */}
       <div className="cam-summary">
-        {/* LEFT PANEL */}
         <div className="cam-summary-card green">
           <h4>Key Tenant Protections</h4>
           <ul>

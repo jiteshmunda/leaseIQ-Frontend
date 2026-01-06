@@ -237,8 +237,8 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
 /* ===== Executive Summary bullets ===== */
 
 .summary-list {
-  list-style: none;
-  padding-left: 0;
+  list-style: disc;
+  padding-left: 18px;
   margin-top: 14px;
 }
 
@@ -340,6 +340,9 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #fafbfc !important;
+  border-bottom: 2px solid #6c5ce7 !important;
+  
 }
 
 .info-grid {
@@ -347,6 +350,20 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
   grid-template-columns: repeat(2, 1fr);
   gap: 18px;
   margin-top: 16px;
+}
+
+.info-item {
+  background: #fafbfc;
+  border-left: 4px solid #6c5ce7;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.info-item p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
 }
 
 .info-grid label {
@@ -357,6 +374,7 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
 .summary-list {
   margin-top: 14px;
   padding-left: 18px;
+  list-style: disc;
 }
 
 .summary-list li {

@@ -11,7 +11,6 @@ const TABS = ["Info", "Space", "Rent Schedules", "Provisions", "Audit", "CAM"];
 const LeaseMainContent = ({
   activeTab,
   setActiveTab,
-  leaseMeta,
   leaseDetails,
   onUpdateLeaseDetails,
 }) => {
@@ -29,24 +28,36 @@ const LeaseMainContent = ({
   });
   const [isUpdatingCamRule, setIsUpdatingCamRule] = useState(false);
 
+  if (!leaseDetails) {
+    return (
+      <div className="lease-content-loading">
+        Loading document details…
+      </div>
+    );
+  }
+
+  if (typeof leaseDetails !== "object") {
+    return null;
+  }
+
   const leaseInfo = leaseDetails?.info?.leaseInformation;
   const spaceInfo = leaseDetails?.space?.space;
-  const normalizeChargeSchedules = (raw = {}) => {
-  const cs = raw["charge-schedules"] || {};
 
-  const chargeSchedulesBlock = cs.chargeSchedules || {};
+  const normalizeChargeSchedules = (raw = {}) => {
+  const cs = raw?.["charge-schedules"] ?? {};
+  const schedules = cs.chargeSchedules ?? {};
 
   return {
-    baseRent: Array.isArray(chargeSchedulesBlock.baseRent)
-      ? chargeSchedulesBlock.baseRent
+    baseRent: Array.isArray(schedules.baseRent)
+      ? schedules.baseRent
       : [],
-
-    lateFee:
-      cs.lateFee ||
-      chargeSchedulesBlock.lateFee ||
-      {}
+    // Preferred shape (per analyzer): charge-schedules.chargeSchedules.lateFee
+    // Fallback for any older payloads: charge-schedules.lateFee
+    lateFee: schedules.lateFee ?? cs.lateFee ?? {},
   };
 };
+
+
   const chargeSchedules = normalizeChargeSchedules(leaseDetails);
 
   const miscProvisions = leaseDetails?.misc?.otherLeaseProvisions;
@@ -132,7 +143,12 @@ const LeaseMainContent = ({
       ]
     : [];
 
-  const getFieldValue = (field) => (field?.value ? String(field.value) : "");
+  const getFieldValue = (field) => {
+    if (!field || typeof field !== "object") return "";
+    if (!("value" in field)) return "";
+    const value = field.value;
+    return value == null ? "" : String(value);
+  };
 
   const formatDisplayValue = (value) => {
     if (value == null) return "";
@@ -197,6 +213,7 @@ const LeaseMainContent = ({
     });
     setShowEditCam(true);
   };
+
 
   const handleUpdateCamRule = async () => {
     if (!editCamRule) return;
@@ -333,7 +350,6 @@ const LeaseMainContent = ({
           <InfoTab
             leaseDetails={leaseDetails}
             leaseInfo={leaseInfo}
-            leaseMeta={leaseMeta}
             chargeSchedules={chargeSchedules}
             miscProvisions={miscProvisions}
             premisesAndTerm={premisesAndTerm}
@@ -346,7 +362,6 @@ const LeaseMainContent = ({
 
         {activeTab === "Space" && (
           <SpaceTab
-            leaseMeta={leaseMeta}
             spaceInfo={spaceInfo}
             getFieldValue={getFieldValue}
           />

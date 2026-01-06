@@ -250,7 +250,6 @@ const ProvisionsTab = ({
                                 }}
                               />
                             )}
-                            <FiTrash2 className="icon delete" />
                           </span>
                         </>
                       )}

@@ -1,9 +1,17 @@
 import { useMemo, useState } from "react";
 import { FiEdit } from "react-icons/fi";
 
+const getFieldCitation = (field) => {
+  if (!field || typeof field !== "object") return "";
+  if (typeof field.citation === "string") return field.citation;
+  if (field.citation && typeof field.citation === "object") {
+    if (typeof field.citation.value === "string") return field.citation.value;
+  }
+  return "";
+};
+
 const InfoTab = ({
   leaseInfo,
-  leaseMeta,
   chargeSchedules,
   // miscProvisions,
   premisesAndTerm,
@@ -13,6 +21,57 @@ const InfoTab = ({
   leaseDetails,
   onUpdateLeaseDetails,
 }) => {
+  const renderInlineBold = (text) => {
+    const source = String(text ?? "");
+    if (!source.includes("**")) return source;
+
+    const parts = [];
+    const re = /\*\*(.+?)\*\*/g;
+    let lastIndex = 0;
+    let match;
+    let keyIndex = 0;
+
+    while ((match = re.exec(source)) !== null) {
+      const start = match.index;
+      const end = re.lastIndex;
+      const before = source.slice(lastIndex, start);
+      if (before) parts.push(before);
+
+      const boldText = match[1] ?? "";
+      parts.push(
+        <strong key={`b-${keyIndex++}`}>{boldText}</strong>
+      );
+
+      lastIndex = end;
+    }
+
+    const after = source.slice(lastIndex);
+    if (after) parts.push(after);
+    return parts;
+  };
+
+  const executiveSummaryRaw = useMemo(() => {
+    const candidate =
+      leaseDetails?.["executive-summary"]?.executiveSummary?.value ??
+      leaseDetails?.["executive-summary"]?.executiveSummary ??
+      leaseDetails?.executiveSummary?.value ??
+      leaseDetails?.executiveSummary ??
+      "";
+
+    return typeof candidate === "string" ? candidate : String(candidate ?? "");
+  }, [leaseDetails]);
+
+  const executiveSummaryItems = useMemo(() => {
+    const raw = String(executiveSummaryRaw ?? "");
+    if (!raw.trim()) return [];
+
+    return raw
+      .split("\n")
+      .map((line) => String(line ?? "").trim())
+      .filter(Boolean)
+      .map((line) => line.replace(/^[-*]\s+/, ""));
+  }, [executiveSummaryRaw]);
+
   const keyDatesCount = useMemo(() => {
     const seen = new Set();
 
@@ -110,56 +169,53 @@ const InfoTab = ({
   );
 
   const [isEditingInfo, setIsEditingInfo] = useState(false);
+  const [isEditingSummary, setIsEditingSummary] = useState(false);
+  const [executiveSummaryForm, setExecutiveSummaryForm] = useState("");
   const [infoForm, setInfoForm] = useState({
+  lease: getFieldValue(leaseInfo?.lease) || "",
+  propertyAddress: getFieldValue(leaseInfo?.property) || "",
+  leaseFrom: getFieldValue(leaseInfo?.leaseFrom) || "",
+  leaseTo: getFieldValue(leaseInfo?.leaseTo) || "",
+  renewalOptions: getFieldValue(premisesAndTerm?.synopsis) || "",
+  squareFeet:
+    leaseDetails?.info?.leaseInformation?.squareFeet?.value
+      ? String(leaseDetails.info.leaseInformation.squareFeet.value)
+      : "",
+  baseRent:
+    chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value
+      ? String(chargeSchedules.baseRent[0].monthlyAmount.value)
+      : "",
+  securityDeposit:
+    leaseDetails?.info?.leaseInformation?.securityDeposit?.value
+      ? String(leaseDetails.info.leaseInformation.securityDeposit.value)
+      : "",
+});
+
+
+  const startEditInfo = () => {
+  setInfoForm({
     lease: getFieldValue(leaseInfo?.lease) || "",
     propertyAddress: getFieldValue(leaseInfo?.property) || "",
     leaseFrom: getFieldValue(leaseInfo?.leaseFrom) || "",
     leaseTo: getFieldValue(leaseInfo?.leaseTo) || "",
     renewalOptions: getFieldValue(premisesAndTerm?.synopsis) || "",
     squareFeet:
-      (leaseDetails?.info?.leaseInformation?.squareFeet?.value &&
-        String(leaseDetails.info.leaseInformation.squareFeet.value)) ||
-      (leaseMeta?.unit?.square_ft
-        ? String(leaseMeta.unit.square_ft)
-        : ""),
+      leaseDetails?.info?.leaseInformation?.squareFeet?.value
+        ? String(leaseDetails.info.leaseInformation.squareFeet.value)
+        : "",
     baseRent:
-      (chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value &&
-        String(chargeSchedules.baseRent[0].monthlyAmount.value)) ||
-      (leaseMeta?.unit?.monthly_rent
-        ? String(leaseMeta.unit.monthly_rent)
-        : ""),
+      chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value
+        ? String(chargeSchedules.baseRent[0].monthlyAmount.value)
+        : "",
     securityDeposit:
-      (leaseDetails?.info?.leaseInformation?.securityDeposit?.value &&
-        String(leaseDetails.info.leaseInformation.securityDeposit.value)) ||
-      (derivedSecurityDeposit || ""),
+      leaseDetails?.info?.leaseInformation?.securityDeposit?.value
+        ? String(leaseDetails.info.leaseInformation.securityDeposit.value)
+        : "",
   });
 
-  const startEditInfo = () => {
-    setInfoForm({
-      lease: getFieldValue(leaseInfo?.lease) || "",
-      propertyAddress: getFieldValue(leaseInfo?.property) || "",
-      leaseFrom: getFieldValue(leaseInfo?.leaseFrom) || "",
-      leaseTo: getFieldValue(leaseInfo?.leaseTo) || "",
-      renewalOptions: getFieldValue(premisesAndTerm?.synopsis) || "",
-      squareFeet:
-        (leaseDetails?.info?.leaseInformation?.squareFeet?.value &&
-          String(leaseDetails.info.leaseInformation.squareFeet.value)) ||
-        (leaseMeta?.unit?.square_ft
-          ? String(leaseMeta.unit.square_ft)
-          : ""),
-      baseRent:
-        (chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value &&
-          String(chargeSchedules.baseRent[0].monthlyAmount.value)) ||
-        (leaseMeta?.unit?.monthly_rent
-          ? String(leaseMeta.unit.monthly_rent)
-          : ""),
-      securityDeposit:
-        (leaseDetails?.info?.leaseInformation?.securityDeposit?.value &&
-          String(leaseDetails.info.leaseInformation.securityDeposit.value)) ||
-        (derivedSecurityDeposit || ""),
-    });
-    setIsEditingInfo(true);
-  };
+  setIsEditingInfo(true);
+};
+
 
   const handleChange = (field, value) => {
     setInfoForm((prev) => ({ ...prev, [field]: value }));
@@ -242,6 +298,42 @@ const InfoTab = ({
     setIsEditingInfo(false);
   };
 
+  const startEditExecutiveSummary = () => {
+    setExecutiveSummaryForm(executiveSummaryRaw || "");
+    setIsEditingSummary(true);
+  };
+
+  const handleSaveExecutiveSummary = () => {
+    if (!onUpdateLeaseDetails || !leaseDetails) {
+      setIsEditingSummary(false);
+      return;
+    }
+
+    const updatedLeaseDetails = {
+      ...leaseDetails,
+      "executive-summary": (() => {
+        const root = { ...(leaseDetails?.["executive-summary"] || {}) };
+        const current = root.executiveSummary;
+
+        if (current && typeof current === "object") {
+          root.executiveSummary = {
+            ...current,
+            value: executiveSummaryForm,
+          };
+        } else {
+          root.executiveSummary = { value: executiveSummaryForm };
+        }
+
+        return root;
+      })(),
+    };
+
+    onUpdateLeaseDetails(updatedLeaseDetails);
+    setIsEditingSummary(false);
+  };
+
+  const leaseInfoSource = leaseDetails?.info?.leaseInformation || leaseInfo || {};
+
   return (
     <>
       {/* Overview */}
@@ -268,7 +360,7 @@ const InfoTab = ({
         </div>
 
         <div className="info-grid">
-          <div>
+          <div className="info-item">
             <label>Lease</label>
             {isEditingInfo ? (
               <input
@@ -281,28 +373,21 @@ const InfoTab = ({
             ) : (
               <p>{getFieldValue(leaseInfo?.lease) || "N/A"}</p>
             )}
+            {getFieldCitation(leaseInfoSource?.lease) ? (
+              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.lease)}</span>
+            ) : null}
           </div>
-          <div>
+          <div className="info-item">
             <label>Property</label>
-            <p>{leaseMeta?.property?.property_name || "N/A"}</p>
+            <p>{getFieldValue(leaseInfo?.property) || "N/A"}</p>
+
+            {getFieldCitation(leaseInfoSource?.property) ? (
+              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.property)}</span>
+            ) : null}
+
           </div>
-          <div>
-            <label>Property Address</label>
-            {isEditingInfo ? (
-              <input
-                type="text"
-                className="form-control"
-                value={infoForm.propertyAddress}
-                onChange={(e) =>
-                  handleChange("propertyAddress", e.target.value)
-                }
-                placeholder="Enter property address"
-              />
-            ) : (
-              <p>{getFieldValue(leaseInfo?.property) || "N/A"}</p>
-            )}
-          </div>
-          <div>
+          
+          <div className="info-item">
             <label>Lease From</label>
             {isEditingInfo ? (
               <input
@@ -315,8 +400,11 @@ const InfoTab = ({
             ) : (
               <p>{getFieldValue(leaseInfo?.leaseFrom) || "N/A"}</p>
             )}
+            {getFieldCitation(leaseInfoSource?.leaseFrom) ? (
+              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.leaseFrom)}</span>
+            ) : null}
           </div>
-          <div>
+          <div className="info-item">
             <label>Lease To</label>
             {isEditingInfo ? (
               <input
@@ -329,8 +417,11 @@ const InfoTab = ({
             ) : (
               <p>{getFieldValue(leaseInfo?.leaseTo) || "N/A"}</p>
             )}
+            {getFieldCitation(leaseInfoSource?.leaseTo) ? (
+              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.leaseTo)}</span>
+            ) : null}
           </div>
-          <div>
+          <div className="info-item">
             <label>Square Feet</label>
             {isEditingInfo ? (
               <input
@@ -342,16 +433,15 @@ const InfoTab = ({
               />
             ) : (
               <p>
-                {(() => {
-                  const val =
-                    leaseDetails?.info?.leaseInformation?.squareFeet?.value ||
-                    leaseMeta?.unit?.square_ft;
-                  return val ? `${val} sqft` : "N/A";
-                })()}
-              </p>
+{leaseDetails?.info?.leaseInformation?.squareFeet?.value
+  ? `${leaseDetails.info.leaseInformation.squareFeet.value} sqft`
+  : "N/A"}              </p>
             )}
+            {getFieldCitation(leaseInfoSource?.squareFeet) ? (
+              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.squareFeet)}</span>
+            ) : null}
           </div>
-          <div>
+          <div className="info-item">
             <label>Base Rent</label>
             {isEditingInfo ? (
               <input
@@ -373,8 +463,11 @@ const InfoTab = ({
               //     : "N/A"}
               // </p>
             )}
+            {getFieldCitation(leaseInfoSource?.baseRent) ? (
+              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.baseRent)}</span>
+            ) : null}
           </div>
-          <div>
+          <div className="info-item">
             <label>Security Deposit</label>
             {isEditingInfo ? (
               <input
@@ -392,8 +485,11 @@ const InfoTab = ({
                   derivedSecurityDeposit || "N/A"}
               </p>
             )}
+            {getFieldCitation(leaseInfoSource?.securityDeposit) ? (
+              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.securityDeposit)}</span>
+            ) : null}
           </div>
-          <div>
+          <div className="info-item">
             <label>Renewal Options</label>
             {isEditingInfo ? (
               <textarea
@@ -408,6 +504,9 @@ const InfoTab = ({
             ) : (
               <p>{getFieldValue(leaseInfo?.renewalOptions) || "N/A"}</p>
             )}
+            {getFieldCitation(leaseInfoSource?.renewalOptions) ? (
+              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.renewalOptions)}</span>
+            ) : null}
           </div>
         </div>
 
@@ -430,6 +529,57 @@ const InfoTab = ({
           </div>
         )}
       </section>
+
+      {/* Executive Summary */}
+      {isEditingSummary || executiveSummaryItems.length > 0 ? (
+        <section className="card">
+          <div className="card-header">
+            <h3>Executive Summary</h3>
+            <button
+              type="button"
+              className="edit-btn"
+              onClick={startEditExecutiveSummary}
+            >
+              <FiEdit /> {isEditingSummary ? "Editing" : "Edit"}
+            </button>
+          </div>
+
+          {isEditingSummary ? (
+            <div className="mt-3">
+              <textarea
+                className="form-control"
+                rows={10}
+                value={executiveSummaryForm}
+                onChange={(e) => setExecutiveSummaryForm(e.target.value)}
+                placeholder="Enter executive summary (use one line per bullet)."
+              />
+
+              <div className="mt-3 d-flex gap-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => setIsEditingSummary(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={handleSaveExecutiveSummary}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ul className="summary-list">
+              {executiveSummaryItems.map((item, i) => (
+                <li key={i}>{renderInlineBold(item)}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ) : null}
 
       
       {/* <section className="card">
