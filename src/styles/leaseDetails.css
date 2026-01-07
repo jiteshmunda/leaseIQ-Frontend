@@ -589,16 +589,23 @@ details:not([open]) .accordion-summary::after {
 
 /* ================= PROVISIONS ================= */
 
-.provisions-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+.provisions {
+  padding: 16px;
 }
 
-.provisions-header h3 {
-  font-size: 18px;
+.provisions-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.provisions-title {
+  font-size: 16px;
   font-weight: 600;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  margin: 0;
+  color: #111827;
 }
 
 .btn-outline {
@@ -612,7 +619,107 @@ details:not([open]) .accordion-summary::after {
 
 /* Category Card */
 .provision-card {
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  /* Override Bootstrap card border */
+  --bs-card-border-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.provision-card:last-child {
+  border-bottom: none;
+}
+
+/* Accordion Styles */
+.provision-accordion {
+  overflow: hidden;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+  transition: background-color 0.2s ease;
+  /* Override Bootstrap card border */
+  border: none !important;
+  --bs-card-border-width: 0 !important;
+  --bs-card-border-color: transparent !important;
+}
+
+.provision-accordion:hover {
+  background: transparent;
+}
+
+.provision-accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0;
+  cursor: pointer;
+  padding: 14px 16px;
+  background: #fff;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.provision-accordion-header:hover {
+  background: #f9fafb;
+}
+
+.provision-accordion.open .provision-accordion-header {
+  background: #f9fafb;
+}
+
+.provision-accordion-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.provision-accordion-title p {
+  margin: 0;
+  display: inline;
+  font-size: 14px;
+  color: #111827;
+}
+
+.provision-accordion-title h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: #111827;
+  letter-spacing: -0.01em;
+}
+
+.accordion-icon {
+  font-size: 16px;
+  color: #9ca3af;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+  flex-shrink: 0;
+  transform: rotate(0deg);
+}
+
+.provision-accordion.open .accordion-icon {
+  transform: rotate(90deg);
+  color: #6b7280;
+}
+
+.provision-accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.3s ease, 
+              padding 0.3s ease;
+  padding: 0 16px;
+}
+
+.provision-accordion-content.open {
+  max-height: 5000px;
+  opacity: 1;
+  padding: 0 16px 12px 36px;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.4s ease 0.1s, 
+              padding 0.4s ease;
 }
 
 .provision-header {
@@ -658,13 +765,16 @@ details:not([open]) .accordion-summary::after {
 /* List */
 .provision-list {
   list-style: disc;
-  padding-left: 18px;
+  padding-left: 20px;
+  margin: 0;
 }
 
 .provision-item {
   position: relative;
-  padding: 6px 40px 6px 0;
-  font-size: 14px;
+  padding: 8px 40px 8px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #4b5563;
 }
 
 /* Hover actions */
@@ -774,7 +884,7 @@ details:not([open]) .accordion-summary::after {
 }
 
 .audit-item {
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: none;
   cursor: pointer;
 }
 
@@ -877,9 +987,24 @@ details:not([open]) .accordion-summary::after {
 }
 
 .audit-details {
-  padding: 0 16px 12px 36px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0 16px;
   font-size: 13px;
   color: #4b5563;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.3s ease, 
+              padding 0.3s ease;
+}
+
+.audit-details.open {
+  max-height: 5000px;
+  opacity: 1;
+  padding: 0 16px 12px 36px;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.4s ease 0.1s, 
+              padding 0.4s ease;
 }
 
 .audit-subsection + .audit-subsection {

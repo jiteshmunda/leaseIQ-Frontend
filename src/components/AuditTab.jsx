@@ -221,20 +221,18 @@ const EXCLUDED_EXPANDED_KEYS = new Set([
                     </div>
                   </button>
 
-                  {isExpanded && (
-  <div className="audit-details">
-    {renderValue(
-      Object.fromEntries(
-        Object.entries(risk || {}).filter(
-          ([key, value]) =>
-            !EXCLUDED_EXPANDED_KEYS.has(key) &&
-            value != null &&
-            value !== ""
-        )
-      )
-    )}
-  </div>
-)}
+                  <div className={`audit-details ${isExpanded ? 'open' : ''}`}>
+                    {renderValue(
+                      Object.fromEntries(
+                        Object.entries(risk || {}).filter(
+                          ([key, value]) =>
+                            !EXCLUDED_EXPANDED_KEYS.has(key) &&
+                            value != null &&
+                            value !== ""
+                        )
+                      )
+                    )}
+                  </div>
 
                 </li>
               );
