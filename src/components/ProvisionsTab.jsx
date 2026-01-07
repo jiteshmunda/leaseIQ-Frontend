@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FiEdit, FiTrash2, FiChevronDown } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiChevronRight } from "react-icons/fi";
 
 const getFieldCitation = (field) => {
   if (!field || typeof field !== "object") return "";
@@ -28,6 +28,7 @@ const ProvisionsTab = ({
   const [editing, setEditing] = useState(null);
   const [editText, setEditText] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [openAccordions, setOpenAccordions] = useState(new Set());
 
   const provisionFields = useMemo(
     () =>
@@ -167,6 +168,20 @@ const ProvisionsTab = ({
     return String(val);
   };
 
+  const toggleAccordion = (key) => {
+    setOpenAccordions((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const isAccordionOpen = (key) => openAccordions.has(key);
+
   const renderAmendmentsAccordion = (field) => {
     if (!hasAmendments(field)) return null;
 
@@ -225,13 +240,11 @@ const ProvisionsTab = ({
 
   return (
     <div className="provisions">
-      {/* Header */}
-       <div className="provisions-header">
-        <h3>Key Lease Provisions</h3>
-      </div>
+      <div className="provisions-card">
+        <h3 className="provisions-title">Key Lease Provisions</h3>
 
-      {miscProvisions &&
-        Object.entries(miscProvisions).map(([key, value]) => {
+        {miscProvisions &&
+          Object.entries(miscProvisions).map(([key, value]) => {
           const items = provisionFields
             .map((fieldKey) => {
               const field = value?.[fieldKey];
@@ -285,13 +298,20 @@ const ProvisionsTab = ({
             .filter(Boolean);
 
           const title = formatProvisionTitle(key);
+          const isOpen = isAccordionOpen(key);
 
           return (
-            <section className="card provision-card" key={key}>
-              <div className="provision-header">
-                <h4>{title}</h4>
+            <section className={`card provision-card provision-accordion ${isOpen ? 'open' : ''}`} key={key}>
+              <div 
+                className="provision-header provision-accordion-header"
+                onClick={() => toggleAccordion(key)}
+              >
+                <div className="provision-accordion-title">
+                  <FiChevronRight className="accordion-icon" />
+                  <p>{title}</p>
+                </div>
 
-                <div className="provision-actions">
+                <div className="provision-actions" onClick={(e) => e.stopPropagation()}>
                   <FiEdit
                     className="icon edit"
                     onClick={() => onEditCategory(key)}
@@ -299,7 +319,10 @@ const ProvisionsTab = ({
                 </div>
               </div>
 
-              <ul className="provision-list">
+              <div 
+                className={`provision-accordion-content ${isOpen ? 'open' : ''}`}
+              >
+                <ul className="provision-list">
                 {items.length ? (
                   items.map((item) => {
                   const isEditingThis =
@@ -375,9 +398,11 @@ const ProvisionsTab = ({
                   </li>
                 )}
               </ul>
+              </div>
             </section>
           );
         })}
+      </div>
     </div>
   );
 };

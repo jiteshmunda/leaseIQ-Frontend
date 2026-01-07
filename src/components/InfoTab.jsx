@@ -388,13 +388,13 @@ const InfoTab = ({
       <section className="card">
         <div className="card-header">
           <h3>Lease Information</h3>
-          <button
+          {/* <button
             type="button"
             className="edit-btn"
             onClick={startEditInfo}
           >
             <FiEdit /> {isEditingInfo ? "Editing" : "Edit"}
-          </button>
+          </button> */}
         </div>
 
         <div className="info-grid">
@@ -655,13 +655,13 @@ const InfoTab = ({
         <section className="card">
           <div className="card-header">
             <h3>Executive Summary</h3>
-            <button
+            {/* <button
               type="button"
               className="edit-btn"
               onClick={startEditExecutiveSummary}
-            >
+            > */}
               {/* <FiEdit /> {isEditingSummary ? "Editing" : "Edit"} */}
-            </button>
+            {/* </button> */}
           </div>
 
           {isEditingSummary ? (
