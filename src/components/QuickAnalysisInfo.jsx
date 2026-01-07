@@ -60,6 +60,21 @@ const QuickAnalysisInfo = () => {
     }
   };
 
+  const getLeaseFileForCam = async () => {
+    const fileId = parsedLeaseData?.uploadedFile?.id;
+    if (!fileId) {
+      throw new Error("File ID not found");
+    }
+    const storedFileData = await getLeaseFile(fileId);
+    if (!storedFileData || !storedFileData.blob) {
+      throw new Error("File not found");
+    }
+    // Convert blob to File object for FormData
+    return new File([storedFileData.blob], storedFileData.name, {
+      type: storedFileData.type || "application/pdf",
+    });
+  };
+
   const handleDownloadReport = async () => {
     if (isDownloading) return;
     setIsDownloading(true);
@@ -301,6 +316,7 @@ const QuickAnalysisInfo = () => {
           setActiveTab={setActiveTab}
           leaseDetails={leaseDetails}
           onUpdateLeaseDetails={handleUpdateLeaseDetails}
+          getLeaseFile={getLeaseFileForCam}
         />
       </div>
       <AiLeaseAssistant

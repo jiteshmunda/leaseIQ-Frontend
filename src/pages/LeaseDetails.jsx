@@ -249,6 +249,42 @@ const fetchDocumentDetails = useCallback(
       setIsUploadingDocument(false);
     }
   };
+  const getLeaseFileForCam = async () => {
+    if (!selectedDocId) {
+      throw new Error("No document selected");
+    }
+
+    try {
+      // Get document URL from backend
+      const res = await api.get(`${BASE_URL}/api/leases/document/${selectedDocId}`);
+      const url = res?.data?.url || res?.data?.data?.url;
+      
+      if (!url) {
+        throw new Error("Document URL not found");
+      }
+
+      // Fetch the file from the URL
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch document");
+      }
+
+      const blob = await response.blob();
+      
+      // Get document name from lease documents
+      const doc = lease?.documents?.find((d) => d._id === selectedDocId);
+      const fileName = doc?.document_name || "lease-document.pdf";
+
+      // Convert blob to File object for FormData
+      return new File([blob], fileName, {
+        type: blob.type || "application/pdf",
+      });
+    } catch (error) {
+      console.error("Failed to get lease file:", error);
+      throw new Error("Failed to retrieve lease document");
+    }
+  };
+
   const handleLeaseDetailsUpdate = async (updatedLeaseDetails) => {
     try {
       const patchUrl = currentVersionId
@@ -386,6 +422,7 @@ const fetchDocumentDetails = useCallback(
   activeTab={activeTab}
   setActiveTab={setActiveTab}
   onUpdateLeaseDetails={handleLeaseDetailsUpdate}
+  getLeaseFile={getLeaseFileForCam}
 />
   )}
 

@@ -5,6 +5,8 @@ import RentSchedulesTab from "./RentSchedulesTab";
 import ProvisionsTab from "./ProvisionsTab";
 import AuditTab from "./AuditTab";
 import CamTab from "./CamTab";
+import { useLeaseAnalyzer } from "../service/useLeaseAnalyzer";
+import { showError } from "../service/toast";
 
 const TABS = ["Info", "Space", "Rent Schedules", "Provisions", "Audit", "CAM"];
 
@@ -13,6 +15,7 @@ const LeaseMainContent = ({
   setActiveTab,
   leaseDetails,
   onUpdateLeaseDetails,
+  getLeaseFile,
 }) => {
   const [showEditCategory, setShowEditCategory] = useState(false);
   const [editCategoryKey, setEditCategoryKey] = useState(null);
@@ -27,6 +30,9 @@ const LeaseMainContent = ({
     citationsText: "",
   });
   const [isUpdatingCamRule, setIsUpdatingCamRule] = useState(false);
+  const [isLoadingCam, setIsLoadingCam] = useState(false);
+  
+  const { runCamAnalysis } = useLeaseAnalyzer();
 
   if (!leaseDetails) {
     return (
@@ -200,6 +206,63 @@ const LeaseMainContent = ({
     setOpenCam((current) => (current === key ? null : key));
   };
 
+  const handleCamTabClick = async () => {
+    // If CAM data already exists, just switch to the tab
+    if (leaseDetails?.["cam-single"]) {
+      setActiveTab("CAM");
+      return;
+    }
+
+    // If no file retrieval function provided, show error
+    if (!getLeaseFile || typeof getLeaseFile !== "function") {
+      showError("Unable to load CAM analysis. File access not available.");
+      return;
+    }
+
+    // Check if CAM analysis is already in progress
+    if (isLoadingCam) {
+      return;
+    }
+
+    setIsLoadingCam(true);
+    setActiveTab("CAM");
+
+    try {
+      // Get the lease file
+      const file = await getLeaseFile();
+      if (!file) {
+        throw new Error("Failed to retrieve lease file");
+      }
+
+      // Create FormData for the API call
+      const formData = new FormData();
+      formData.append("assets", file);
+
+      // Run CAM analysis
+      const camResult = await runCamAnalysis({ formData });
+
+      // Update lease details with CAM data
+      if (onUpdateLeaseDetails && typeof onUpdateLeaseDetails === "function") {
+        const updated = cloneLeaseDetails(leaseDetails);
+        updated["cam-single"] = camResult["cam-single"];
+        await onUpdateLeaseDetails(updated);
+      }
+    } catch (error) {
+      console.error("CAM analysis failed:", error);
+      showError("Failed to analyze CAM provisions. Please try again.");
+    } finally {
+      setIsLoadingCam(false);
+    }
+  };
+
+  const handleTabClick = (tab) => {
+    if (tab === "CAM") {
+      handleCamTabClick();
+    } else {
+      setActiveTab(tab);
+    }
+  };
+
   const handleEditCategory = (categoryName) => {
     setEditCategoryKey(categoryName);
     setEditCategoryName(formatProvisionTitle(categoryName));
@@ -339,7 +402,8 @@ const LeaseMainContent = ({
           <button
             key={tab}
             className={activeTab === tab ? "active" : ""}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleTabClick(tab)}
+            disabled={tab === "CAM" && isLoadingCam && !leaseDetails?.["cam-single"]}
           >
             {tab}
           </button>
@@ -389,14 +453,25 @@ const LeaseMainContent = ({
         {activeTab === "Audit" && <AuditTab audit={auditObject} risks={auditRisks} />}
 
         {activeTab === "CAM" && (
-          <CamTab
-            resolvedCamRules={resolvedCamRules}
-            openCam={openCam}
-            onToggleCam={toggleCam}
-            onEditRule={(rule) => {
-              handleOpenEditCamRule(rule);
-            }}
-          />
+          <>
+            {isLoadingCam ? (
+              <div className="lease-content-loading">
+                <p>Analyzing CAM provisions...</p>
+                <p style={{ fontSize: "0.9em", color: "#666", marginTop: "8px" }}>
+                  This process may take some time
+                </p>
+              </div>
+            ) : (
+              <CamTab
+                resolvedCamRules={resolvedCamRules}
+                openCam={openCam}
+                onToggleCam={toggleCam}
+                onEditRule={(rule) => {
+                  handleOpenEditCamRule(rule);
+                }}
+              />
+            )}
+          </>
         )}
 
       </div>
