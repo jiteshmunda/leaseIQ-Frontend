@@ -69,13 +69,12 @@ const LeaseMainContent = ({
       ? rawAudit.audit
       : rawAudit;
 
-  // Prefer the flat checklist/identified_risks arrays; fall back to
-  // grouped risk_register only when no issue list is present.
   const auditSource =
     auditObject?.audit_checklist ||
     auditObject?.identified_risks ||
     auditObject?.risk_register ||
     auditObject?.risks ||
+    auditObject?.risk_register_sections ||
     [];
 
   const auditRisks = Array.isArray(auditSource)
@@ -128,7 +127,6 @@ const LeaseMainContent = ({
           title: camSingle.sectionTitle || camSingle.title || "CAM Clause",
           statusClass: "orange",
           status: "Active",
-          count: "1 rule",
           content:
             camSingle.textContent ||
             camSingle.executionClause ||
@@ -373,6 +371,7 @@ const LeaseMainContent = ({
           <RentSchedulesTab
             chargeSchedules={chargeSchedules}
             getFieldValue={getFieldValue}
+            filename={leaseDetails?.filename}
           />
         )}
 

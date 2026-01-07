@@ -207,18 +207,40 @@ const fetchDocumentDetails = useCallback(
             },
           }
         );
+
+        // Normalize amendments response
         let rawDetails =
           debugRes?.data?.lease_details ||
           debugRes?.data?.data?.lease_details;
+
         if (!rawDetails && debugRes?.data) {
           rawDetails = debugRes.data;
+        }
+
+        if (typeof rawDetails === "string") {
+          try {
+            rawDetails = JSON.parse(rawDetails);
+          } catch (parseErr) {
+            console.error("Failed to parse amendment response string", parseErr);
+            throw new Error("Invalid amendment response format");
+          }
         }
 
         if (!rawDetails) {
           throw new Error("Invalid amendment response");
         }
 
-        derivedLeaseDetails = rawDetails;
+        // From the amendments payload, send only the `details` object
+        const detailsOnly =
+          rawDetails?.lease_details?.details || // full response shape
+          rawDetails?.details || // already lease_details shape
+          rawDetails; // fallback
+
+        if (!detailsOnly) {
+          throw new Error("Amendment details not found in response");
+        }
+
+        derivedLeaseDetails = detailsOnly;
       } catch (err) {
         console.error("Failed to analyze amendment document", err);
         showError("Failed to analyze amendment document");

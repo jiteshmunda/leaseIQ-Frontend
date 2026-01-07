@@ -1,0 +1,89 @@
+.field-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.field-value {
+  display: inline-block;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.info-icon {
+  font-size: 13px;
+  color: #ff9800;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tooltip-container {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip-box {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  min-width: 220px;
+  max-width: min(320px, 90vw);
+  max-height: min(260px, 60vh);
+  background: #fffff9;
+  color: #000000;
+  border-left: 2px solid #ff9800;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  display: none;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow-y: auto;
+}
+
+.tooltip-box strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.tooltip-box ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.tooltip-box li {
+  margin-bottom: 4px;
+}
+
+.tooltip-container:hover .tooltip-box {
+  display: block;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .tooltip-box {
+    bottom: calc(100% + 8px);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    max-width: 90vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .field-wrapper {
+    align-items: flex-start;
+  }
+
+  .field-value {
+    white-space: normal;
+  }
+}

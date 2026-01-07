@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { FiEdit } from "react-icons/fi";
+import FieldWithTooltip from "./Fieldwithamendments";
 
 const getFieldCitation = (field) => {
   if (!field || typeof field !== "object") return "";
@@ -8,6 +9,43 @@ const getFieldCitation = (field) => {
     if (typeof field.citation.value === "string") return field.citation.value;
   }
   return "";
+};
+
+const hasAmendments = (field) =>
+  !!(
+    field &&
+    typeof field === "object" &&
+    Array.isArray(field.amendments) &&
+    field.amendments.length > 0
+  );
+
+const renderAmendments = (field) => {
+  if (!field || !Array.isArray(field.amendments) || !field.amendments.length) {
+    return null;
+  }
+
+  return (
+    <div className="amendments-block">
+      <span className="amendments-label">Amendments</span>
+      <ul className="amendments-list">
+        {field.amendments.map((am, idx) => (
+          <li key={idx}>
+            {am?.effective_date ? <strong>{am.effective_date}: </strong> : null}
+            {am?.description || (
+              <span>
+                {am?.previous_value && (
+                  <span>
+                    Previous: {am.previous_value}{" "}
+                  </span>
+                )}
+                {am?.new_value && <span>New: {am.new_value}</span>}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 };
 
 const InfoTab = ({
@@ -72,101 +110,101 @@ const InfoTab = ({
       .map((line) => line.replace(/^[-*]\s+/, ""));
   }, [executiveSummaryRaw]);
 
-  const keyDatesCount = useMemo(() => {
-    const seen = new Set();
+  // const keyDatesCount = useMemo(() => {
+  //   const seen = new Set();
 
-    const looksLikeDate = (s) => {
-      const text = String(s ?? "").trim();
-      if (!text) return false;
-      // ISO-ish: 2025-12-30 or 2025-12-30T...
-      if (/^\d{4}-\d{2}-\d{2}(?:[T\s].*)?$/.test(text)) return true;
-      // Common US: 12/30/2025 or 12/30/25
-      if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(text)) return true;
-      return false;
-    };
+  //   const looksLikeDate = (s) => {
+  //     const text = String(s ?? "").trim();
+  //     if (!text) return false;
+  //     // ISO-ish: 2025-12-30 or 2025-12-30T...
+  //     if (/^\d{4}-\d{2}-\d{2}(?:[T\s].*)?$/.test(text)) return true;
+  //     // Common US: 12/30/2025 or 12/30/25
+  //     if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(text)) return true;
+  //     return false;
+  //   };
 
-    const visit = (value) => {
-      if (value == null) return;
-      if (Array.isArray(value)) {
-        value.forEach(visit);
-        return;
-      }
-      if (typeof value === "object") {
-        Object.values(value).forEach(visit);
-        return;
-      }
-      if (typeof value === "string") {
-        if (!looksLikeDate(value)) return;
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return;
-        const day = d.toISOString().slice(0, 10);
-        seen.add(day);
-      }
-    };
+  //   const visit = (value) => {
+  //     if (value == null) return;
+  //     if (Array.isArray(value)) {
+  //       value.forEach(visit);
+  //       return;
+  //     }
+  //     if (typeof value === "object") {
+  //       Object.values(value).forEach(visit);
+  //       return;
+  //     }
+  //     if (typeof value === "string") {
+  //       if (!looksLikeDate(value)) return;
+  //       const d = new Date(value);
+  //       if (Number.isNaN(d.getTime())) return;
+  //       const day = d.toISOString().slice(0, 10);
+  //       seen.add(day);
+  //     }
+  //   };
 
-    visit(leaseDetails);
-    return seen.size;
-  }, [leaseDetails]);
+  //   visit(leaseDetails);
+  //   return seen.size;
+  // }, [leaseDetails]);
 
-  const obligationsCount = useMemo(() => {
-    const audit = leaseDetails?.audit;
-    const totalItems = audit?.totalItems ?? audit?.total_items ?? audit?.summary?.totalItems;
-    if (typeof totalItems === "number" && Number.isFinite(totalItems)) {
-      return totalItems;
-    }
-    const source = audit?.identified_risks || audit?.audit_checklist;
-    return Array.isArray(source) ? source.length : 0;
-  }, [leaseDetails]);
+  // const obligationsCount = useMemo(() => {
+  //   const audit = leaseDetails?.audit;
+  //   const totalItems = audit?.totalItems ?? audit?.total_items ?? audit?.summary?.totalItems;
+  //   if (typeof totalItems === "number" && Number.isFinite(totalItems)) {
+  //     return totalItems;
+  //   }
+  //   const source = audit?.identified_risks || audit?.audit_checklist;
+  //   return Array.isArray(source) ? source.length : 0;
+  // }, [leaseDetails]);
 
-  const keyTermsCount = useMemo(() => {
-    const info = leaseDetails?.info?.leaseInformation;
-    if (!info || typeof info !== "object") return 0;
+  // const keyTermsCount = useMemo(() => {
+  //   const info = leaseDetails?.info?.leaseInformation;
+  //   if (!info || typeof info !== "object") return 0;
 
-    const isNonEmpty = (v) => {
-      if (v == null) return false;
-      if (typeof v === "string") return v.trim().length > 0;
-      if (typeof v === "number") return Number.isFinite(v);
-      if (typeof v === "boolean") return true;
-      if (typeof v === "object" && "value" in v) {
-        const inner = v.value;
-        if (inner == null) return false;
-        return String(inner).trim().length > 0;
-      }
-      return false;
-    };
+  //   const isNonEmpty = (v) => {
+  //     if (v == null) return false;
+  //     if (typeof v === "string") return v.trim().length > 0;
+  //     if (typeof v === "number") return Number.isFinite(v);
+  //     if (typeof v === "boolean") return true;
+  //     if (typeof v === "object" && "value" in v) {
+  //       const inner = v.value;
+  //       if (inner == null) return false;
+  //       return String(inner).trim().length > 0;
+  //     }
+  //     return false;
+  //   };
 
-    return Object.values(info).filter(isNonEmpty).length;
-  }, [leaseDetails]);
+  //   return Object.values(info).filter(isNonEmpty).length;
+  // }, [leaseDetails]);
 
-  const overviewCards = useMemo(
-    () => [
-      {
-        key: "liabilities",
-        color: "red",
-        label: "Liabilities",
-        value: leaseDetails?.audit ? "Hidden" : "N/A",
-      },
-      {
-        key: "keyDates",
-        color: "blue",
-        label: "Key Dates",
-        value: keyDatesCount,
-      },
-      {
-        key: "obligations",
-        color: "green",
-        label: "Obligations",
-        value: obligationsCount,
-      },
-      {
-        key: "keyTerms",
-        color: "orange",
-        label: "Key Terms",
-        value: keyTermsCount,
-      },
-    ],
-    [leaseDetails, keyDatesCount, obligationsCount, keyTermsCount]
-  );
+  // const overviewCards = useMemo(
+  //   () => [
+  //     {
+  //       key: "liabilities",
+  //       color: "red",
+  //       label: "Liabilities",
+  //       value: leaseDetails?.audit ? "Hidden" : "N/A",
+  //     },
+  //     {
+  //       key: "keyDates",
+  //       color: "blue",
+  //       label: "Key Dates",
+  //       value: keyDatesCount,
+  //     },
+  //     {
+  //       key: "obligations",
+  //       color: "green",
+  //       label: "Obligations",
+  //       value: obligationsCount,
+  //     },
+  //     {
+  //       key: "keyTerms",
+  //       color: "orange",
+  //       label: "Key Terms",
+  //       value: keyTermsCount,
+  //     },
+  //   ],
+  //   [leaseDetails, keyDatesCount, obligationsCount, keyTermsCount]
+  // );
 
   const [isEditingInfo, setIsEditingInfo] = useState(false);
   const [isEditingSummary, setIsEditingSummary] = useState(false);
@@ -337,14 +375,14 @@ const InfoTab = ({
   return (
     <>
       {/* Overview */}
-      <section className="overview">
+      {/* <section className="overview">
         {overviewCards.map((card) => (
           <div key={card.key} className={`overview-card ${card.color}`}>
             <span>{card.label}</span>
             <strong>{card.value}</strong>
           </div>
         ))}
-      </section>
+      </section> */}
 
       {/* Lease Info */}
       <section className="card">
@@ -360,8 +398,17 @@ const InfoTab = ({
         </div>
 
         <div className="info-grid">
-          <div className="info-item">
-            <label>LEASE</label>
+          <div
+            className={`info-item ${
+              hasAmendments(leaseInfoSource?.lease) ? "has-amendments" : ""
+            }`}
+          >
+            <label>
+              <FieldWithTooltip
+                value="LEASE"
+                amendments={leaseInfoSource?.lease?.amendments}
+              />
+            </label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -376,19 +423,49 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.lease) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.lease)}</span>
             ) : null}
+            {renderAmendments(leaseInfoSource?.lease)}
           </div>
-          <div className="info-item">
-            <label>PROPERTY</label>
-            <p>{getFieldValue(leaseInfo?.property) || "N/A"}</p>
+          <div
+            className={`info-item ${
+              hasAmendments(leaseInfoSource?.property) ? "has-amendments" : ""
+            }`}
+          >
+            <label>
+              <FieldWithTooltip
+                value="PROPERTY"
+                amendments={leaseInfoSource?.property?.amendments}
+              />
+            </label>
+            {isEditingInfo ? (
+              <input
+                type="text"
+                className="form-control"
+                value={infoForm.propertyAddress}
+                onChange={(e) => handleChange("propertyAddress", e.target.value)}
+                placeholder="Enter property address"
+              />
+            ) : (
+              <p>{getFieldValue(leaseInfo?.property) || "N/A"}</p>
+            )}
 
             {getFieldCitation(leaseInfoSource?.property) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.property)}</span>
             ) : null}
+            {renderAmendments(leaseInfoSource?.property)}
 
           </div>
           
-          <div className="info-item">
-            <label>LEASE FROM</label>
+          <div
+            className={`info-item ${
+              hasAmendments(leaseInfoSource?.leaseFrom) ? "has-amendments" : ""
+            }`}
+          >
+            <label>
+              <FieldWithTooltip
+                value="LEASE FROM"
+                amendments={leaseInfoSource?.leaseFrom?.amendments}
+              />
+            </label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -403,9 +480,19 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.leaseFrom) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.leaseFrom)}</span>
             ) : null}
+            {renderAmendments(leaseInfoSource?.leaseFrom)}
           </div>
-          <div className="info-item">
-            <label>LEASE TO</label>
+          <div
+            className={`info-item ${
+              hasAmendments(leaseInfoSource?.leaseTo) ? "has-amendments" : ""
+            }`}
+          >
+            <label>
+              <FieldWithTooltip
+                value="LEASE TO"
+                amendments={leaseInfoSource?.leaseTo?.amendments}
+              />
+            </label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -420,9 +507,19 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.leaseTo) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.leaseTo)}</span>
             ) : null}
+            {renderAmendments(leaseInfoSource?.leaseTo)}
           </div>
-          <div className="info-item">
-            <label>SQUARE FEET</label>
+          <div
+            className={`info-item ${
+              hasAmendments(leaseInfoSource?.squareFeet) ? "has-amendments" : ""
+            }`}
+          >
+            <label>
+              <FieldWithTooltip
+                value="SQUARE FEET"
+                amendments={leaseInfoSource?.squareFeet?.amendments}
+              />
+            </label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -433,16 +530,27 @@ const InfoTab = ({
               />
             ) : (
               <p>
-{leaseDetails?.info?.leaseInformation?.squareFeet?.value
-  ? `${leaseDetails.info.leaseInformation.squareFeet.value} sqft`
-  : "N/A"}              </p>
+                {leaseDetails?.info?.leaseInformation?.squareFeet?.value
+                  ? `${leaseDetails.info.leaseInformation.squareFeet.value} sqft`
+                  : "N/A"}
+              </p>
             )}
             {getFieldCitation(leaseInfoSource?.squareFeet) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.squareFeet)}</span>
             ) : null}
+            {renderAmendments(leaseInfoSource?.squareFeet)}
           </div>
-          <div className="info-item">
-            <label>BASE RENT</label>
+          <div
+            className={`info-item ${
+              hasAmendments(leaseInfoSource?.baseRent) ? "has-amendments" : ""
+            }`}
+          >
+            <label>
+              <FieldWithTooltip
+                value="BASE RENT"
+                amendments={leaseInfoSource?.baseRent?.amendments}
+              />
+            </label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -453,22 +561,23 @@ const InfoTab = ({
               />
             ) : (
               <p>{getFieldValue(leaseInfo?.baseRent) || "N/A"}</p>
-              // <p>
-              //   {chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value
-              //     ? `${
-              //         chargeSchedules.baseRent[0].monthlyAmount.value
-              //       } / month`
-              //     : leaseMeta?.unit?.monthly_rent
-              //     ? `${leaseMeta.unit.monthly_rent} / month`
-              //     : "N/A"}
-              // </p>
             )}
             {getFieldCitation(leaseInfoSource?.baseRent) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.baseRent)}</span>
             ) : null}
+            {renderAmendments(leaseInfoSource?.baseRent)}
           </div>
-          <div className="info-item">
-            <label>SECURITY DEPOSIT</label>
+          <div
+            className={`info-item ${
+              hasAmendments(leaseInfoSource?.securityDeposit) ? "has-amendments" : ""
+            }`}
+          >
+            <label>
+              <FieldWithTooltip
+                value="SECURITY DEPOSIT"
+                amendments={leaseInfoSource?.securityDeposit?.amendments}
+              />
+            </label>
             {isEditingInfo ? (
               <input
                 type="text"
@@ -488,9 +597,19 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.securityDeposit) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.securityDeposit)}</span>
             ) : null}
+            {renderAmendments(leaseInfoSource?.securityDeposit)}
           </div>
-          <div className="info-item">
-            <label>RENEWAL OPTIONS</label>
+          <div
+            className={`info-item ${
+              hasAmendments(leaseInfoSource?.renewalOptions) ? "has-amendments" : ""
+            }`}
+          >
+            <label>
+              <FieldWithTooltip
+                value="RENEWAL OPTIONS"
+                amendments={leaseInfoSource?.renewalOptions?.amendments}
+              />
+            </label>
             {isEditingInfo ? (
               <textarea
                 className="form-control"
@@ -507,6 +626,7 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.renewalOptions) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.renewalOptions)}</span>
             ) : null}
+            {renderAmendments(leaseInfoSource?.renewalOptions)}
           </div>
         </div>
 

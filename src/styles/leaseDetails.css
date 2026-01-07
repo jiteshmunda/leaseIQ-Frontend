@@ -95,6 +95,17 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
   background: #fff;
   border-right: 1px solid #eee;
   padding: 20px;
+
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.doc-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .muted {
@@ -358,6 +369,10 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
   border-radius: 10px;
   padding: 12px 14px;
 }
+.info-item.has-amendments {
+  border-left-color: #f59e0b;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.35);
+}
 .info-item label {
   font-size: 11px;
   font-weight: 600;
@@ -509,6 +524,28 @@ details:not([open]) .accordion-summary::after {
   color: #6b7280;
 }
 
+.amendments-block {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #fbbf24;
+}
+
+.amendments-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #b45309;
+  margin-bottom: 2px;
+}
+
+.amendments-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: #92400e;
+}
+
 /* Base rent card */
 .base-rent-card {
   margin-top: 8px;
@@ -539,6 +576,14 @@ details:not([open]) .accordion-summary::after {
   font-size: 14px;
   padding: 14px 12px;
   border-bottom: 1px solid #f1f1f1;
+}
+
+.rent-table tr.has-amendments-row td {
+  background-color: #fffbeb;
+}
+
+.rent-table tr.amendments-row td {
+  background-color: #fffbeb;
 }
 
 

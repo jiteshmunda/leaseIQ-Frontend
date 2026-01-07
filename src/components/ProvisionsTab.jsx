@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiChevronDown } from "react-icons/fi";
 
 const getFieldCitation = (field) => {
   if (!field || typeof field !== "object") return "";
@@ -9,6 +9,14 @@ const getFieldCitation = (field) => {
   }
   return "";
 };
+
+const hasAmendments = (field) =>
+  !!(
+    field &&
+    typeof field === "object" &&
+    Array.isArray(field.amendments) &&
+    field.amendments.length > 0
+  );
 
 const ProvisionsTab = ({
   miscProvisions,
@@ -131,6 +139,90 @@ const ProvisionsTab = ({
       .map((s) => s.trim())
       .filter(Boolean);
 
+  const renderAmendmentValue = (val) => {
+    if (val == null) return null;
+
+    if (typeof val === "string") {
+      const trimmed = val.trim();
+      if (
+        (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+        (trimmed.startsWith("[") && trimmed.endsWith("]"))
+      ) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (typeof parsed === "object" && parsed !== null) {
+            return normalizeValue(parsed);
+          }
+        } catch {
+          // fall through to plain text
+        }
+      }
+      return trimmed;
+    }
+
+    if (typeof val === "object") {
+      return normalizeValue(val);
+    }
+
+    return String(val);
+  };
+
+  const renderAmendmentsAccordion = (field) => {
+    if (!hasAmendments(field)) return null;
+
+    return (
+      <div className="amendments-block">
+        <details className="amendments-details">
+          <summary className="amendments-summary">
+            Amendments
+          </summary>
+          <ul className="amendments-list">
+            {field.amendments.map((am, idx) => (
+              <li key={idx}>
+                {am?.amendment_type && (
+                  <div>
+                    <strong>Type: </strong>
+                    {am.amendment_type}
+                  </div>
+                )}
+                {am?.effective_date && (
+                  <div>
+                    <strong>Effective Date: </strong>
+                    {am.effective_date}
+                  </div>
+                )}
+                {am?.previous_value && (
+                  <div>
+                    <strong>Previous: </strong>
+                    {renderAmendmentValue(am.previous_value)}
+                  </div>
+                )}
+                {am?.new_value && (
+                  <div>
+                    <strong>New: </strong>
+                    {renderAmendmentValue(am.new_value)}
+                  </div>
+                )}
+                {am?.amendment_citation && (
+                  <div>
+                    <strong>Citation: </strong>
+                    {am.amendment_citation}
+                  </div>
+                )}
+                {am?.description && (
+                  <div>
+                    <strong>Description: </strong>
+                    {am.description}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </details>
+      </div>
+    );
+  };
+
   return (
     <div className="provisions">
       {/* Header */}
@@ -160,6 +252,7 @@ const ProvisionsTab = ({
                     citation,
                     canEdit: true,
                     segmentIndex: null,
+                    field,
                   };
                 }
 
@@ -172,6 +265,7 @@ const ProvisionsTab = ({
                   citation,
                   canEdit: true,
                   segmentIndex: idx,
+                  field,
                 }));
               }
 
@@ -184,6 +278,7 @@ const ProvisionsTab = ({
                 citation,
                 canEdit: false,
                 segmentIndex: null,
+                field,
               };
             })
             .flat()
@@ -249,6 +344,7 @@ const ProvisionsTab = ({
                           {item.citation ? (
                             <span className="citation">Citation : {item.citation}</span>
                           ) : null}
+                          {renderAmendmentsAccordion(item.field)}
                           <span className="item-actions">
                             {item.canEdit && (
                               <FiEdit
