@@ -18,14 +18,21 @@ const hasAmendments = (field) =>
     field.amendments.length > 0
   );
 
-const renderAmendments = (field) => {
+const formatAmendmentsLabel = (filename) => {
+  if (typeof filename !== "string") return "Amendments";
+  const trimmed = filename.trim();
+  if (!trimmed) return "Amendments";
+  return trimmed.replace(/\.[^.]+$/i, "");
+};
+
+const renderAmendments = (field, filename) => {
   if (!field || !Array.isArray(field.amendments) || !field.amendments.length) {
     return null;
   }
 
   return (
     <div className="amendments-block">
-      <span className="amendments-label">Amendments</span>
+      <span className="amendments-label">{formatAmendmentsLabel(filename)}</span>
       <ul className="amendments-list">
         {field.amendments.map((am, idx) => (
           <li key={idx}>
@@ -47,7 +54,7 @@ const renderAmendments = (field) => {
   );
 };
 
-const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
+const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
   return (
     <section className="card">
       <div className="card-header">
@@ -70,7 +77,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.premises) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.premises)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.premises)}
+          {renderAmendments(spaceInfo?.premises, filename)}
         </div>
         <div
           className={`info-item ${
@@ -87,7 +94,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.unit) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.unit)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.unit)}
+          {renderAmendments(spaceInfo?.unit, filename)}
         </div>
         <div
           className={`info-item ${
@@ -107,7 +114,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.building) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.building)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.building)}
+          {renderAmendments(spaceInfo?.building, filename)}
         </div>
         <div
           className={`info-item ${
@@ -124,7 +131,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.floor) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.floor)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.floor)}
+          {renderAmendments(spaceInfo?.floor, filename)}
         </div>
         <div
           className={`info-item ${
@@ -141,7 +148,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.zipCode) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.zipCode)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.zipCode)}
+          {renderAmendments(spaceInfo?.zipCode, filename)}
         </div>
         <div
           className={`info-item ${
@@ -163,7 +170,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.areaRentable) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.areaRentable)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.areaRentable)}
+          {renderAmendments(spaceInfo?.areaRentable, filename)}
         </div>
         <div
           className={`info-item ${
@@ -180,7 +187,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.areaUsable) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.areaUsable)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.areaUsable)}
+          {renderAmendments(spaceInfo?.areaUsable, filename)}
         </div>
         <div
           className={`info-item ${
@@ -197,7 +204,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.city) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.city)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.city)}
+          {renderAmendments(spaceInfo?.city, filename)}
         </div>
         <div
           className={`info-item ${
@@ -214,7 +221,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.state) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.state)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.state)}
+          {renderAmendments(spaceInfo?.state, filename)}
         </div>
         <div
           className={`info-item ${
@@ -231,7 +238,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.notes) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.notes)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.notes)}
+          {renderAmendments(spaceInfo?.notes, filename)}
         </div>
         <div
           className={`info-item ${
@@ -248,7 +255,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.commonArea) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.commonArea)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.commonArea)}
+          {renderAmendments(spaceInfo?.commonArea, filename)}
         </div>
         <div
           className={`info-item ${
@@ -265,7 +272,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.parking?.value) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.parking?.value)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.parking?.value)}
+          {renderAmendments(spaceInfo?.parking?.value, filename)}
         </div>
         <div
           className={`info-item ${
@@ -282,7 +289,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.parking?.type) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.parking?.type)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.parking?.type)}
+          {renderAmendments(spaceInfo?.parking?.type, filename)}
         </div>
         <div
           className={`info-item ${
@@ -299,7 +306,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.storageArea) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.storageArea)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.storageArea)}
+          {renderAmendments(spaceInfo?.storageArea, filename)}
         </div>
         <div
           className={`info-item ${
@@ -316,7 +323,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue }) => {
           {getFieldCitation(spaceInfo?.status) ? (
             <span className="citation">Citation : {getFieldCitation(spaceInfo?.status)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.status)}
+          {renderAmendments(spaceInfo?.status, filename)}
         </div>
       </div>
     </section>

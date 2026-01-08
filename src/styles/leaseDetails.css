@@ -407,6 +407,7 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
 .edit-btn,
 .add-btn {
   border: 1px solid #ddd;
+  color: #181818;
   background: #fff;
   border-radius: 8px;
   padding: 6px 10px;

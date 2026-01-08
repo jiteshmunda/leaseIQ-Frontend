@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import InfoTab from "./InfoTab";
 import SpaceTab from "./SpaceTab";
 import RentSchedulesTab from "./RentSchedulesTab";
@@ -17,6 +17,7 @@ const LeaseMainContent = ({
   onUpdateLeaseDetails,
   getLeaseFile,
 }) => {
+  const scrollSectionRef = useRef(null);
   const [showEditCategory, setShowEditCategory] = useState(false);
   const [editCategoryKey, setEditCategoryKey] = useState(null);
   const [editCategoryName, setEditCategoryName] = useState("");
@@ -33,6 +34,13 @@ const LeaseMainContent = ({
   const [isLoadingCam, setIsLoadingCam] = useState(false);
   
   const { runCamAnalysis } = useLeaseAnalyzer();
+
+  useEffect(() => {
+    // The scroll container stays mounted across tab switches, so it keeps its scrollTop.
+    // Reset to top on each tab change.
+    const el = scrollSectionRef.current;
+    if (el) el.scrollTop = 0;
+  }, [activeTab]);
 
   if (!leaseDetails) {
     return (
@@ -409,7 +417,7 @@ const LeaseMainContent = ({
       </div>
 
                 {/* ===== SCROLLABLE SECTION ===== */}
-                <div className="scroll-section">
+                <div className="scroll-section" ref={scrollSectionRef}>
         {activeTab === "Info" && (
           <InfoTab
             leaseDetails={leaseDetails}
@@ -421,6 +429,7 @@ const LeaseMainContent = ({
             getFieldValue={getFieldValue}
             formatDisplayValue={formatDisplayValue}
             onUpdateLeaseDetails={onUpdateLeaseDetails}
+            filename={leaseDetails?.filename}
           />
         )}
 
@@ -428,6 +437,7 @@ const LeaseMainContent = ({
           <SpaceTab
             spaceInfo={spaceInfo}
             getFieldValue={getFieldValue}
+            filename={leaseDetails?.filename}
           />
         )}
 
@@ -446,10 +456,11 @@ const LeaseMainContent = ({
             onEditCategory={handleEditCategory}
             leaseDetails={leaseDetails}
             onUpdateLeaseDetails={onUpdateLeaseDetails}
+            filename={leaseDetails?.filename}
           />
         )}
 
-        {activeTab === "Audit" && <AuditTab audit={auditObject} risks={auditRisks} />}
+        {activeTab === "Audit" && <AuditTab audit={auditObject} risks={auditRisks} filename={leaseDetails?.filename} />}
 
         {activeTab === "CAM" && (
           <>
@@ -468,6 +479,7 @@ const LeaseMainContent = ({
                 onEditRule={(rule) => {
                   handleOpenEditCamRule(rule);
                 }}
+                filename={leaseDetails?.filename}
               />
             )}
           </>
@@ -509,14 +521,14 @@ const LeaseMainContent = ({
         {/* Footer */}
         <div className="modal-footer">
           <button
-            className="btn btn-secondary btn-sm"
+            className="btn btn-outline-secondary btn-sm"
             onClick={() => setShowEditCategory(false)}
             disabled={isUpdatingCategory}
           >
             Cancel
           </button>
           <button
-            className="btn btn-primary btn-sm"
+            className="btn btn-outline-primary btn-sm"
             onClick={handleUpdateCategory}
             disabled={isUpdatingCategory}
           >
@@ -602,14 +614,14 @@ const LeaseMainContent = ({
         {/* Footer */}
         <div className="modal-footer">
           <button
-            className="btn btn-secondary btn-sm"
+            className="btn btn-outline-secondary btn-sm"
             onClick={() => setShowEditCam(false)}
             disabled={isUpdatingCamRule}
           >
             Cancel
           </button>
           <button
-            className="btn btn-primary btn-sm"
+            className="btn btn-outline-primary btn-sm"
             onClick={handleUpdateCamRule}
             disabled={isUpdatingCamRule}
           >

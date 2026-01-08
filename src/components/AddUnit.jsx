@@ -395,10 +395,10 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button variant="outline-secondary" onClick={handleClose}>
           Cancel
         </Button>
-        <Button type="button" onClick={handleSubmit} disabled={loading}>
+        <Button type="button" variant="outline-primary" onClick={handleSubmit} disabled={loading}>
           {loading ? "Creating..." : "Add Unit"}
         </Button>
       </Modal.Footer>

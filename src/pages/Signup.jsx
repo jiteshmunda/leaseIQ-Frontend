@@ -113,11 +113,11 @@ function Signup() {
                 </div>
                 <h3>Individual Account</h3>
                 <p className="small text-muted">Perfect for independent professionals managing their own portfolio.</p>
-                <ul className="feature-list">
+                {/* <ul className="feature-list">
                   <li>• Personal workspace</li>
                   <li>• 10 abstracts/month</li>
                   <li>• Starting at $99/month</li>
-                </ul>
+                </ul> */}
               </div>
             </Col>
             <Col md={6}>
@@ -127,11 +127,11 @@ function Signup() {
                 </div>
                 <h3>Create Organization</h3>
                 <p className="small text-muted">Set up a team workspace with centralized billing and user management.</p>
-                <ul className="feature-list">
+                {/* <ul className="feature-list">
                   <li>• Team collaboration</li>
                   <li>• 10 abstracts/user/month</li>
                   <li>• Starting at $79/user/month</li>
-                </ul>
+                </ul> */}
               </div>
             </Col>
           </Row>

@@ -24,6 +24,7 @@ const ProvisionsTab = ({
   onEditCategory,
   leaseDetails,
   onUpdateLeaseDetails,
+  filename,
 }) => {
   const [editing, setEditing] = useState(null);
   const [editText, setEditText] = useState("");
@@ -55,6 +56,28 @@ const ProvisionsTab = ({
     }
   };
 
+  const safeJsonParse = (value, fallback) => {
+    if (typeof value !== "string") return fallback;
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === "undefined" || trimmed === "null") return fallback;
+    try {
+      return JSON.parse(trimmed);
+    } catch {
+      return fallback;
+    }
+  };
+
+  const normalizeMisc = (misc) => {
+    if (!misc) return {};
+    if (typeof misc === "string") return safeJsonParse(misc, {});
+    if (typeof misc === "object") {
+      // Some payloads wrap misc as { content: "{...}" }
+      if (typeof misc.content === "string") return safeJsonParse(misc.content, {});
+      return misc;
+    }
+    return {};
+  };
+
   const beginEdit = (categoryKey, fieldKey, currentValue) => {
     setEditing({ categoryKey, fieldKey, segmentIndex: null });
     setEditText(typeof currentValue === "string" ? currentValue : String(currentValue ?? ""));
@@ -81,7 +104,7 @@ const ProvisionsTab = ({
     setIsSaving(true);
     try {
       const updated = cloneLeaseDetails(leaseDetails);
-      updated.misc = JSON.parse(updated.misc.content) ?? {};
+      updated.misc = normalizeMisc(updated.misc);
       updated.misc.otherLeaseProvisions = updated.misc.otherLeaseProvisions ?? {};
       updated.misc.otherLeaseProvisions[editing.categoryKey] =
         updated.misc.otherLeaseProvisions[editing.categoryKey] ?? {};
@@ -182,14 +205,21 @@ const ProvisionsTab = ({
 
   const isAccordionOpen = (key) => openAccordions.has(key);
 
+  const formatAmendmentsLabel = (name) => {
+    if (typeof name !== "string") return "";
+    return name.replace(/\.[^.]+$/i, "").trim();
+  };
+
   const renderAmendmentsAccordion = (field) => {
     if (!hasAmendments(field)) return null;
+
+    const label = formatAmendmentsLabel(filename) || "Amendments";
 
     return (
       <div className="amendments-block">
         <details className="amendments-details">
           <summary className="amendments-summary">
-            Amendments
+            <span className="amendments-label">{label}</span>
           </summary>
           <ul className="amendments-list">
             {field.amendments.map((am, idx) => (
@@ -353,7 +383,7 @@ const ProvisionsTab = ({
                             </button>
                             <button
                               type="button"
-                              className="btn btn-info btn-sm "
+                              className="btn btn-outline-primary btn-sm "
                               onClick={saveEdit}
                               disabled={isSaving}
                             >

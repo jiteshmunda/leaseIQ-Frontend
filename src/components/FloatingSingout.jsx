@@ -95,10 +95,10 @@ const FloatingSignOut = () => {
         </Modal.Header>
         <Modal.Body>Are you sure you want to <b>logout</b> ?</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCancelLogout}>
+          <Button variant="outline-secondary" onClick={handleCancelLogout}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={handleConfirmLogout}>
+          <Button variant="outline-danger" onClick={handleConfirmLogout}>
             Logout
           </Button>
         </Modal.Footer>

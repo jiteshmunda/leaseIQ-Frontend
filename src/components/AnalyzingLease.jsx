@@ -7,7 +7,7 @@ const steps = [
   "Text extracted",
   "Extracting key dates...",
   "Identifying rent schedules...",
-  "Finding CAM provisions...",
+  "Finding provisions...",
   "Running audit checks...",
 ];
 

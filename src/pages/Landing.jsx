@@ -23,6 +23,12 @@ const Landing = () => {
         const res = await api.get("/api/tenants");
         if (cancelled) return;
         setTenants(res.data.data || []);
+        try {
+          await api.post("/api/leases/update-periods");
+        } catch (err) {
+          // Don't block landing if this background update fails
+          console.error("Failed to update lease periods", err);
+        }
 
         // Fetch pending requests if role is org_admin
         if (role === "org_admin") {

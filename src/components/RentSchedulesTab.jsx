@@ -10,14 +10,25 @@ const hasAmendments = (field) =>
     field.amendments.length > 0
   );
 
-const renderAmendments = (field, label = "Amendments") => {
+const formatAmendmentsLabel = (filename, contextLabel) => {
+  const base =
+    typeof filename === "string" && filename.trim()
+      ? filename.trim().replace(/\.[^.]+$/i, "")
+      : "Amendments";
+
+  const ctx = typeof contextLabel === "string" ? contextLabel.trim() : "";
+  if (!ctx || ctx === "Amendments") return base;
+  return `${base} — ${ctx}`;
+};
+
+const renderAmendments = (field, label, filename) => {
   if (!field || !Array.isArray(field.amendments) || !field.amendments.length) {
     return null;
   }
 
   return (
     <div className="amendments-block">
-      <span className="amendments-label">{label}</span>
+      <span className="amendments-label">{formatAmendmentsLabel(filename, label)}</span>
       <ul className="amendments-list">
         {field.amendments.map((am, idx) => (
           <li key={idx}>
@@ -64,7 +75,7 @@ const renderAmendments = (field, label = "Amendments") => {
   );
 };
 
-const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
+const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
   const getFieldCitation = (field) => {
     if (!field || typeof field !== "object") return "";
     if (typeof field.citation === "string") return field.citation;
@@ -82,7 +93,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
     return (
       <>
         {hasAmends ? (
-          <FieldWithTooltip value={value} amendments={field.amendments} />
+          <FieldWithTooltip value={value} amendments={field.amendments} filename={filename} />
         ) : (
           <div>{value}</div>
         )}
@@ -117,6 +128,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                 <FieldWithTooltip
                   value="Calculation Type"
                   amendments={chargeSchedules?.lateFee?.calculationType?.amendments}
+                  filename={filename}
                 />
               </label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.calculationType) || "N/A"}</p>
@@ -125,7 +137,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   Citation : {getFieldCitation(chargeSchedules?.lateFee?.calculationType)}
                 </span>
               ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.calculationType)}
+              {renderAmendments(chargeSchedules?.lateFee?.calculationType, undefined, filename)}
             </div>
 
             <div
@@ -139,6 +151,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                 <FieldWithTooltip
                   value="Grace Days"
                   amendments={chargeSchedules?.lateFee?.graceDays?.amendments}
+                  filename={filename}
                 />
               </label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.graceDays) || "N/A"}</p>
@@ -147,7 +160,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   Citation : {getFieldCitation(chargeSchedules?.lateFee?.graceDays)}
                 </span>
               ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.graceDays)}
+              {renderAmendments(chargeSchedules?.lateFee?.graceDays, undefined, filename)}
             </div>
 
             <div
@@ -161,6 +174,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                 <FieldWithTooltip
                   value="Percent"
                   amendments={chargeSchedules?.lateFee?.percent?.amendments}
+                  filename={filename}
                 />
               </label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.percent) || "N/A"}</p>
@@ -169,7 +183,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   Citation : {getFieldCitation(chargeSchedules?.lateFee?.percent)}
                 </span>
               ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.percent)}
+              {renderAmendments(chargeSchedules?.lateFee?.percent, undefined, filename)}
             </div>
 
             <div
@@ -185,6 +199,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   amendments={
                     chargeSchedules?.lateFee?.secondFeeCalculationType?.amendments
                   }
+                  filename={filename}
                 />
               </label>
               <p>
@@ -197,7 +212,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   Citation : {getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType)}
                 </span>
               ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.secondFeeCalculationType)}
+              {renderAmendments(chargeSchedules?.lateFee?.secondFeeCalculationType, undefined, filename)}
             </div>
 
             <div
@@ -213,6 +228,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   amendments={
                     chargeSchedules?.lateFee?.secondFeeGrace?.amendments
                   }
+                  filename={filename}
                 />
               </label>
               <p>
@@ -224,7 +240,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   Citation : {getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace)}
                 </span>
               ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.secondFeeGrace)}
+              {renderAmendments(chargeSchedules?.lateFee?.secondFeeGrace, undefined, filename)}
             </div>
 
             <div
@@ -240,6 +256,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   amendments={
                     chargeSchedules?.lateFee?.secondFeePercent?.amendments
                   }
+                  filename={filename}
                 />
               </label>
               <p>
@@ -251,7 +268,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   Citation : {getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent)}
                 </span>
               ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.secondFeePercent)}
+              {renderAmendments(chargeSchedules?.lateFee?.secondFeePercent, undefined, filename)}
             </div>
 
             <div
@@ -265,6 +282,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                 <FieldWithTooltip
                   value="Per Day Fee"
                   amendments={chargeSchedules?.lateFee?.perDayFee?.amendments}
+                  filename={filename}
                 />
               </label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.perDayFee) || "N/A"}</p>
@@ -273,7 +291,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                   Citation : {getFieldCitation(chargeSchedules?.lateFee?.perDayFee)}
                 </span>
               ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.perDayFee)}
+              {renderAmendments(chargeSchedules?.lateFee?.perDayFee, undefined, filename)}
             </div>
           </div>
         </div>
@@ -328,14 +346,14 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue }) => {
                             <summary className="amendments-summary">
                               Amendments
                             </summary>
-                            {renderAmendments(item, "Row Amendments")}
-                            {renderAmendments(item?.period, "Period Amendments")}
-                            {renderAmendments(item?.dateFrom, "Start Date Amendments")}
-                            {renderAmendments(item?.dateTo, "End Date Amendments")}
-                            {renderAmendments(item?.monthlyAmount, "Monthly Rent Amendments")}
-                            {renderAmendments(item?.annualAmount, "Annual Rent Amendments")}
-                            {renderAmendments(item?.areaRentable, "Area Rentable Amendments")}
-                            {renderAmendments(item?.amountPerArea, "Amount Per Area Amendments")}
+                            {renderAmendments(item, undefined, filename)}
+                            {renderAmendments(item?.period, undefined, filename)}
+                            {renderAmendments(item?.dateFrom, undefined, filename)}
+                            {renderAmendments(item?.dateTo, undefined, filename)}
+                            {renderAmendments(item?.monthlyAmount, undefined, filename)}
+                            {renderAmendments(item?.annualAmount, undefined, filename)}
+                            {renderAmendments(item?.areaRentable, undefined, filename)}
+                            {renderAmendments(item?.amountPerArea, undefined, filename)}
                           </details>
                         </td>
                       </tr>

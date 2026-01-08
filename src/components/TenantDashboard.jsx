@@ -44,11 +44,18 @@ const TenantDashboard = () => {
   );
 
   const totalSqFt = leases.reduce(
-    (sum, lease) => sum + Number(lease.sqft || 0),
+    (sum, lease) => sum + Number(lease.square_ft || 0),
     0
   );
 
   const avgRentPerSqFt = totalSqFt > 0 ? totalMonthlyRent / totalSqFt : 0;
+
+  const formatDateOnly = (value) => {
+    if (!value) return "";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toISOString().slice(0, 10);
+  };
 
 
 
@@ -178,15 +185,15 @@ const TenantDashboard = () => {
         <div className="unit-rent text-end">
             <small>Monthly Rent</small>
             <h6>{lease.monthly_rent || "$0"}</h6>
-            <span className="sqft">{lease.sqft || "0"} sq ft</span>
+            <span className="sqft">{lease.square_ft || "0"} sq ft</span>
         </div>
         </div>
 
         {/* DATES */}
         <div className="unit-dates">
-          <span>📅 Start: {lease.startDate || "N/A"}</span>
+          <span>📅 Start: {formatDateOnly(lease.start_date)}</span>
           <span>•</span>
-          <span>📅 End: {lease.endDate || "N/A"}</span>
+          <span>📅 End: {formatDateOnly(lease.end_date)}</span>
         </div>
 
       </Card.Body>

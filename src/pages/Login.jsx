@@ -14,15 +14,14 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    email: "",
-    username: "",
+    identifier: "",
     password: "",
     /* org_name: "", */ // Disabled state field
   });
 
   // Updated validation: removed org_name requirement
   const isFormValid = 
-    (formData.username.trim() || formData.email.trim()) && 
+    formData.identifier.trim() && 
     formData.password.trim() /* && 
     formData.org_name.trim() */;
 
@@ -38,11 +37,14 @@ const Login = () => {
 
     try {
       setLoading(true);
+
+      const identifier = formData.identifier.trim();
+      const isEmail = /@/.test(identifier);
+
       const res = await axios.post(
         `${BASE_URL}/api/auth/login`,
         {
-          email: formData.email,
-          username: formData.username,
+          ...(isEmail ? { email: identifier } : { username: identifier }),
           password: formData.password,
           /* org_name: formData.org_name */ // Disabled in API payload
         },
@@ -82,9 +84,9 @@ const Login = () => {
             <Form.Label>Username/Email</Form.Label>
             <Form.Control
               type="text"
-              name="username"
+              name="identifier"
               placeholder="Enter your username or email"
-              value={formData.username}
+              value={formData.identifier}
               onChange={handleChange}
               disabled={loading}
             />

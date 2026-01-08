@@ -122,6 +122,10 @@ const fetchDocumentDetails = useCallback(
   }
 }, [selectedDocId, fetchDocumentDetails]);
 
+  useEffect(() => {
+    setActiveTab("Info");
+  }, [selectedDocId]);
+
 
   useEffect(() => {
     const docs = lease?.documents ?? [];
@@ -513,7 +517,19 @@ const fetchDocumentDetails = useCallback(
                     disabled={isUploadingDocument || !pendingUploadFile}
                     onClick={() => uploadLeaseDocument(pendingUploadFile)}
                   >
-                    Upload
+                    {isUploadingDocument ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                          style={{ marginRight: 6 }}
+                        />
+                        Uploading...
+                      </>
+                    ) : (
+                      "Upload"
+                    )}
                   </button>
                 </div>
               </div>

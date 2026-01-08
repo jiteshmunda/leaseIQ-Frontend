@@ -19,14 +19,21 @@ const hasAmendments = (field) =>
     field.amendments.length > 0
   );
 
-const renderAmendments = (field) => {
+const formatAmendmentsLabel = (filename) => {
+  if (typeof filename !== "string") return "Amendments";
+  const trimmed = filename.trim();
+  if (!trimmed) return "Amendments";
+  return trimmed.replace(/\.[^.]+$/i, "");
+};
+
+const renderAmendments = (field, filename) => {
   if (!field || !Array.isArray(field.amendments) || !field.amendments.length) {
     return null;
   }
 
   return (
     <div className="amendments-block">
-      <span className="amendments-label">Amendments</span>
+      <span className="amendments-label">{formatAmendmentsLabel(filename)}</span>
       <ul className="amendments-list">
         {field.amendments.map((am, idx) => (
           <li key={idx}>
@@ -58,6 +65,7 @@ const InfoTab = ({
   // formatDisplayValue,
   leaseDetails,
   onUpdateLeaseDetails,
+  filename,
 }) => {
   const renderInlineBold = (text) => {
     const source = String(text ?? "");
@@ -336,10 +344,10 @@ const InfoTab = ({
     setIsEditingInfo(false);
   };
 
-  const startEditExecutiveSummary = () => {
-    setExecutiveSummaryForm(executiveSummaryRaw || "");
-    setIsEditingSummary(true);
-  };
+  // const startEditExecutiveSummary = () => {
+  //   setExecutiveSummaryForm(executiveSummaryRaw || "");
+  //   setIsEditingSummary(true);
+  // };
 
   const handleSaveExecutiveSummary = () => {
     if (!onUpdateLeaseDetails || !leaseDetails) {
@@ -388,13 +396,13 @@ const InfoTab = ({
       <section className="card">
         <div className="card-header">
           <h3>Lease Information</h3>
-          {/* <button
+           <button
             type="button"
             className="edit-btn"
             onClick={startEditInfo}
           >
             <FiEdit /> {isEditingInfo ? "Editing" : "Edit"}
-          </button> */}
+          </button> 
         </div>
 
         <div className="info-grid">
@@ -423,7 +431,7 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.lease) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.lease)}</span>
             ) : null}
-            {renderAmendments(leaseInfoSource?.lease)}
+            {renderAmendments(leaseInfoSource?.lease, filename)}
           </div>
           <div
             className={`info-item ${
@@ -451,7 +459,7 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.property) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.property)}</span>
             ) : null}
-            {renderAmendments(leaseInfoSource?.property)}
+            {renderAmendments(leaseInfoSource?.property, filename)}
 
           </div>
           
@@ -480,7 +488,7 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.leaseFrom) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.leaseFrom)}</span>
             ) : null}
-            {renderAmendments(leaseInfoSource?.leaseFrom)}
+            {renderAmendments(leaseInfoSource?.leaseFrom, filename)}
           </div>
           <div
             className={`info-item ${
@@ -507,7 +515,7 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.leaseTo) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.leaseTo)}</span>
             ) : null}
-            {renderAmendments(leaseInfoSource?.leaseTo)}
+            {renderAmendments(leaseInfoSource?.leaseTo, filename)}
           </div>
           <div
             className={`info-item ${
@@ -538,7 +546,7 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.squareFeet) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.squareFeet)}</span>
             ) : null}
-            {renderAmendments(leaseInfoSource?.squareFeet)}
+            {renderAmendments(leaseInfoSource?.squareFeet, filename)}
           </div>
           <div
             className={`info-item ${
@@ -565,7 +573,7 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.baseRent) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.baseRent)}</span>
             ) : null}
-            {renderAmendments(leaseInfoSource?.baseRent)}
+            {renderAmendments(leaseInfoSource?.baseRent, filename)}
           </div>
           <div
             className={`info-item ${
@@ -597,7 +605,7 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.securityDeposit) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.securityDeposit)}</span>
             ) : null}
-            {renderAmendments(leaseInfoSource?.securityDeposit)}
+            {renderAmendments(leaseInfoSource?.securityDeposit, filename)}
           </div>
           <div
             className={`info-item ${
@@ -626,7 +634,7 @@ const InfoTab = ({
             {getFieldCitation(leaseInfoSource?.renewalOptions) ? (
               <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.renewalOptions)}</span>
             ) : null}
-            {renderAmendments(leaseInfoSource?.renewalOptions)}
+            {renderAmendments(leaseInfoSource?.renewalOptions, filename)}
           </div>
         </div>
 
