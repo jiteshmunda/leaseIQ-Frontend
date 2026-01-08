@@ -48,8 +48,8 @@ function Signup() {
       newErrors.org_name = "Organization Name is required";
     
     // username is required for create_new per your JSON sample
-    if (formData.org_option === "create_new" && !formData.username.trim())
-      newErrors.username = "Username is required for admins";
+    if (formData.org_option !== "join_existing" && !formData.username.trim())
+      newErrors.username = "Username is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -61,22 +61,34 @@ function Signup() {
 
     try {
       setLoading(true);
-      
-      // Structure payload based on your JSON requirements
-      const payload = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        org_option: formData.org_option,
-        org_name: formData.org_option !== "individual" ? formData.org_name : undefined,
-      };
 
-      // Add username only if creating a new org or individual
-      if (formData.org_option !== "join_existing") {
-        payload.username = formData.username;
+      const isIndividual = formData.org_option === "individual";
+
+      if (isIndividual) {
+        const payload = {
+          name: formData.name,
+          email: formData.email,
+          username: formData.username,
+          password: formData.password,
+        };
+        await axios.post(`${BASE_URL}/api/auth/signup`, payload);
+      } else {
+        // Structure payload based on your JSON requirements
+        const payload = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          org_option: formData.org_option,
+          org_name: formData.org_name,
+        };
+
+        // Add username only if creating a new org
+        if (formData.org_option === "create_new") {
+          payload.username = formData.username;
+        }
+
+        await axios.post(`${BASE_URL}/api/auth/org-signup`, payload);
       }
-
-      await axios.post(`${BASE_URL}/api/auth/org-signup`, payload);
       
       const successMsg = formData.org_option === "join_existing" 
         ? "Request sent! Please wait for admin approval." 
