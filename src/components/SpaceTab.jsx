@@ -55,6 +55,11 @@ const renderAmendments = (field, filename) => {
 };
 
 const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
+  const parkingSpacesField =
+    spaceInfo?.parking?.value && typeof spaceInfo.parking.value === "object"
+      ? spaceInfo.parking.value
+      : spaceInfo?.parking;
+
   return (
     <section className="card">
       <div className="card-header">
@@ -259,20 +264,20 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
         </div>
         <div
           className={`info-item ${
-            hasAmendments(spaceInfo?.parking?.value) ? "has-amendments" : ""
+            hasAmendments(parkingSpacesField) ? "has-amendments" : ""
           }`}
         >
           <label>
             <FieldWithTooltip
               value="PARKING SPACES"
-              amendments={spaceInfo?.parking?.value?.amendments}
+              amendments={parkingSpacesField?.amendments}
             />
           </label>
-          <p>{getFieldValue(spaceInfo?.parking?.value) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.parking?.value) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.parking?.value)}</span>
+          <p>{getFieldValue(parkingSpacesField) || "N/A"}</p>
+          {getFieldCitation(parkingSpacesField) ? (
+            <span className="citation">Citation : {getFieldCitation(parkingSpacesField)}</span>
           ) : null}
-          {renderAmendments(spaceInfo?.parking?.value, filename)}
+          {renderAmendments(parkingSpacesField, filename)}
         </div>
         <div
           className={`info-item ${

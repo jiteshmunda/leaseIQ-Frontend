@@ -92,13 +92,31 @@ const formatTextValue = (value) => {
 const resolveExecutiveSummaryText = (leaseDetails) => {
   if (!leaseDetails || typeof leaseDetails !== "object") return "";
 
+  const unwrap = (value) => {
+    if (!value || typeof value !== "object") return value;
+    if (value.details && typeof value.details === "object") return value.details;
+    if (value.lease_details && typeof value.lease_details === "object") {
+      const inner = value.lease_details;
+      if (inner.details && typeof inner.details === "object") return inner.details;
+    }
+    return value;
+  };
+
+  const root = unwrap(leaseDetails);
+  const alt = unwrap(leaseDetails?.details);
+
   const candidate =
-    leaseDetails?.["executive-summary"]?.executiveSummary?.value ??
-    leaseDetails?.["executive-summary"]?.executiveSummary ??
-    leaseDetails?.executiveSummary?.value ??
-    leaseDetails?.executiveSummary ??
-    leaseDetails?.executive_summary ??
-    leaseDetails?.["executive_summary"] ??
+    root?.["executive-summary"]?.executiveSummary?.value ??
+    root?.["executive-summary"]?.executiveSummary ??
+    root?.executiveSummary?.value ??
+    root?.executiveSummary ??
+    root?.executive_summary ??
+    root?.["executive_summary"] ??
+    // Some payloads may nest summary under details
+    alt?.["executive-summary"]?.executiveSummary?.value ??
+    alt?.["executive-summary"]?.executiveSummary ??
+    alt?.executiveSummary?.value ??
+    alt?.executiveSummary ??
     "";
 
   if (typeof candidate === "string") return candidate;
@@ -291,7 +309,23 @@ const toFieldValue = (field) => {
   return field;
 };
 
-const DownloadLeaseDetailsDocx = ({ leaseDetails, selectedDocumentName, disabled }) => {
+const unwrapLeaseDetails = (value) => {
+  if (!value || typeof value !== "object") return value;
+  if (value.details && typeof value.details === "object") return value.details;
+  if (value.lease_details && typeof value.lease_details === "object") {
+    const inner = value.lease_details;
+    if (inner.details && typeof inner.details === "object") return inner.details;
+  }
+  return value;
+};
+
+const DownloadLeaseDetailsDocx = ({
+  leaseDetails,
+  selectedDocumentName,
+  disabled,
+  buttonClassName,
+  iconClassName,
+}) => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const fileStem = useMemo(() => {
@@ -316,7 +350,10 @@ const DownloadLeaseDetailsDocx = ({ leaseDetails, selectedDocumentName, disabled
       const timestamp = new Date().toLocaleString();
       const fileName = selectedDocumentName || fileStem;
 
-      const detailsList = Array.isArray(leaseDetails) ? leaseDetails : [leaseDetails];
+      const rawList = Array.isArray(leaseDetails) ? leaseDetails : [leaseDetails];
+      const detailsList = rawList
+        .map(unwrapLeaseDetails)
+        .filter((d) => d && typeof d === "object");
 
       const children = [];
 
@@ -771,6 +808,75 @@ const DownloadLeaseDetailsDocx = ({ leaseDetails, selectedDocumentName, disabled
             }
           });
         }
+
+        // CAM Section (append after Audit)
+        const camSingleRaw = analysisData?.["cam-single"];
+        const camSingle = camSingleRaw && typeof camSingleRaw === "object" ? (camSingleRaw.data ?? camSingleRaw) : null;
+        if (camSingle && typeof camSingle === "object") {
+          const title = camSingle.sectionTitle || camSingle.title || "CAM Clause";
+          const clauseText = camSingle.textContent || camSingle.executionClause || camSingle.content || camSingle.text || "";
+          const citations = Array.isArray(camSingle.citations)
+            ? camSingle.citations.filter(Boolean)
+            : camSingle.citations
+            ? [String(camSingle.citations)]
+            : [];
+          const pageNumber = camSingle.pageNumber || camSingle.page_number;
+          if (pageNumber && !citations.some((c) => String(c).includes(String(pageNumber)))) {
+            citations.push(`Page ${pageNumber}`);
+          }
+
+          const pushLabelValue = (label, value) => {
+            const text = formatTextValue(value);
+            if (!text || text === "N/A") return;
+            children.push(
+              new Paragraph({
+                children: [
+                  new TextRun({ text: `${label}: `, bold: true }),
+                  new TextRun({ text }),
+                ],
+                spacing: { after: 120 },
+              })
+            );
+          };
+
+          children.push(
+            new Paragraph({
+              text: "CAM",
+              heading: HeadingLevel.HEADING_1,
+              spacing: { before: 400, after: 200 },
+            })
+          );
+
+          pushLabelValue("Title", title);
+
+          const cleanedClause = String(formatTextValue(clauseText) ?? "").trim();
+          if (cleanedClause && cleanedClause !== "N/A") {
+            children.push(
+              new Paragraph({
+                text: "Clause Text",
+                heading: HeadingLevel.HEADING_2,
+                spacing: { before: 200, after: 120 },
+              })
+            );
+
+            cleanedClause
+              .split("\n")
+              .map((s) => s.trim())
+              .filter(Boolean)
+              .forEach((line) => {
+                children.push(
+                  new Paragraph({
+                    text: line,
+                    spacing: { after: 100 },
+                  })
+                );
+              });
+          }
+
+          if (citations.length) {
+            pushLabelValue("Citations", citations.join(", "));
+          }
+        }
       });
 
       children.push(
@@ -798,13 +904,13 @@ const DownloadLeaseDetailsDocx = ({ leaseDetails, selectedDocumentName, disabled
   return (
     <button
       type="button"
-      className="ai-btn"
+      className={buttonClassName || "ai-btn"}
       onClick={handleDownload}
       disabled={disabled || isGenerating}
       title={isGenerating ? "Preparing DOCX..." : "Download details as DOCX"}
       aria-label="Download details as DOCX"
     >
-      <FiDownload />
+      <FiDownload className={iconClassName} />
     </button>
   );
 };
