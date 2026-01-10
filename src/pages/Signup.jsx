@@ -83,7 +83,7 @@ function Signup() {
         const payload = {
           name: formData.name,
           email: formData.email,
-          password: encryptedPassword,
+          password: formData.password,
           org_option: formData.org_option,
           org_name: formData.org_name,
         };
