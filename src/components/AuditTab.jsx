@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { FiChevronRight } from "react-icons/fi";
-import "../styles/tab.css";
+import { FiChevronRight, FiFileText, FiAlertTriangle, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 
 const AuditTab = ({ audit, risks = [] }) => {
   const [expandedIndexes, setExpandedIndexes] = useState([]);
@@ -22,10 +21,6 @@ const AuditTab = ({ audit, risks = [] }) => {
       .trim()
       .replace(/\b\w/g, (c) => c.toUpperCase());
 
-  /* ─────────────────────────
-     RESOLVE AUDIT ROOT
-     (supports nested audit.audit)
-  ───────────────────────── */
   const resolveAuditObject = (value) => {
     if (Array.isArray(value)) return { audit_items: value };
     if (!isPlainObject(value)) return null;
@@ -45,7 +40,6 @@ const AuditTab = ({ audit, risks = [] }) => {
     );
   };
 
- 
   const resolvedRisks = (() => {
     if (Array.isArray(risks) && risks.length) return risks;
     if (!auditObject) return [];
@@ -62,58 +56,7 @@ const AuditTab = ({ audit, risks = [] }) => {
     );
   };
 
-  const renderValue = (value, depth = 0) => {
-    if (value == null) return <span>-</span>;
-
-    if (isPrimitive(value)) {
-      return <span>{String(value)}</span>;
-    }
-
-    if (Array.isArray(value)) {
-      if (value.length === 0) return <span>-</span>;
-
-      const allPrimitives = value.every((v) => isPrimitive(v));
-      if (allPrimitives) {
-        return (
-          <ul className="audit-sublist">
-            {value.map((v, idx) => (
-              <li key={idx}>{String(v)}</li>
-            ))}
-          </ul>
-        );
-      }
-
-      return (
-        <ul className="audit-sublist">
-          {value.map((v, idx) => (
-            <li key={idx}>{renderValue(v, depth + 1)}</li>
-          ))}
-        </ul>
-      );
-    }
-
-    if (isPlainObject(value)) {
-      const entries = Object.entries(value).filter(
-        ([, v]) => v != null && v !== ""
-      );
-      if (entries.length === 0) return <span>-</span>;
-      if (depth >= 2) return <span>{JSON.stringify(value)}</span>;
-
-      return (
-        <ul className="audit-sublist">
-          {entries.map(([k, v]) => (
-            <li key={k}>
-              <strong>{labelizeKey(k)}:</strong>{" "}
-              {renderValue(v, depth + 1)}
-            </li>
-          ))}
-        </ul>
-      );
-    }
-
-    return <span>{String(value)}</span>;
-  };
-
+  // Resolve page citations from various possible keys
   const resolvePages = (risk) => {
     const candidates = [
       risk.page_numbers,
@@ -125,10 +68,23 @@ const AuditTab = ({ audit, risks = [] }) => {
 
     for (const c of candidates) {
       if (Array.isArray(c) && c.length) return c;
+      // Handle string page references (e.g., "2-3")
+      if (typeof c === "string" && c.trim()) return [c];
     }
 
     if (risk.page_number != null) return [risk.page_number];
     if (risk.pageNumber != null) return [risk.pageNumber];
+    return null;
+  };
+
+  // Resolve citation text (section, clause, etc.)
+  const resolveCitation = (risk) => {
+    const citationKeys = ["citation", "clause", "affected_clause", "section", "reference", "lease_section", "article"];
+    for (const key of citationKeys) {
+      if (risk[key] && typeof risk[key] === "string") {
+        return risk[key];
+      }
+    }
     return null;
   };
 
@@ -143,48 +99,144 @@ const AuditTab = ({ audit, risks = [] }) => {
     risk?.category ||
     risk?.title ||
     risk?.type ||
+    risk?._section_name ||
     "Uncategorized Risk";
-const EXCLUDED_EXPANDED_KEYS = new Set([
-  "category",
-  "title",
-  "type",
 
-  "page_number",
-  "page_numbers",
-  "page_reference",
-  "page_references",
-  "pages",
-  "pageNumber",
-  "pageNumbers",
+  // Get description from various possible keys
+  const getDescription = (risk) => {
+    const descKeys = ["description", "issue_description", "details", "summary", "overview", "explanation", "risk_description", "finding", "issue"];
+    for (const key of descKeys) {
+      if (risk[key] && typeof risk[key] === "string") {
+        return risk[key];
+      }
+    }
+    return null;
+  };
 
-  "certainty",
-  "certainty_level",
-  "certaintyLevel",
-  "severity",
-]);
+  // Get recommendation
+  const getRecommendation = (risk) => {
+    const recKeys = ["recommendation", "recommendations", "recommended_action", "suggested_action", "action", "mitigation", "remediation"];
+    for (const key of recKeys) {
+      const val = risk[key];
+      if (val && typeof val === "string") {
+        return val;
+      }
+      if (Array.isArray(val) && val.length > 0) {
+        return val;
+      }
+    }
+    return null;
+  };
+
+  // Get impact
+  const getImpact = (risk) => {
+    const impactKeys = ["impact", "consequence", "financial_impact", "effect"];
+    for (const key of impactKeys) {
+      if (risk[key] && typeof risk[key] === "string") {
+        return risk[key];
+      }
+    }
+    return null;
+  };
+
+  // Render citation tag (similar to provisions)
+  const renderCitationTag = (pages, citation) => {
+    if (!pages && !citation) return null;
+
+    const parts = [];
+    if (citation) parts.push(citation);
+    if (pages) parts.push(`Page ${pages.join(", ")}`);
+
+    return (
+      <div className="audit-citation-tag">
+        <FiFileText className="audit-citation-icon" />
+        <span className="audit-citation-text">{parts.join(" • ")}</span>
+      </div>
+    );
+  };
+
+  // Get severity stats for summary
+  const getSeverityStats = () => {
+    const stats = { high: 0, medium: 0, low: 0 };
+    resolvedRisks.forEach(risk => {
+      const certainty = String(resolveCertainty(risk) || "").toLowerCase();
+      if (certainty === "high") stats.high++;
+      else if (certainty === "medium") stats.medium++;
+      else if (certainty === "low") stats.low++;
+    });
+    return stats;
+  };
+
+  const severityStats = getSeverityStats();
+
+  // Tooltip descriptions for severity levels
+  const severityTooltips = {
+    high: "Critical issues requiring immediate attention. These may have significant financial or legal implications and should be addressed before signing.",
+    medium: "Important concerns that should be reviewed. While not immediately critical, these issues could lead to complications if left unaddressed.",
+    low: "Minor observations worth noting. These are unlikely to cause significant problems but may be useful for negotiation or future reference.",
+  };
 
   return (
     <div className="audit">
       <div className="audit-card">
-        <h3 className="audit-title">
-          {totalItems > 0
-            ? `Found ${totalItems} potential issues requiring attention`
-            : "No audit issues detected for this lease"}
-        </h3>
+        <div className="audit-card-header">
+          <h3 className="audit-title">
+            {totalItems > 0
+              ? `Found ${totalItems} potential issues requiring attention`
+              : "No audit issues detected"}
+          </h3>
+          {totalItems > 0 && (
+            <div className="audit-summary-stats">
+              {severityStats.high > 0 && (
+                <span 
+                  className="audit-stat audit-stat-high" 
+                  title={severityTooltips.high}
+                >
+                  <FiAlertCircle size={14} />
+                  {severityStats.high} High
+                </span>
+              )}
+              {severityStats.medium > 0 && (
+                <span 
+                  className="audit-stat audit-stat-medium" 
+                  title={severityTooltips.medium}
+                >
+                  <FiAlertTriangle size={14} />
+                  {severityStats.medium} Medium
+                </span>
+              )}
+              {severityStats.low > 0 && (
+                <span 
+                  className="audit-stat audit-stat-low" 
+                  title={severityTooltips.low}
+                >
+                  <FiCheckCircle size={14} />
+                  {severityStats.low} Low
+                </span>
+              )}
+            </div>
+          )}
+        </div>
 
         {totalItems === 0 ? (
           <div className="audit-empty">
-            Audit analysis has not reported any risks.
+            <FiCheckCircle className="audit-empty-icon" />
+            <p>Audit analysis has not reported any risks.</p>
+            <span className="audit-empty-hint">This lease appears to be in good standing.</span>
           </div>
         ) : (
           <ul className="audit-list">
             {resolvedRisks.map((risk, index) => {
               const isExpanded = expandedIndexes.includes(index);
               const pages = resolvePages(risk);
+              const citation = resolveCitation(risk);
               const certainty = resolveCertainty(risk);
               const certaintyClass = certainty
                 ? String(certainty).toLowerCase()
                 : "";
+              const description = getDescription(risk);
+              const recommendation = getRecommendation(risk);
+              const impact = getImpact(risk);
 
               return (
                 <li
@@ -202,18 +254,14 @@ const EXCLUDED_EXPANDED_KEYS = new Set([
                           isExpanded ? "rotate" : ""
                         }`}
                       />
-                      <span>{getRiskTitle(risk)}</span>
+                      <span className="audit-item-title">{getRiskTitle(risk)}</span>
                     </div>
 
                     <div className="audit-right">
-                      {pages && (
-                        <span className="audit-pill audit-pill-page">
-                          Page {pages.join(", ")}
-                        </span>
-                      )}
                       {certainty && (
                         <span
                           className={`audit-pill audit-pill-certainty ${certaintyClass}`}
+                          title={severityTooltips[certaintyClass] || ""}
                         >
                           {String(certainty)}
                         </span>
@@ -222,18 +270,54 @@ const EXCLUDED_EXPANDED_KEYS = new Set([
                   </button>
 
                   <div className={`audit-details ${isExpanded ? 'open' : ''}`}>
-                    {renderValue(
-                      Object.fromEntries(
-                        Object.entries(risk || {}).filter(
-                          ([key, value]) =>
-                            !EXCLUDED_EXPANDED_KEYS.has(key) &&
-                            value != null &&
-                            value !== ""
-                        )
-                      )
-                    )}
-                  </div>
+                    <div className="audit-content-blocks">
+                      {/* Description Block */}
+                      {description && (
+                        <div className="audit-content-block">
+                          <p className="audit-block-description">{description}</p>
+                          {renderCitationTag(pages, citation)}
+                        </div>
+                      )}
 
+                      {/* If no description but we have other content */}
+                      {!description && (pages || citation) && (
+                        <div className="audit-content-block audit-content-block-minimal">
+                          {renderCitationTag(pages, citation)}
+                        </div>
+                      )}
+
+                      {/* Recommendation Block */}
+                      {recommendation && (
+                        <div className="audit-content-block audit-content-block-recommendation">
+                          <span className="audit-block-label">Recommendation</span>
+                          {Array.isArray(recommendation) ? (
+                            <ul className="audit-block-list">
+                              {recommendation.map((rec, idx) => (
+                                <li key={idx}>{rec}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="audit-block-text">{recommendation}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Impact Block */}
+                      {impact && (
+                        <div className="audit-content-block audit-content-block-impact">
+                          <span className="audit-block-label">Impact</span>
+                          <p className="audit-block-text">{impact}</p>
+                        </div>
+                      )}
+
+                      {/* Empty state */}
+                      {!description && !recommendation && !impact && !pages && !citation && (
+                        <div className="audit-empty-details">
+                          <p>No additional details available.</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </li>
               );
             })}

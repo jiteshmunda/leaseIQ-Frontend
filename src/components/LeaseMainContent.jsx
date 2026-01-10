@@ -82,13 +82,24 @@ const LeaseMainContent = ({
       ? rawAudit.audit
       : rawAudit;
 
-  const auditSource =
-    auditObject?.audit_checklist ||
-    auditObject?.identified_risks ||
-    auditObject?.risk_register ||
-    auditObject?.risks ||
-    auditObject?.risk_register_sections ||
-    [];
+  // Handle risk_register_sections specially - flatten nested issues arrays
+  const auditSource = (() => {
+    if (auditObject?.audit_checklist) return auditObject.audit_checklist;
+    if (auditObject?.identified_risks) return auditObject.identified_risks;
+    if (auditObject?.risk_register) return auditObject.risk_register;
+    if (auditObject?.risks) return auditObject.risks;
+    if (auditObject?.risk_register_sections) {
+      // Flatten: each section has { section_name, issues: [...] }
+      // Extract all issues and carry section_name as category fallback
+      return auditObject.risk_register_sections.flatMap((section) =>
+        (section.issues || []).map((issue) => ({
+          ...issue,
+          _section_name: section.section_name, // preserve section context
+        }))
+      );
+    }
+    return [];
+  })();
 
   const auditRisks = Array.isArray(auditSource)
     ? auditSource.map((item) => {
