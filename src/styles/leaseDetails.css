@@ -674,6 +674,7 @@ details:not([open]) .accordion-summary::after {
   align-items: center;
   gap: 8px;
   flex: 1;
+  font-weight: 600;
 }
 
 .provision-accordion-title p {

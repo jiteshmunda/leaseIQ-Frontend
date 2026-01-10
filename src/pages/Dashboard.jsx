@@ -74,10 +74,10 @@ const filteredTenants = tenants.filter((tenant) =>
     <Container fluid className="p-4 dashboard-container">
 
       {/* TITLE + FILTER */}
-      <Row className="align-items-center mb-4">
-        <Col xs={12} md={6}>
+      {/* <Row className="align-items-center mb-4">
+         <Col xs={12} md={6}>
           <h5 className="mb-3 mb-md-0">Upcoming Critical Items</h5>
-        </Col>
+        </Col> 
 
         <Col
           xs={12}
@@ -88,7 +88,7 @@ const filteredTenants = tenants.filter((tenant) =>
           <Button variant="outline-secondary">60 Days</Button>
           <Button variant="outline-secondary">90 Days</Button>
         </Col>
-      </Row>
+      </Row> */}
 
       {/* KPI CARDS */}
       <Row className="mb-4">
@@ -138,7 +138,7 @@ const filteredTenants = tenants.filter((tenant) =>
   </Col>
 </Row>
 
-<Card className="mb-4 shadow-sm">
+{/* <Card className="mb-4 shadow-sm">
   <Card.Body>
     <h6 className="mb-3">Critical Dates</h6>
 
@@ -175,7 +175,7 @@ const filteredTenants = tenants.filter((tenant) =>
       ))
     )}
   </Card.Body>
-</Card>
+</Card> */}
 
 
        {/* HEADER */}
@@ -221,8 +221,8 @@ const filteredTenants = tenants.filter((tenant) =>
           <div>
             <h6 className="mb-1">{tenant.tenant_name}</h6>
             <small className="text-muted">
-              {tenant.total_units} Units • {tenant.total_sqft} sq ft •
-              Expires {tenant.lease_expiry}
+               {tenant.total_units} Units • {/*{tenant.total_sqft} sq ft • */}
+              {/* Expires {tenant.lease_expiry} */}
             </small>
           </div>
         </Col>

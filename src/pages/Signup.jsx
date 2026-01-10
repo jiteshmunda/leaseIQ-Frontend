@@ -3,10 +3,12 @@ import { Form, Button, Row, Col, InputGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, User, Building2, ArrowLeft } from "lucide-react";
 import axios from "axios";
+import { encryptPassword } from "../service/encryption"; 
 import { showError, showSuccess } from "../service/toast";
 import "../styles/signup.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const AUTH_PUBLIC_KEY = import.meta.env.VITE_AUTH_PUBLIC_KEY; 
 
 function Signup() {
   const navigate = useNavigate();
@@ -63,13 +65,17 @@ function Signup() {
       setLoading(true);
 
       const isIndividual = formData.org_option === "individual";
+      const encryptedPassword = await encryptPassword(
+              formData.password,
+              AUTH_PUBLIC_KEY
+            );
 
       if (isIndividual) {
         const payload = {
           name: formData.name,
           email: formData.email,
           username: formData.username,
-          password: formData.password,
+          password: encryptedPassword,
         };
         await axios.post(`${BASE_URL}/api/auth/signup`, payload);
       } else {
@@ -77,7 +83,7 @@ function Signup() {
         const payload = {
           name: formData.name,
           email: formData.email,
-          password: formData.password,
+          password: encryptedPassword,
           org_option: formData.org_option,
           org_name: formData.org_name,
         };
@@ -125,11 +131,11 @@ function Signup() {
                 </div>
                 <h3>Individual Account</h3>
                 <p className="small text-muted">Perfect for independent professionals managing their own portfolio.</p>
-                {/* <ul className="feature-list">
+                  <ul className="feature-list">
                   <li>• Personal workspace</li>
-                  <li>• 10 abstracts/month</li>
-                  <li>• Starting at $99/month</li>
-                </ul> */}
+                  {/*<li>• 10 abstracts/month</li>
+                  <li>• Starting at $99/month</li>*/}
+                </ul> 
               </div>
             </Col>
             <Col md={6}>
@@ -139,11 +145,11 @@ function Signup() {
                 </div>
                 <h3>Create Organization</h3>
                 <p className="small text-muted">Set up a team workspace with centralized billing and user management.</p>
-                {/* <ul className="feature-list">
+                 <ul className="feature-list">
                   <li>• Team collaboration</li>
-                  <li>• 10 abstracts/user/month</li>
-                  <li>• Starting at $79/user/month</li>
-                </ul> */}
+                  {/*<li>• 10 abstracts/user/month</li>
+                  <li>• Starting at $79/user/month</li>*/}
+                </ul> 
               </div>
             </Col>
           </Row>

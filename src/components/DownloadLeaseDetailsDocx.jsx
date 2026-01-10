@@ -127,6 +127,193 @@ const resolveExecutiveSummaryText = (leaseDetails) => {
   return candidate == null ? "" : String(candidate);
 };
 
+const markdownLineToTextRuns = (rawLine) => {
+  const line = String(rawLine ?? "");
+  const linkNormalized = line.replace(/\[([^\]]+)]\(([^)]+)\)/g, "$1 ($2)");
+
+  const runs = [];
+  let buf = "";
+  let bold = false;
+  let italics = false;
+  let code = false;
+
+  const flush = () => {
+    if (!buf) return;
+    runs.push(
+      new TextRun({
+        text: buf,
+        bold: code ? false : bold,
+        italics: code ? false : italics,
+        font: code ? "Consolas" : undefined,
+      })
+    );
+    buf = "";
+  };
+
+  for (let i = 0; i < linkNormalized.length; i += 1) {
+    const ch = linkNormalized[i];
+
+    // Escape support.
+    if (ch === "\\" && i + 1 < linkNormalized.length) {
+      buf += linkNormalized[i + 1];
+      i += 1;
+      continue;
+    }
+
+    // Inline code using backticks.
+    if (ch === "`") {
+      flush();
+      code = !code;
+      continue;
+    }
+
+    // Bold: **text**
+    if (!code && ch === "*" && linkNormalized[i + 1] === "*") {
+      flush();
+      bold = !bold;
+      i += 1;
+      continue;
+    }
+
+    // Italic: *text*
+    if (!code && ch === "*") {
+      flush();
+      italics = !italics;
+      continue;
+    }
+
+    buf += ch;
+  }
+
+  flush();
+  return runs.length ? runs : [new TextRun({ text: "" })];
+};
+
+const markdownToDocxParagraphs = (markdown, { baseHeadingLevel = HeadingLevel.HEADING_2 } = {}) => {
+  const text = String(markdown ?? "").replace(/\r\n/g, "\n");
+  if (!text.trim()) return [];
+
+  const paragraphs = [];
+  const lines = text.split("\n");
+  let inCodeBlock = false;
+  let codeLines = [];
+
+  const flushCode = () => {
+    if (!codeLines.length) return;
+    const codeText = codeLines.join("\n");
+    paragraphs.push(
+      new Paragraph({
+        children: [new TextRun({ text: codeText, font: "Consolas" })],
+        spacing: { after: 120 },
+        indent: { left: 300 },
+      })
+    );
+    codeLines = [];
+  };
+
+  const headingFromLevel = (level) => {
+    // Executive Summary already introduces HEADING_1; map markdown headings beneath it.
+    if (level <= 1) return baseHeadingLevel;
+    if (level === 2) return HeadingLevel.HEADING_3;
+    if (level === 3) return HeadingLevel.HEADING_4;
+    if (level === 4) return HeadingLevel.HEADING_5;
+    return HeadingLevel.HEADING_6;
+  };
+
+  for (let idx = 0; idx < lines.length; idx += 1) {
+    const raw = lines[idx];
+    const line = raw ?? "";
+
+    // Fenced code blocks ```
+    if (/^\s*```/.test(line)) {
+      if (inCodeBlock) {
+        inCodeBlock = false;
+        flushCode();
+      } else {
+        inCodeBlock = true;
+        codeLines = [];
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      codeLines.push(line);
+      continue;
+    }
+
+    if (!line.trim()) {
+      // Blank line creates separation.
+      paragraphs.push(new Paragraph({ text: "", spacing: { after: 60 } }));
+      continue;
+    }
+
+    // Blockquote: >
+    const bqMatch = line.match(/^\s*>\s?(.*)$/);
+    if (bqMatch) {
+      paragraphs.push(
+        new Paragraph({
+          children: markdownLineToTextRuns(bqMatch[1]),
+          spacing: { after: 120 },
+          indent: { left: 300 },
+        })
+      );
+      continue;
+    }
+
+    // Headings: #, ##, ###
+    const hMatch = line.match(/^\s*(#{1,6})\s+(.+)$/);
+    if (hMatch) {
+      const level = hMatch[1].length;
+      paragraphs.push(
+        new Paragraph({
+          text: formatTextValue(hMatch[2]),
+          heading: headingFromLevel(level),
+          spacing: { before: 200, after: 120 },
+        })
+      );
+      continue;
+    }
+
+    // Unordered list: -, *, +
+    const ulMatch = line.match(/^\s*[-*+]\s+(.+)$/);
+    if (ulMatch) {
+      paragraphs.push(
+        new Paragraph({
+          children: markdownLineToTextRuns(ulMatch[1]),
+          bullet: { level: 0 },
+          spacing: { after: 80 },
+        })
+      );
+      continue;
+    }
+
+    // Ordered list: 1. item (render as bullet to avoid numbering config complexity)
+    const olMatch = line.match(/^\s*\d+\.\s+(.+)$/);
+    if (olMatch) {
+      paragraphs.push(
+        new Paragraph({
+          children: markdownLineToTextRuns(olMatch[1]),
+          bullet: { level: 0 },
+          spacing: { after: 80 },
+        })
+      );
+      continue;
+    }
+
+    // Normal paragraph
+    paragraphs.push(
+      new Paragraph({
+        children: markdownLineToTextRuns(line),
+        spacing: { after: 120 },
+      })
+    );
+  }
+
+  // In case the markdown ends while still "in code" (malformed), flush what we have.
+  if (inCodeBlock) flushCode();
+  return paragraphs;
+};
+
 const safeParseJson = (value) => {
   if (typeof value !== "string") return null;
   const text = value.trim();
@@ -381,8 +568,6 @@ const DownloadLeaseDetailsDocx = ({
       const firstDetails = detailsList.find((d) => d && typeof d === "object");
       const cleaned = formatTextValue(resolveExecutiveSummaryText(firstDetails));
       if (cleaned && cleaned !== "N/A") {
-        const summaryParagraphs = cleaned.split("\n").filter((p) => p.trim());
-
         children.push(
           new Paragraph({
             text: "Executive Summary",
@@ -391,14 +576,10 @@ const DownloadLeaseDetailsDocx = ({
           })
         );
 
-        summaryParagraphs.forEach((para) => {
-          children.push(
-            new Paragraph({
-              text: para,
-              spacing: { after: 120 },
-            })
-          );
+        const summaryDocx = markdownToDocxParagraphs(cleaned, {
+          baseHeadingLevel: HeadingLevel.HEADING_2,
         });
+        if (summaryDocx.length) children.push(...summaryDocx);
       }
 
       // Per-document sections

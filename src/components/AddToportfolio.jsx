@@ -158,8 +158,13 @@ function AddToportfolio({ show, onClose, onSuccess }) {
     }
 
     if (!form.unit_number) e.unit_number = "Unit number required";
-    if (+form.square_ft <= 0) e.square_ft = "Invalid sqft";
-    if (+form.monthly_rent <= 0) e.monthly_rent = "Invalid rent";
+    if (form.square_ft !== "" && form.square_ft !== null && form.square_ft !== undefined) {
+      if (Number(form.square_ft) <= 0) e.square_ft = "Sqft must be greater than 0";
+    }
+
+    if (form.monthly_rent !== "" && form.monthly_rent !== null && form.monthly_rent !== undefined) {
+      if (Number(form.monthly_rent) <= 0) e.monthly_rent = "Rent must be greater than 0";
+    }
 
     if (!document) e.document = "Upload lease PDF";
 
@@ -189,8 +194,14 @@ function AddToportfolio({ show, onClose, onSuccess }) {
       const payload = new FormData();
 
       payload.append("unit_number", form.unit_number);
-      payload.append("square_ft", form.square_ft);
-      payload.append("monthly_rent", form.monthly_rent);
+
+      if (form.square_ft !== "" && form.square_ft !== null && form.square_ft !== undefined) {
+        payload.append("square_ft", form.square_ft);
+      }
+
+      if (form.monthly_rent !== "" && form.monthly_rent !== null && form.monthly_rent !== undefined) {
+        payload.append("monthly_rent", form.monthly_rent);
+      }
 
       if (useExistingTenant) {
         payload.append("tenant_id", tenantId);
@@ -360,6 +371,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
           {/* UNIT DETAILS */}
           <Row className="mb-3">
             <Col>
+            <h6>Unit</h6>
               <Form.Control 
                 name="unit_number" 
                 placeholder="Unit No" 
@@ -372,10 +384,11 @@ function AddToportfolio({ show, onClose, onSuccess }) {
               )}
             </Col>
             <Col>
+            <h6>Square Feet</h6>
               <Form.Control 
                 type="number" 
                 name="square_ft" 
-                placeholder="Sqft" 
+                placeholder="Square Feet" 
                 onChange={handleChange}
                 isInvalid={submitAttempted && errors.square_ft}
                 disabled={loading}
@@ -385,10 +398,11 @@ function AddToportfolio({ show, onClose, onSuccess }) {
               )}
             </Col>
             <Col>
+            <h6>Monthly Rent</h6>
               <Form.Control 
                 type="number" 
                 name="monthly_rent" 
-                placeholder="Rent" 
+                placeholder="Monthly Rent" 
                 onChange={handleChange}
                 isInvalid={submitAttempted && errors.monthly_rent}
                 disabled={loading}
