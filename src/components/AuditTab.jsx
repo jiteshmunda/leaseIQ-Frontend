@@ -169,6 +169,13 @@ const AuditTab = ({ audit, risks = [] }) => {
 
   const severityStats = getSeverityStats();
 
+  // Tooltip descriptions for severity levels
+  const severityTooltips = {
+    high: "Critical issues requiring immediate attention. These may have significant financial or legal implications and should be addressed before signing.",
+    medium: "Important concerns that should be reviewed. While not immediately critical, these issues could lead to complications if left unaddressed.",
+    low: "Minor observations worth noting. These are unlikely to cause significant problems but may be useful for negotiation or future reference.",
+  };
+
   return (
     <div className="audit">
       <div className="audit-card">
@@ -181,19 +188,28 @@ const AuditTab = ({ audit, risks = [] }) => {
           {totalItems > 0 && (
             <div className="audit-summary-stats">
               {severityStats.high > 0 && (
-                <span className="audit-stat audit-stat-high">
+                <span 
+                  className="audit-stat audit-stat-high" 
+                  title={severityTooltips.high}
+                >
                   <FiAlertCircle size={14} />
                   {severityStats.high} High
                 </span>
               )}
               {severityStats.medium > 0 && (
-                <span className="audit-stat audit-stat-medium">
+                <span 
+                  className="audit-stat audit-stat-medium" 
+                  title={severityTooltips.medium}
+                >
                   <FiAlertTriangle size={14} />
                   {severityStats.medium} Medium
                 </span>
               )}
               {severityStats.low > 0 && (
-                <span className="audit-stat audit-stat-low">
+                <span 
+                  className="audit-stat audit-stat-low" 
+                  title={severityTooltips.low}
+                >
                   <FiCheckCircle size={14} />
                   {severityStats.low} Low
                 </span>
@@ -245,6 +261,7 @@ const AuditTab = ({ audit, risks = [] }) => {
                       {certainty && (
                         <span
                           className={`audit-pill audit-pill-certainty ${certaintyClass}`}
+                          title={severityTooltips[certaintyClass] || ""}
                         >
                           {String(certainty)}
                         </span>

@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { FiEdit, FiFileText, FiChevronRight, FiClock, FiArrowRight } from "react-icons/fi";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { FiEdit, FiFileText, FiChevronRight, FiClock, FiArrowRight, FiX, FiCheck } from "react-icons/fi";
 
 const getFieldCitation = (field) => {
   if (!field || typeof field !== "object") return "";
@@ -30,6 +30,7 @@ const ProvisionsTab = ({
   const [editText, setEditText] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [openAccordions, setOpenAccordions] = useState(new Set());
+  const textareaRef = useRef(null);
 
   const provisionFields = useMemo(
     () =>
@@ -77,15 +78,44 @@ const ProvisionsTab = ({
     return {};
   };
 
-  const beginEdit = (categoryKey, fieldKey, currentValue) => {
-    setEditing({ categoryKey, fieldKey, segmentIndex: null });
+  const beginEdit = (categoryKey, fieldKey, currentValue, categoryTitle) => {
+    setEditing({ categoryKey, fieldKey, segmentIndex: null, categoryTitle });
     setEditText(typeof currentValue === "string" ? currentValue : String(currentValue ?? ""));
   };
 
-  const beginEditSegment = (categoryKey, fieldKey, segmentIndex, segmentValue) => {
-    setEditing({ categoryKey, fieldKey, segmentIndex });
+  const beginEditSegment = (categoryKey, fieldKey, segmentIndex, segmentValue, categoryTitle) => {
+    setEditing({ categoryKey, fieldKey, segmentIndex, categoryTitle });
     setEditText(typeof segmentValue === "string" ? segmentValue : String(segmentValue ?? ""));
   };
+
+  // Focus textarea when editing starts
+  useEffect(() => {
+    if (editing && textareaRef.current) {
+      textareaRef.current.focus();
+      // Place cursor at end of text
+      const len = textareaRef.current.value.length;
+      textareaRef.current.setSelectionRange(len, len);
+    }
+  }, [editing]);
+
+  // Keyboard handler for edit mode
+  const handleKeyDown = useCallback((e) => {
+    if (!editing) return;
+    
+    // Escape to cancel
+    if (e.key === "Escape") {
+      e.preventDefault();
+      cancelEdit();
+    }
+    
+    // Ctrl/Cmd + Enter to save
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      if (!isSaving) {
+        saveEdit();
+      }
+    }
+  }, [editing, isSaving]);
 
   const cancelEdit = () => {
     setEditing(null);
@@ -390,13 +420,50 @@ const ProvisionsTab = ({
                         <div className="provision-content-block" key={item.id}>
                           {isEditingThis ? (
                             <div className="provision-edit-container">
+                              <div className="provision-edit-header">
+                                <div className="provision-edit-header-left">
+                                  <FiEdit className="provision-edit-header-icon" />
+                                  <span className="provision-edit-header-title">
+                                    Editing: {editing?.categoryTitle || title}
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="provision-edit-close"
+                                  onClick={cancelEdit}
+                                  disabled={isSaving}
+                                  title="Cancel (Esc)"
+                                >
+                                  <FiX size={16} />
+                                </button>
+                              </div>
                               <textarea
-                                className="form-control provision-edit-textarea"
-                                rows={4}
+                                ref={textareaRef}
+                                id="provision-edit-field"
+                                name="provision-edit-field"
+                                className="provision-edit-textarea"
+                                rows={8}
                                 value={editText}
                                 onChange={(e) => setEditText(e.target.value)}
+                                onKeyDown={handleKeyDown}
                                 disabled={isSaving}
+                                placeholder="Enter provision details..."
                               />
+                              <div className="provision-edit-footer">
+                                <div className="provision-edit-hints">
+                                  <span className="provision-edit-hint">
+                                    <kbd>Esc</kbd> to cancel
+                                  </span>
+                                  <span className="provision-edit-hint">
+                                    <kbd>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}</kbd>+<kbd>Enter</kbd> to save
+                                  </span>
+                                </div>
+                                <div className="provision-edit-meta">
+                                  <span className="provision-edit-char-count">
+                                    {editText.length} characters
+                                  </span>
+                                </div>
+                              </div>
                               <div className="provision-edit-actions">
                                 <button
                                   type="button"
@@ -404,6 +471,7 @@ const ProvisionsTab = ({
                                   onClick={cancelEdit}
                                   disabled={isSaving}
                                 >
+                                  <FiX size={14} />
                                   Cancel
                                 </button>
                                 <button
@@ -412,6 +480,7 @@ const ProvisionsTab = ({
                                   onClick={saveEdit}
                                   disabled={isSaving}
                                 >
+                                  <FiCheck size={14} />
                                   {isSaving ? "Saving..." : "Save"}
                                 </button>
                               </div>
@@ -430,10 +499,11 @@ const ProvisionsTab = ({
                                           item.categoryKey,
                                           item.fieldKey,
                                           item.segmentIndex,
-                                          item.raw
+                                          item.raw,
+                                          title
                                         );
                                       } else {
-                                        beginEdit(item.categoryKey, item.fieldKey, item.raw);
+                                        beginEdit(item.categoryKey, item.fieldKey, item.raw, title);
                                       }
                                     }}
                                   >
