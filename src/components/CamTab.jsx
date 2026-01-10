@@ -1,191 +1,392 @@
-import { FiChevronDown, FiChevronRight, FiEdit, FiTrash2 } from "react-icons/fi";
+import { useState } from "react";
+import { FiChevronRight, FiEdit, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 
-const CamTab = ({
-  resolvedCamRules,
-  openCam,
-  onToggleCam,
-  onEditRule,
-}) => {
-  const formatLabel = (key) =>
-    String(key)
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (c) => c.toUpperCase());
+const CamTab = ({ camData, loading, onEditRule }) => {
+  const [expandedCategories, setExpandedCategories] = useState(new Set());
+  const [expandedRules, setExpandedRules] = useState(new Set());
 
-  const formatValue = (value) => {
-    if (value == null) return "";
-    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-      return String(value);
+  // Loading state
+  if (loading) {
+    return (
+      <div className="cam-tab">
+        <div className="cam-loading-state">
+          <div className="cam-spinner"></div>
+          <p>Analyzing CAM provisions...</p>
+          <p className="cam-loading-hint">This may take a few moments.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No data state
+  if (!camData) {
+    return (
+      <div className="cam-tab">
+        <div className="cam-no-data">
+          <FiAlertCircle size={48} />
+          <p>No CAM provisions available.</p>
+          <p className="cam-no-data-hint">Click the CAM tab to analyze this document's CAM clauses.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Toggle category expansion
+  const toggleCategory = (category) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(category)) {
+      newExpanded.delete(category);
+    } else {
+      newExpanded.add(category);
     }
-    if (typeof value === "object") {
-      try {
-        return JSON.stringify(value);
-      } catch {
-        return String(value);
-      }
-    }
-    return String(value);
+    setExpandedCategories(newExpanded);
   };
 
-  return (
-    <div className="cam">
-      {/* Overview */}
-      <div className="cam-overview">
-        <h3>Overview</h3>
-        <p>Click on any category to view detailed lease language and analysis</p>
-      </div>
+  // Toggle rule expansion
+  const toggleRule = (ruleId) => {
+    const newExpanded = new Set(expandedRules);
+    if (newExpanded.has(ruleId)) {
+      newExpanded.delete(ruleId);
+    } else {
+      newExpanded.add(ruleId);
+    }
+    setExpandedRules(newExpanded);
+  };
 
-      {/* Rules Card */}
-      <div className="cam-card">
-        <div className="cam-card-header">
-          <h4>Rules</h4>
+  // Get favorability badge color
+  const getFavorabilityColor = (favorability) => {
+    switch (favorability?.toLowerCase()) {
+      case "favorable":
+        return "#16a34a";
+      case "unfavorable":
+        return "#dc2626";
+      case "neutral":
+      default:
+        return "#6b7280";
+    }
+  };
+
+  // Get impact color
+  const getImpactColor = (impact) => {
+    switch (impact?.toLowerCase()) {
+      case "high":
+        return "#dc2626";
+      case "medium":
+        return "#ea580c";
+      case "low":
+        return "#16a34a";
+      default:
+        return "#6b7280";
+    }
+  };
+
+  // Get risk color
+  const getRiskColor = (risk) => {
+    switch (risk?.toLowerCase()) {
+      case "high":
+        return "#dc2626";
+      case "medium":
+        return "#ea580c";
+      case "low":
+        return "#16a34a";
+      default:
+        return "#6b7280";
+    }
+  };
+
+  // Category display names
+  const getCategoryDisplayName = (category) => {
+    const categoryMap = {
+      proportionateShare: "Proportionate Share",
+      camExpenseCategories: "CAM Expense Categories",
+      exclusions: "Exclusions",
+      paymentTerms: "Payment Terms",
+      capsLimitations: "Caps & Limitations",
+      reconciliationProcedures: "Reconciliation Procedures",
+      baseYearProvisions: "Base Year Provisions",
+      grossUpProvisions: "Gross-Up Provisions",
+      administrativeFees: "Administrative Fees",
+      auditRights: "Audit Rights",
+      noticeRequirements: "Notice Requirements",
+      controllableVsNonControllable: "Controllable vs Non-Controllable",
+      definitions: "Definitions",
+      calculationMethods: "Calculation Methods",
+    };
+    return categoryMap[category] || category;
+  };
+
+  // Get category status based on rules favorability
+  const getCategoryStatus = (rules) => {
+    if (!rules || rules.length === 0) return "neutral";
+    const favorabilities = rules.map((r) => r.favorability?.toLowerCase()).filter(Boolean);
+    if (favorabilities.some((f) => f === "favorable")) {
+      if (favorabilities.some((f) => f === "unfavorable")) {
+        return "neutral";
+      }
+      return "favorable";
+    }
+    if (favorabilities.some((f) => f === "unfavorable")) {
+      return "unfavorable";
+    }
+    return "neutral";
+  };
+
+  // Extract data from camData
+  const summary = camData.cumulativeCamRulesSummary || {};
+  const riskAssessment = summary.riskAssessment || {};
+  const rulesByCategoryCount = summary.rulesByCategory || {};
+  const allRules = camData.allExtractedRules || [];
+
+  // Group rules by category
+  const rulesByCategory = {};
+  allRules.forEach((rule) => {
+    const category = rule.ruleCategory;
+    if (!rulesByCategory[category]) {
+      rulesByCategory[category] = [];
+    }
+    rulesByCategory[category].push(rule);
+  });
+
+  // Calculate stats
+  const overallRisk = riskAssessment.overallTenantRisk || "Unknown";
+  const totalRules = summary.totalRulesExtracted || 0;
+  const protections = riskAssessment.keyTenantProtections || [];
+  const exposures = riskAssessment.keyTenantExposures || [];
+
+  // Extract base year and controllable cap from rules
+  const baseYearRule = allRules.find((r) => r.ruleCategory === "baseYearProvisions");
+  const baseYear = baseYearRule?.exactLanguage?.match(/20\d{2}/)?.[0] || "N/A";
+  const controllableCapRule = allRules.find((r) => r.ruleCategory === "capsLimitations");
+  const controllableCap = controllableCapRule?.exactLanguage?.match(/(\d+)%/)?.[1] || "N/A";
+
+  return (
+    <div className="cam-tab">
+      {/* Overview Section */}
+      <div className="cam-overview-section">
+        <h2 className="cam-section-title">Overview</h2>
+
+        {/* Summary Cards */}
+        <div className="cam-overview-cards">
+          <div className="cam-stat-card cam-risk-card">
+            <span className="cam-stat-label">Overall Risk</span>
+            <span className="cam-stat-value" style={{ color: getRiskColor(overallRisk) }}>
+              {overallRisk}
+            </span>
+          </div>
+
+          <div className="cam-stat-card cam-rules-card">
+            <span className="cam-stat-label">Total Rules</span>
+            <span className="cam-stat-value">{totalRules}</span>
+          </div>
+
+          <div className="cam-stat-card cam-protections-card">
+            <span className="cam-stat-label">Protections</span>
+            <span className="cam-stat-value">{protections.length}</span>
+          </div>
+
+          <div className="cam-stat-card cam-exposures-card">
+            <span className="cam-stat-label">Exposures</span>
+            <span className="cam-stat-value">{exposures.length}</span>
+          </div>
         </div>
 
-        <ul className="cam-list">
-          {resolvedCamRules.length ? (
-            resolvedCamRules.map((rule) => (
-              <li className="cam-item" key={rule.key}>
-                <div className="cam-row" onClick={() => onToggleCam(rule.key)}>
-                  <div className="cam-left">
-                    {openCam === rule.key ? <FiChevronDown /> : <FiChevronRight />}
-                    <span>{rule.title}</span>
-                  </div>
-
-                  <div className="cam-right">
-                    <span className="count">{rule.count}</span>
-                    <span className={`status ${rule.statusClass}`}>
-                      {rule.status}
-                    </span>
-
-                    <FiEdit
-                      className="icon edit"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditRule(rule);
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {openCam === rule.key && (
-                  <div className="cam-content">
-                    {rule.content && <p style={{ whiteSpace: "pre-wrap" }}>{rule.content}</p>}
-
-                    {(rule.data?.leaseReference?.section || (rule.citations && rule.citations.length > 0)) && (
-                      <div className="cam-tags">
-                        {rule.data?.leaseReference?.section && (
-                          <span className="tag">{rule.data.leaseReference.section}</span>
-                        )}
-                        {rule.citations &&
-                          rule.citations.length > 0 &&
-                          rule.citations.map((c, i) => (
-                            <span className="tag" key={i}>
-                              {c}
-                            </span>
-                          ))}
-                      </div>
-                    )}
-
-                    {rule.data && typeof rule.data === "object" && (
-                      <div style={{ marginTop: 12 }}>
-                        <ul style={{ margin: 0, paddingLeft: 18 }}>
-                          {Object.entries(rule.data)
-                            .filter(([k]) => k !== "tables")
-                            // Page is already shown as a pill via citations (e.g., "Page 39").
-                            .filter(([k]) => k !== "pageNumber")
-                            // Section is shown as a pill; avoid repeating it in JSON.
-                            .filter(([k]) => k !== "leaseReference")
-                            .filter(([, v]) => v != null && v !== "")
-                            .map(([k, v]) => (
-                              <li key={k}>
-                                <strong>{formatLabel(k)}:</strong> {formatValue(v)}
-                              </li>
-                            ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </li>
-            ))
-          ) : (
-            <li className="cam-item">
-              <div className="cam-row" style={{ cursor: "default" }}>
-                <div className="cam-left">
-                  <span>No CAM rules available.</span>
-                </div>
-              </div>
-            </li>
-          )}
-        </ul>
+        {/* Metadata Bar */}
+        <div className="cam-metadata-bar">
+          <div className="cam-metadata-item">
+            <strong>Base Year:</strong> {baseYear}
+          </div>
+          <div className="cam-metadata-item">
+            <strong>Controllable Cap:</strong> {controllableCap !== "N/A" ? `${controllableCap}% annually` : "N/A"}
+          </div>
+        </div>
       </div>
 
-      {/* <div className="cam-summary">
-        <div className="cam-summary-card green"> */}
-          {/* <h4>Key Tenant Protections</h4>
-          <ul>
-            <li>
-              All deductible cap on building operating expenses, with such
-              caps/ceilings applied annually
-            </li>
-            <li>
-              Initial assessment covers only actual CAM incurred during initial
-              occupancy
-            </li>
-            <li>
-              Detailed exclusions list protecting tenant from capital
-              expenditure pass-throughs
-            </li>
-            <li>
-              Rent discount/late-or-no payroll service credit if late or
-              omitted landlord service
-            </li>
-            <li>
-              Landlord shall not increase the estimate of operating expenses
-              more than once per year
-            </li>
-            <li>
-              Payments deemed additional rent but subject to direct credit if
-              tenant occupies entire building
-            </li>
-            <li>
-              Landlord must warrant and confirm each operating expenses item
-              with supporting documentation and no "bundled" costs
-            </li>
-          </ul>
-        </div> */}
+      {/* Rules Section */}
+      <div className="cam-rules-section">
+        <div className="cam-section-header">
+          <h2 className="cam-section-title">Rules by Category</h2>
+          <p className="cam-instruction">Click on any category to view detailed rules and provisions</p>
+        </div>
 
-        {/* RIGHT PANEL */}
-        {/* <div className="cam-summary-card orange"> */}
-          {/* <h4>Key Tenant Expenses</h4>
-          <ul>
-            <li>
-              Tenant in BUID in accordance with applicable management contract
-              for management and CAM costs
-            </li>
-            <li>
-              Insurance CAM includes only premiums for policies (not insurance
-              CAM in excess of actual)
-            </li>
-            <li>
-              Repair/service that is more accommodative to/requires tenant's
-              lease or use
-            </li>
-            <li>
-              Tenant's charge for use of leasebase-linked or CAM-eligible
-              services
-            </li>
-            <li>
-              Any HVAC or post-hours air-conditioning invoiced outside regular
-              lease service hours or outside standard CAM rights
-            </li>
-            <li>
-              If landlord or tenant abates the premises or gives access in case
-              of early event or repairs/building costs tied to either premature
-              occupancy or an insurance event
-            </li>
-      //     </ul> 
-      //   </div> 
-      // </div> */}
+        <div className="cam-categories">
+          {Object.keys(rulesByCategoryCount).map((category) => {
+            const rules = rulesByCategory[category] || [];
+            const ruleCount = rulesByCategoryCount[category] || 0;
+            const isExpanded = expandedCategories.has(category);
+            const status = getCategoryStatus(rules);
+
+            if (ruleCount === 0) return null;
+
+            return (
+              <div key={category} className="cam-category">
+                <button
+                  className={`cam-category-header ${isExpanded ? "expanded" : ""}`}
+                  onClick={() => toggleCategory(category)}
+                >
+                  <span className={`cam-expand-icon ${isExpanded ? "expanded" : ""}`}>
+                    <FiChevronRight />
+                  </span>
+                  <span className="cam-category-name">{getCategoryDisplayName(category)}</span>
+                  <span className="cam-category-count">
+                    ({ruleCount} {ruleCount === 1 ? "rule" : "rules"})
+                  </span>
+                  <span
+                    className="cam-favorability-badge"
+                    style={{ backgroundColor: getFavorabilityColor(status) }}
+                  >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </span>
+                </button>
+
+                {isExpanded && (
+                  <div className="cam-category-rules">
+                    {rules.map((rule) => {
+                      const isRuleExpanded = expandedRules.has(rule.ruleId);
+                      return (
+                        <div key={rule.ruleId} className="cam-rule-item">
+                          <div className="cam-rule-header">
+                            <span className="cam-rule-id">{rule.ruleId}</span>
+                            {rule.ruleStatus === "Updated" && (
+                              <span className="cam-updated-badge">Updated</span>
+                            )}
+                            <button
+                              className="cam-rule-expand-btn"
+                              onClick={() => toggleRule(rule.ruleId)}
+                            >
+                              <span className={`cam-expand-icon small ${isRuleExpanded ? "expanded" : ""}`}>
+                                <FiChevronRight />
+                              </span>
+                            </button>
+                          </div>
+
+                          <div className="cam-rule-summary">{rule.ruleSummary}</div>
+
+                          {rule.locations && rule.locations.length > 0 && (
+                            <div className="cam-rule-meta">
+                              <span className="cam-meta-item">
+                                📄 Page {rule.locations.map((l) => l.pageNumber).filter((v, i, a) => a.indexOf(v) === i).join(", ")}
+                              </span>
+                              <span className="cam-meta-item" style={{ color: getImpactColor(rule.impactSeverity) }}>
+                                ⚡ {rule.impactSeverity || "Medium"} Impact
+                              </span>
+                              <span
+                                className="cam-favorability-badge small"
+                                style={{ backgroundColor: getFavorabilityColor(rule.favorability) }}
+                              >
+                                {rule.favorability || "Neutral"}
+                              </span>
+                            </div>
+                          )}
+
+                          {isRuleExpanded && (
+                            <div className="cam-rule-details">
+                              <div className="cam-detail-section">
+                                <h4>Exact Language</h4>
+                                <p className="cam-exact-language">{rule.exactLanguage}</p>
+                              </div>
+
+                              <div className="cam-detail-section">
+                                <h4>Tenant Impact</h4>
+                                <p>{rule.tenantImpact}</p>
+                              </div>
+
+                              {rule.updateHistory && rule.updateHistory.length > 0 && (
+                                <div className="cam-detail-section">
+                                  <h4>Update History</h4>
+                                  {rule.updateHistory.map((update, idx) => (
+                                    <div key={idx} className="cam-update-item">
+                                      <strong>Page {update.updatePage}:</strong> {update.updateSummary}
+                                      {update.materialityOfChange && (
+                                        <span className="cam-materiality">
+                                          {" "}— {update.materialityOfChange}
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {rule.crossReferences && rule.crossReferences.length > 0 && (
+                                <div className="cam-detail-section">
+                                  <h4>Cross References</h4>
+                                  <div className="cam-cross-refs">
+                                    {rule.crossReferences.map((ref, idx) => (
+                                      <span key={idx} className="cam-cross-ref-tag">{ref}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Summary Boxes */}
+      <div className="cam-summary-boxes">
+        {/* Key Tenant Protections */}
+        <div className="cam-summary-box cam-protections-box">
+          <div className="cam-box-header">
+            <div className="cam-box-icon protections">
+              <FiCheckCircle />
+            </div>
+            <h3>Key Tenant Protections</h3>
+          </div>
+          <ul className="cam-box-list">
+            {protections.length > 0 ? (
+              protections.map((protection, idx) => (
+                <li key={idx}>{protection}</li>
+              ))
+            ) : (
+              <li className="cam-no-items">No protections identified</li>
+            )}
+          </ul>
+        </div>
+
+        {/* Key Tenant Exposures */}
+        <div className="cam-summary-box cam-exposures-box">
+          <div className="cam-box-header">
+            <div className="cam-box-icon exposures">
+              <FiAlertCircle />
+            </div>
+            <h3>Key Tenant Exposures</h3>
+          </div>
+          <ul className="cam-box-list">
+            {exposures.length > 0 ? (
+              exposures.map((exposure, idx) => (
+                <li key={idx}>{exposure}</li>
+              ))
+            ) : (
+              <li className="cam-no-items">No exposures identified</li>
+            )}
+          </ul>
+        </div>
+      </div>
+
+      {/* Missing Provisions Warning */}
+      {camData.flagsAndObservations?.missingProvisions?.length > 0 && (
+        <div className="cam-warnings-section">
+          <h3 className="cam-warnings-title">Missing Provisions</h3>
+          <div className="cam-warnings-list">
+            {camData.flagsAndObservations.missingProvisions.map((provision, idx) => (
+              <div key={idx} className="cam-warning-item">
+                <span className="cam-warning-type">{provision.provisionType}</span>
+                <span className={`cam-warning-significance ${provision.significance?.toLowerCase()}`}>
+                  {provision.significance} Significance
+                </span>
+                <p className="cam-warning-risk">{provision.tenantRisk}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
