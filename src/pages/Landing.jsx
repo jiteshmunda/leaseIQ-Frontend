@@ -62,7 +62,7 @@ const Landing = () => {
   const portfolioTitle = (() => {
     const isEmpty = tenants.length === 0;
 
-    if (role === "org_admin" || role === "org_user") {
+    if (role === "org_admin" || role === "user") {
       return isEmpty ? "Build Organization Portfolio" : "Manage Organization Portfolio";
     }
     return isEmpty ? "Build My Portfolio" : "Go to Portfolio";
