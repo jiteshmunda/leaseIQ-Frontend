@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FiEdit, FiTrash2, FiChevronRight } from "react-icons/fi";
+import { FiEdit, FiFileText, FiChevronRight, FiClock, FiArrowRight } from "react-icons/fi";
 
 const getFieldCitation = (field) => {
   if (!field || typeof field !== "object") return "";
@@ -71,7 +71,6 @@ const ProvisionsTab = ({
     if (!misc) return {};
     if (typeof misc === "string") return safeJsonParse(misc, {});
     if (typeof misc === "object") {
-      // Some payloads wrap misc as { content: "{...}" }
       if (typeof misc.content === "string") return safeJsonParse(misc.content, {});
       return misc;
     }
@@ -124,7 +123,6 @@ const ProvisionsTab = ({
           updated.misc.otherLeaseProvisions[editing.categoryKey][editing.fieldKey].value =
             segments.filter(Boolean).join("\n\n");
         } else {
-          // Fallback: overwrite whole field
           updated.misc.otherLeaseProvisions[editing.categoryKey][editing.fieldKey].value = editText;
         }
       } else {
@@ -210,60 +208,88 @@ const ProvisionsTab = ({
     return name.replace(/\.[^.]+$/i, "").trim();
   };
 
-  const renderAmendmentsAccordion = (field) => {
+  // Enhanced amendment rendering with timeline visualization
+  const renderAmendmentsTimeline = (field) => {
     if (!hasAmendments(field)) return null;
 
     const label = formatAmendmentsLabel(filename) || "Amendments";
+    const amendments = field.amendments;
 
     return (
-      <div className="amendments-block">
-        <details className="amendments-details">
-          <summary className="amendments-summary">
-            <span className="amendments-label">{label}</span>
+      <div className="provision-amendments">
+        <details className="provision-amendments-details">
+          <summary className="provision-amendments-summary">
+            <FiClock className="provision-amendments-icon" />
+            <span className="provision-amendments-text">Amendment History</span>
+            <span className="provision-amendments-count">{amendments.length}</span>
           </summary>
-          <ul className="amendments-list">
-            {field.amendments.map((am, idx) => (
-              <li key={idx}>
-                {am?.amendment_type && (
-                  <div>
-                    <strong>Type: </strong>
-                    {am.amendment_type}
+          <div className="provision-amendments-timeline">
+            {amendments.map((am, idx) => (
+              <div key={idx} className="provision-amendment-card">
+                <div className="provision-amendment-header">
+                  {am?.amendment_type && (
+                    <span className="provision-amendment-type">{am.amendment_type}</span>
+                  )}
+                  {am?.effective_date && (
+                    <span className="provision-amendment-date">
+                      <FiClock size={12} />
+                      {am.effective_date}
+                    </span>
+                  )}
+                </div>
+                
+                {(am?.previous_value || am?.new_value) && (
+                  <div className="provision-amendment-comparison">
+                    {am?.previous_value && (
+                      <div className="provision-amendment-value provision-amendment-previous">
+                        <span className="provision-amendment-label">Previous</span>
+                        <div className="provision-amendment-content">
+                          {renderAmendmentValue(am.previous_value)}
+                        </div>
+                      </div>
+                    )}
+                    {am?.previous_value && am?.new_value && (
+                      <div className="provision-amendment-arrow">
+                        <FiArrowRight />
+                      </div>
+                    )}
+                    {am?.new_value && (
+                      <div className="provision-amendment-value provision-amendment-new">
+                        <span className="provision-amendment-label">New</span>
+                        <div className="provision-amendment-content">
+                          {renderAmendmentValue(am.new_value)}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-                {am?.effective_date && (
-                  <div>
-                    <strong>Effective Date: </strong>
-                    {am.effective_date}
-                  </div>
-                )}
-                {am?.previous_value && (
-                  <div>
-                    <strong>Previous: </strong>
-                    {renderAmendmentValue(am.previous_value)}
-                  </div>
-                )}
-                {am?.new_value && (
-                  <div>
-                    <strong>New: </strong>
-                    {renderAmendmentValue(am.new_value)}
-                  </div>
-                )}
-                {am?.amendment_citation && (
-                  <div>
-                    <strong>Citation: </strong>
-                    {am.amendment_citation}
-                  </div>
-                )}
+
                 {am?.description && (
-                  <div>
-                    <strong>Description: </strong>
-                    {am.description}
+                  <p className="provision-amendment-description">{am.description}</p>
+                )}
+
+                {am?.amendment_citation && (
+                  <div className="provision-citation-tag small">
+                    <FiFileText className="provision-citation-icon" />
+                    <span className="provision-citation-text">{am.amendment_citation}</span>
                   </div>
                 )}
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </details>
+      </div>
+    );
+  };
+
+  // Enhanced citation tag component
+  const renderCitationTag = (citation) => {
+    if (!citation) return null;
+    
+    return (
+      <div className="provision-citation-tag">
+        <FiFileText className="provision-citation-icon" />
+        <span className="provision-citation-text">{citation}</span>
       </div>
     );
   };
@@ -338,7 +364,7 @@ const ProvisionsTab = ({
               >
                 <div className="provision-accordion-title">
                   <FiChevronRight className="accordion-icon" />
-                  <p>{title}</p>
+                  <h4>{title}</h4>
                 </div>
 
                 <div className="provision-actions" onClick={(e) => e.stopPropagation()}>
@@ -352,82 +378,82 @@ const ProvisionsTab = ({
               <div 
                 className={`provision-accordion-content ${isOpen ? 'open' : ''}`}
               >
-                <ul className="provision-list">
-                {items.length ? (
-                  items.map((item) => {
-                  const isEditingThis =
-                    editing?.categoryKey === item.categoryKey &&
-                    editing?.fieldKey === item.fieldKey &&
-                    (editing?.segmentIndex ?? null) === (item.segmentIndex ?? null);
+                <div className="provision-items-container">
+                  {items.length ? (
+                    items.map((item) => {
+                      const isEditingThis =
+                        editing?.categoryKey === item.categoryKey &&
+                        editing?.fieldKey === item.fieldKey &&
+                        (editing?.segmentIndex ?? null) === (item.segmentIndex ?? null);
 
-                  return (
-                    <li className="provision-item" key={item.id}>
-                      {isEditingThis ? (
-                        <div style={{ width: "100%" }}>
-                          <textarea
-                            className="form-control"
-                            rows={3}
-                            style={{ height: "auto", minHeight: 90, resize: "vertical" }}
-                            value={editText}
-                            onChange={(e) => setEditText(e.target.value)}
-                            disabled={isSaving}
-                          />
-                          <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                            <button
-                              type="button"
-                              className="btn btn-outline-secondary btn-sm"
-                              onClick={cancelEdit}
-                              disabled={isSaving}
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-outline-primary btn-sm "
-                              onClick={saveEdit}
-                              disabled={isSaving}
-                            >
-                              Save
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          {item.display}
-                          {item.citation ? (
-                            <span className="citation">Citation : {item.citation}</span>
-                          ) : null}
-                          {renderAmendmentsAccordion(item.field)}
-                          <span className="item-actions">
-                            {item.canEdit && (
-                              <FiEdit
-                                className="icon edit"
-                                onClick={() => {
-                                  if (typeof item.segmentIndex === "number") {
-                                    beginEditSegment(
-                                      item.categoryKey,
-                                      item.fieldKey,
-                                      item.segmentIndex,
-                                      item.raw
-                                    );
-                                  } else {
-                                    beginEdit(item.categoryKey, item.fieldKey, item.raw);
-                                  }
-                                }}
+                      return (
+                        <div className="provision-content-block" key={item.id}>
+                          {isEditingThis ? (
+                            <div className="provision-edit-container">
+                              <textarea
+                                className="form-control provision-edit-textarea"
+                                rows={4}
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                disabled={isSaving}
                               />
-                            )}
-                          </span>
-                        </>
-                      )}
-                    </li>
-                  );
-                })
-                ) : (
-                  <li className="provision-item">
-                    <em className="muted">No items yet.</em>
-                  </li>
-                )}
-              </ul>
+                              <div className="provision-edit-actions">
+                                <button
+                                  type="button"
+                                  className="btn btn-outline-secondary btn-sm"
+                                  onClick={cancelEdit}
+                                  disabled={isSaving}
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-primary btn-sm"
+                                  onClick={saveEdit}
+                                  disabled={isSaving}
+                                >
+                                  {isSaving ? "Saving..." : "Save"}
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="provision-text-content">
+                                <p className="provision-description">{item.display}</p>
+                                {item.canEdit && (
+                                  <button
+                                    type="button"
+                                    className="provision-edit-btn"
+                                    onClick={() => {
+                                      if (typeof item.segmentIndex === "number") {
+                                        beginEditSegment(
+                                          item.categoryKey,
+                                          item.fieldKey,
+                                          item.segmentIndex,
+                                          item.raw
+                                        );
+                                      } else {
+                                        beginEdit(item.categoryKey, item.fieldKey, item.raw);
+                                      }
+                                    }}
+                                  >
+                                    <FiEdit size={14} />
+                                  </button>
+                                )}
+                              </div>
+                              {item.citation && renderCitationTag(item.citation)}
+                              {renderAmendmentsTimeline(item.field)}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="provision-empty-state">
+                      <p>No provisions documented for this category.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </section>
           );

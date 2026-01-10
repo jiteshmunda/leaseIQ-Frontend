@@ -2015,3 +2015,799 @@ details:not([open]) .accordion-summary::after {
     font-size: 1.5rem;
   }
 }
+
+/* ================= ENHANCED PROVISIONS UX ================= */
+
+/* Provision Items Container */
+.provision-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Content Block - Card style for each provision */
+.provision-content-block {
+  background: #fff;
+  border-left: 4px solid #6c5ce7;
+  border-radius: 10px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.provision-content-block:hover {
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.1);
+  transform: translateX(2px);
+}
+
+/* Text Content with Edit Button */
+.provision-text-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.provision-description {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.75;
+  margin: 0;
+  flex: 1;
+}
+
+.provision-edit-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.provision-content-block:hover .provision-edit-btn {
+  opacity: 1;
+}
+
+.provision-edit-btn:hover {
+  background: #eef2ff;
+  color: #6c5ce7;
+}
+
+/* Citation Tag - Prominent visual element */
+.provision-citation-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-top: 14px;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.provision-citation-tag:hover {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  border-color: #a5b4fc;
+}
+
+.provision-citation-tag.small {
+  padding: 6px 10px;
+  margin-top: 10px;
+}
+
+.provision-citation-icon {
+  color: #6c5ce7;
+  flex-shrink: 0;
+}
+
+.provision-citation-text {
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Edit Mode Styling */
+.provision-edit-container {
+  width: 100%;
+}
+
+.provision-edit-textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.provision-edit-textarea:focus {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+  outline: none;
+}
+
+.provision-edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  justify-content: flex-end;
+}
+
+/* Empty State */
+.provision-empty-state {
+  text-align: center;
+  padding: 32px 24px;
+  color: #9ca3af;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px dashed #e5e7eb;
+}
+
+.provision-empty-state p {
+  margin: 0;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* Amendment Timeline Styles */
+.provision-amendments {
+  margin-top: 16px;
+}
+
+.provision-amendments-details {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.provision-amendments-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+  cursor: pointer;
+  list-style: none;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.provision-amendments-summary::-webkit-details-marker {
+  display: none;
+}
+
+.provision-amendments-details[open] .provision-amendments-summary {
+  border-bottom-color: #fde68a;
+}
+
+.provision-amendments-summary:hover {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.provision-amendments-icon {
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+.provision-amendments-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
+  flex: 1;
+}
+
+.provision-amendments-count {
+  background: #d97706;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.provision-amendments-timeline {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Amendment Card */
+.provision-amendment-card {
+  background: #fafbfc;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.provision-amendment-card:hover {
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+}
+
+.provision-amendment-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.provision-amendment-type {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.provision-amendment-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+/* Amendment Comparison View */
+.provision-amendment-comparison {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.provision-amendment-value {
+  flex: 1;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.provision-amendment-previous {
+  border-left: 3px solid #ef4444;
+}
+
+.provision-amendment-new {
+  border-left: 3px solid #22c55e;
+}
+
+.provision-amendment-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  color: #6b7280;
+}
+
+.provision-amendment-previous .provision-amendment-label {
+  color: #ef4444;
+}
+
+.provision-amendment-new .provision-amendment-label {
+  color: #22c55e;
+}
+
+.provision-amendment-content {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.provision-amendment-arrow {
+  display: flex;
+  align-items: center;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.provision-amendment-description {
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.65;
+  padding: 12px 14px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin: 0 0 12px 0;
+}
+
+/* ================= ENHANCED AUDIT UX ================= */
+
+/* Audit Card Header with Stats */
+.audit-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.audit-card-header .audit-title {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: 15px;
+}
+
+.audit-summary-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.audit-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.audit-stat-high {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.audit-stat-medium {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.audit-stat-low {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* Audit Item Title */
+.audit-item-title {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+}
+
+/* Enhanced Audit Pills */
+.audit-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.audit-pill-page {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  color: #4f46e5;
+  border: 1px solid #c7d2fe;
+}
+
+/* Empty State */
+.audit-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 24px;
+  text-align: center;
+}
+
+.audit-empty-icon {
+  font-size: 56px;
+  color: #22c55e;
+  margin-bottom: 18px;
+}
+
+.audit-empty p {
+  color: #374151;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.audit-empty-hint {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.audit-empty-value {
+  color: #9ca3af;
+}
+
+/* Structured Audit Details */
+.audit-structured-details {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.audit-detail-section {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px 18px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.audit-detail-section:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.audit-detail-info {
+  border-left: 4px solid #6c5ce7;
+}
+
+.audit-detail-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.audit-detail-success {
+  border-left: 4px solid #22c55e;
+}
+
+.audit-detail-danger {
+  border-left: 4px solid #ef4444;
+}
+
+.audit-detail-other {
+  border-left: 4px solid #9ca3af;
+}
+
+.audit-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.audit-section-header h4 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.audit-section-icon {
+  flex-shrink: 0;
+}
+
+.audit-section-icon.info {
+  color: #6c5ce7;
+}
+
+.audit-section-icon.warning {
+  color: #f59e0b;
+}
+
+.audit-section-icon.success {
+  color: #22c55e;
+}
+
+.audit-section-icon.danger {
+  color: #ef4444;
+}
+
+.audit-section-icon.other {
+  color: #9ca3af;
+}
+
+.audit-section-content {
+  color: #4b5563;
+}
+
+.audit-text-content {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.75;
+  color: #374151;
+}
+
+.audit-structured-list {
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.audit-structured-list li {
+  font-size: 14px;
+  line-height: 1.65;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.audit-structured-list li:last-child {
+  margin-bottom: 0;
+}
+
+.audit-structured-list li::marker {
+  color: #6c5ce7;
+}
+
+/* Key-Value Grid */
+.audit-key-value-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.audit-key-value-row {
+  display: flex;
+  gap: 16px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border-left: 3px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.audit-key-value-row:hover {
+  border-left-color: #6c5ce7;
+  background: #f5f3ff;
+}
+
+.audit-key-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.audit-key-value {
+  font-size: 14px;
+  color: #374151;
+  flex: 1;
+  line-height: 1.5;
+}
+
+/* Detail Item */
+.audit-detail-item {
+  margin-bottom: 14px;
+}
+
+.audit-detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.audit-detail-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.audit-detail-value {
+  color: #374151;
+}
+
+/* Nested Items */
+.audit-nested-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.audit-nested-item {
+  padding: 12px 14px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 3px solid #e5e7eb;
+}
+
+.audit-empty-details {
+  text-align: center;
+  padding: 24px;
+  color: #9ca3af;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.audit-empty-details p {
+  margin: 0;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* ================= AUDIT CONTENT BLOCKS (Similar to Provisions) ================= */
+
+.audit-content-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Content Block - Card style for each audit item */
+.audit-content-block {
+  background: #fff;
+  border-left: 4px solid #6c5ce7;
+  border-radius: 10px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.audit-content-block:hover {
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.1);
+  transform: translateX(2px);
+}
+
+.audit-content-block-minimal {
+  padding: 14px 18px;
+}
+
+.audit-content-block-recommendation {
+  border-left-color: #22c55e;
+}
+
+.audit-content-block-recommendation:hover {
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+}
+
+.audit-content-block-impact {
+  border-left-color: #f59e0b;
+}
+
+.audit-content-block-impact:hover {
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+/* Block Description */
+.audit-block-description {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* Block Label */
+.audit-block-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.audit-content-block-recommendation .audit-block-label {
+  color: #16a34a;
+}
+
+.audit-content-block-impact .audit-block-label {
+  color: #d97706;
+}
+
+/* Block Text */
+.audit-block-text {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Block List */
+.audit-block-list {
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.audit-block-list li {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.65;
+  margin-bottom: 8px;
+}
+
+.audit-block-list li:last-child {
+  margin-bottom: 0;
+}
+
+.audit-block-list li::marker {
+  color: #22c55e;
+}
+
+/* Citation Tag - Matches Provisions Style */
+.audit-citation-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+  border: 1px solid #c7d2fe;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-top: 14px;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.audit-citation-tag:hover {
+  background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+  border-color: #a5b4fc;
+}
+
+.audit-citation-icon {
+  color: #6c5ce7;
+  flex-shrink: 0;
+}
+
+.audit-citation-text {
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .provision-amendment-comparison {
+    flex-direction: column;
+  }
+
+  .provision-amendment-arrow {
+    transform: rotate(90deg);
+    justify-content: center;
+    padding: 6px 0;
+  }
+
+  .audit-key-value-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .audit-key-label {
+    min-width: auto;
+  }
+
+  .provision-content-block {
+    padding: 14px 16px;
+  }
+
+  .provision-edit-btn {
+    opacity: 1;
+  }
+
+  .audit-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .audit-summary-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
