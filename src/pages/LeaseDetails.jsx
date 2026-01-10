@@ -3,7 +3,6 @@ import api from "../service/api.js";
 import {
   FiArrowLeft,
   FiMessageSquare,
-  FiDownload,
   FiUpload,
   FiFileText,
   FiEye,
@@ -11,6 +10,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import AiLeaseAssistant from "../components/AiLeaseAssistant";
 import LeaseMainContent from "../components/LeaseMainContent";
+import DownloadLeaseDetailsDocx from "../components/DownloadLeaseDetailsDocx";
 import "../styles/leaseDetails.css";
 import FloatingSignOut from "../components/FloatingSingout";
 import { showSuccess, showError } from "../service/toast";
@@ -38,6 +38,11 @@ const LeaseDetails = () => {
   const [selectedDocId, setSelectedDocId] = useState(null);
   const [currentVersionId, setCurrentVersionId] = useState(null);
 
+  const selectedDocumentName =
+    lease?.documents?.find((d) => d?._id === selectedDocId)?.document_name ||
+    lease?.documents?.find((d) => d?._id === selectedDocId)?.document_type ||
+    "";
+
   const openDocumentUrl = async (documentId) => {
     if (!documentId) return;
 
@@ -61,10 +66,12 @@ const fetchDocumentDetails = useCallback(
   async (docId) => {
     if (!docId) {
       setDocumentDetails(null);
+      setCurrentVersionId(null);
       return;
     }
 
     setDetailsLoading(true);
+    setDocumentDetails(null);
     try {
       const res = await api.get(
         `${BASE_URL}/api/leases/${leaseId}/details/${docId}`,
@@ -147,30 +154,7 @@ const fetchDocumentDetails = useCallback(
     });
   }, [lease?.documents]);
   
-  useEffect(() => {
-  if (!selectedDocId) {
-    setDocumentDetails(null);
-    setCurrentVersionId(null);
-    return;
-  }
 
-  setDetailsLoading(true);
-  setDocumentDetails(null); // 🔴 CLEAR OLD DATA
-
-  api
-    .get(`${BASE_URL}/api/leases/${leaseId}/details/${selectedDocId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    .then((res) => {
-      const payload = res?.data?.data || res?.data;
-      setCurrentVersionId(payload?.version ?? null);
-      setDocumentDetails(payload?.details ?? payload.details); // ✅ details for UI
-    })
-    .catch(() => {
-      setDocumentDetails(null);
-    })
-    .finally(() => setDetailsLoading(false));
-}, [leaseId, selectedDocId, token]);
 
   const closeUploadModal = () => {
     if (isUploadingDocument) return;
@@ -377,9 +361,11 @@ const fetchDocumentDetails = useCallback(
           {/* <button className="ai-btn" onClick={() => setShowAiAssistant(true)}>
             <FiMessageSquare /> AI Assistant
           </button> */}
-          <button className="ai-btn">
-            <FiDownload />
-          </button>
+          <DownloadLeaseDetailsDocx
+            leaseDetails={documentDetails}
+            selectedDocumentName={selectedDocumentName}
+            disabled={detailsLoading || !documentDetails}
+          />
         </div>
       </header>
 

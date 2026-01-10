@@ -59,7 +59,14 @@ const Landing = () => {
   };
 
   const hasPending = pendingUsers.length > 0;
-  const portfolioTitle = tenants.length === 0 ? "Build My Portfolio" : "Go to Portfolio";
+  const portfolioTitle = (() => {
+    const isEmpty = tenants.length === 0;
+
+    if (role === "org_admin" || role === "org_user") {
+      return isEmpty ? "Build Organization Portfolio" : "Manage Organization Portfolio";
+    }
+    return isEmpty ? "Build My Portfolio" : "Go to Portfolio";
+  })();
   const portfolioRoute = tenants.length === 0 ? "/build-portfolio" : "/dashboard";
   const portfolionavigation = tenants.length === 0 ? "Set up Portfolio" : "View Portfolio";
 

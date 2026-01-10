@@ -109,14 +109,21 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
       nextErrors.unit_number = "Unit number is required.";
     }
 
-    const squareFeet = Number(form.square_ft);
-    if (!Number.isFinite(squareFeet) || squareFeet <= 0) {
-      nextErrors.square_ft = "Square feet must be greater than 0.";
+    // Optional: only validate when user provides a value.
+    const squareFeetRaw = String(form.square_ft ?? "").trim();
+    if (squareFeetRaw) {
+      const squareFeet = Number(squareFeetRaw);
+      if (!Number.isFinite(squareFeet) || squareFeet <= 0) {
+        nextErrors.square_ft = "Square feet must be greater than 0.";
+      }
     }
 
-    const monthlyRent = Number(form.monthly_rent);
-    if (!Number.isFinite(monthlyRent) || monthlyRent <= 0) {
-      nextErrors.monthly_rent = "Monthly rent must be greater than 0.";
+    const monthlyRentRaw = String(form.monthly_rent ?? "").trim();
+    if (monthlyRentRaw) {
+      const monthlyRent = Number(monthlyRentRaw);
+      if (!Number.isFinite(monthlyRent) || monthlyRent <= 0) {
+        nextErrors.monthly_rent = "Monthly rent must be greater than 0.";
+      }
     }
 
     if (!document) {
@@ -155,8 +162,16 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
 
       // unit details
       payload.append("unit_number", form.unit_number);
-      payload.append("square_ft", form.square_ft);
-      payload.append("monthly_rent", form.monthly_rent);
+
+      const squareFeetRaw = String(form.square_ft ?? "").trim();
+      if (squareFeetRaw) {
+        payload.append("square_ft", squareFeetRaw);
+      }
+
+      const monthlyRentRaw = String(form.monthly_rent ?? "").trim();
+      if (monthlyRentRaw) {
+        payload.append("monthly_rent", monthlyRentRaw);
+      }
       if (tenantId) {
         payload.append("tenant_id", tenantId); // ✅ EXISTING TENANT
       } else {

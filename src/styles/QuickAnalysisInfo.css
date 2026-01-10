@@ -202,6 +202,20 @@
   transition: opacity 0.2s ease;
 }
 
+.qai-header-icon-button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.qai-docx-icon {
+  font-size: 22px;
+}
+
 .qai-header-icon:hover {
   opacity: 0.8;
 }

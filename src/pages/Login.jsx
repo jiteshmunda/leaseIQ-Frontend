@@ -5,8 +5,10 @@ import { Eye, EyeOff } from "lucide-react";
 import "../styles/login.css";
 import axios from "axios";
 import { showError, showSuccess } from "../service/toast";
+import { encryptPassword } from "../service/encryption";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const AUTH_PUBLIC_KEY = import.meta.env.VITE_AUTH_PUBLIC_KEY;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -41,11 +43,17 @@ const Login = () => {
       const identifier = formData.identifier.trim();
       const isEmail = /@/.test(identifier);
 
+      const encryptedPassword = await encryptPassword(
+        formData.password,
+        AUTH_PUBLIC_KEY
+      );
+
       const res = await axios.post(
         `${BASE_URL}/api/auth/login`,
         {
           ...(isEmail ? { email: identifier } : { username: identifier }),
-          password: formData.password,
+          password: encryptedPassword,
+          passwordEncrypted: true,
           /* org_name: formData.org_name */ // Disabled in API payload
         },
         {

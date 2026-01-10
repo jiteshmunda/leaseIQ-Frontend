@@ -5,7 +5,7 @@ import "../styles/analyzingLease.css";
 const steps = [
   "Document uploaded",
   "Text extracted",
-  "Extracting key dates...",
+  "Building the lease portfolio...",
   "Identifying rent schedules...",
   "Finding provisions...",
   "Running audit checks...",

@@ -244,14 +244,14 @@ const InfoTab = ({
     propertyAddress: getFieldValue(leaseInfo?.property) || "",
     leaseFrom: getFieldValue(leaseInfo?.leaseFrom) || "",
     leaseTo: getFieldValue(leaseInfo?.leaseTo) || "",
-    renewalOptions: getFieldValue(premisesAndTerm?.synopsis) || "",
+    renewalOptions: getFieldValue(leaseInfo?.renewalOptions) || "",
     squareFeet:
       leaseDetails?.info?.leaseInformation?.squareFeet?.value
         ? String(leaseDetails.info.leaseInformation.squareFeet.value)
         : "",
     baseRent:
-      chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value
-        ? String(chargeSchedules.baseRent[0].monthlyAmount.value)
+      leaseDetails?.info?.leaseInformation?.baseRent?.value
+        ? String(leaseDetails.info.leaseInformation.baseRent.value)
         : "",
     securityDeposit:
       leaseDetails?.info?.leaseInformation?.securityDeposit?.value
