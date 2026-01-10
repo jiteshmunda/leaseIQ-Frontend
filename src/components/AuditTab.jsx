@@ -68,6 +68,8 @@ const AuditTab = ({ audit, risks = [] }) => {
 
     for (const c of candidates) {
       if (Array.isArray(c) && c.length) return c;
+      // Handle string page references (e.g., "2-3")
+      if (typeof c === "string" && c.trim()) return [c];
     }
 
     if (risk.page_number != null) return [risk.page_number];
@@ -77,7 +79,7 @@ const AuditTab = ({ audit, risks = [] }) => {
 
   // Resolve citation text (section, clause, etc.)
   const resolveCitation = (risk) => {
-    const citationKeys = ["citation", "clause", "section", "reference", "lease_section", "article"];
+    const citationKeys = ["citation", "clause", "affected_clause", "section", "reference", "lease_section", "article"];
     for (const key of citationKeys) {
       if (risk[key] && typeof risk[key] === "string") {
         return risk[key];
@@ -97,11 +99,12 @@ const AuditTab = ({ audit, risks = [] }) => {
     risk?.category ||
     risk?.title ||
     risk?.type ||
+    risk?._section_name ||
     "Uncategorized Risk";
 
   // Get description from various possible keys
   const getDescription = (risk) => {
-    const descKeys = ["description", "details", "summary", "overview", "explanation", "risk_description", "finding", "issue"];
+    const descKeys = ["description", "issue_description", "details", "summary", "overview", "explanation", "risk_description", "finding", "issue"];
     for (const key of descKeys) {
       if (risk[key] && typeof risk[key] === "string") {
         return risk[key];
@@ -112,7 +115,7 @@ const AuditTab = ({ audit, risks = [] }) => {
 
   // Get recommendation
   const getRecommendation = (risk) => {
-    const recKeys = ["recommendation", "recommendations", "suggested_action", "action", "mitigation", "remediation"];
+    const recKeys = ["recommendation", "recommendations", "recommended_action", "suggested_action", "action", "mitigation", "remediation"];
     for (const key of recKeys) {
       const val = risk[key];
       if (val && typeof val === "string") {
