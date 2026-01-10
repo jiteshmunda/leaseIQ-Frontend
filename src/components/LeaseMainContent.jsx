@@ -22,7 +22,6 @@ const LeaseMainContent = ({
   const [editCategoryKey, setEditCategoryKey] = useState(null);
   const [editCategoryName, setEditCategoryName] = useState("");
   const [isUpdatingCategory, setIsUpdatingCategory] = useState(false);
-  const [openCam, setOpenCam] = useState(null);
   const [showEditCam, setShowEditCam] = useState(false);
   const [editCamRule, setEditCamRule] = useState(null);
   const [editCamForm, setEditCamForm] = useState({
@@ -121,41 +120,7 @@ const LeaseMainContent = ({
       .map((s) => s.trim())
       .filter(Boolean);
 
-  const mergeUnique = (arr) => {
-    const seen = new Set();
-    const out = [];
-    for (const item of arr) {
-      const key = String(item ?? "").trim();
-      if (!key) continue;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(key);
-    }
-    return out;
-  };
-
-  const resolvedCamRules = camSingle
-    ? [
-        {
-          key: "cam-single",
-          title: camSingle.sectionTitle || camSingle.title || "CAM Clause",
-          statusClass: "orange",
-          status: "Active",
-          content:
-            camSingle.textContent ||
-            camSingle.executionClause ||
-            "CAM clause details extracted from the lease.",
-          citations: mergeUnique([
-            ...(Array.isArray(camSingle.citations) ? camSingle.citations : []),
-            ...(camSingle.pageNumber ? [`Page ${camSingle.pageNumber}`] : []),
-          ]),
-          // Keep the raw object available for UI rendering.
-          data: camSingle,
-          // Tables exist in data but are intentionally not shown in the UI.
-          tables: camSingle.tables || [],
-        },
-      ]
-    : [];
+  // CAM data is passed directly to CamTab component without transformation
 
   const getFieldValue = (field) => {
     if (!field || typeof field !== "object") return "";
@@ -208,9 +173,6 @@ const LeaseMainContent = ({
       .replace(/^./, (c) => c.toUpperCase());
   };
 
-  const toggleCam = (key) => {
-    setOpenCam((current) => (current === key ? null : key));
-  };
 
   const handleCamTabClick = async () => {
     // If CAM data already exists, just switch to the tab
@@ -473,13 +435,11 @@ const LeaseMainContent = ({
               </div>
             ) : (
               <CamTab
-                resolvedCamRules={resolvedCamRules}
-                openCam={openCam}
-                onToggleCam={toggleCam}
+                camData={camSingle}
+                loading={isLoadingCam}
                 onEditRule={(rule) => {
                   handleOpenEditCamRule(rule);
                 }}
-                filename={leaseDetails?.filename}
               />
             )}
           </>
