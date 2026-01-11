@@ -156,6 +156,7 @@ const QuickAnalysisInfo = () => {
           leaseDetails={leaseDetails}
           onUpdateLeaseDetails={handleUpdateLeaseDetails}
           getLeaseFile={getLeaseFileForCam}
+          documentId={parsedLeaseData?.uploadedFile?.id}
         />
       </div>
       <AiLeaseAssistant

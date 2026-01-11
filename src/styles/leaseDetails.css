@@ -2114,6 +2114,34 @@ details:not([open]) .accordion-summary::after {
   line-height: 1.4;
 }
 
+/* Clickable Citation Tag */
+.provision-citation-clickable {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.provision-citation-clickable:hover {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.25);
+}
+
+.provision-citation-clickable:active {
+  transform: translateY(0);
+}
+
+.provision-citation-link-icon {
+  color: #3b82f6;
+  opacity: 0;
+  margin-left: 4px;
+  transition: opacity 0.2s ease;
+}
+
+.provision-citation-clickable:hover .provision-citation-link-icon {
+  opacity: 1;
+}
+
 /* Edit Mode Styling - Enhanced Professional UI */
 @keyframes provision-edit-enter {
   from {

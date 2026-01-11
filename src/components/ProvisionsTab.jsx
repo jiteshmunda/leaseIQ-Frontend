@@ -1,5 +1,7 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from "react";
-import { FiEdit, FiFileText, FiChevronRight, FiClock, FiArrowRight, FiX, FiCheck } from "react-icons/fi";
+import { FiEdit, FiFileText, FiChevronRight, FiClock, FiArrowRight, FiX, FiCheck, FiExternalLink } from "react-icons/fi";
+import { openPdfWithCitation, canNavigateToCitation, getCitationDisplayText } from "../service/citationUtils";
+import { showError } from "../service/toast";
 
 const getFieldCitation = (field) => {
   if (!field || typeof field !== "object") return "";
@@ -25,6 +27,7 @@ const ProvisionsTab = ({
   leaseDetails,
   onUpdateLeaseDetails,
   filename,
+  documentId,
 }) => {
   const [editing, setEditing] = useState(null);
   const [editText, setEditText] = useState("");
@@ -312,14 +315,49 @@ const ProvisionsTab = ({
     );
   };
 
-  // Enhanced citation tag component
-  const renderCitationTag = (citation) => {
+  // Handle citation click to open PDF viewer
+  const handleCitationClick = async (citation) => {
+    if (!documentId) {
+      showError("Document not available for citation navigation");
+      return;
+    }
+
+    try {
+      await openPdfWithCitation(documentId, citation);
+    } catch (err) {
+      console.error("Failed to open citation:", err);
+      showError("Failed to open PDF. Please try again.");
+    }
+  };
+
+  // Enhanced citation tag component - now clickable
+  const renderCitationTag = (citation, field) => {
     if (!citation) return null;
+    
+    // Get the full citation object if available (for structured citations)
+    const citationObj = field?.citation || citation;
+    const displayText = getCitationDisplayText(citationObj) || citation;
+    const isNavigable = documentId && canNavigateToCitation(citationObj);
+    
+    if (isNavigable) {
+      return (
+        <button
+          type="button"
+          className="provision-citation-tag provision-citation-clickable"
+          onClick={() => handleCitationClick(citationObj)}
+          title="Click to view in PDF"
+        >
+          <FiFileText className="provision-citation-icon" />
+          <span className="provision-citation-text">{displayText}</span>
+          <FiExternalLink className="provision-citation-link-icon" size={12} />
+        </button>
+      );
+    }
     
     return (
       <div className="provision-citation-tag">
         <FiFileText className="provision-citation-icon" />
-        <span className="provision-citation-text">{citation}</span>
+        <span className="provision-citation-text">{displayText}</span>
       </div>
     );
   };
@@ -511,7 +549,7 @@ const ProvisionsTab = ({
                                   </button>
                                 )}
                               </div>
-                              {item.citation && renderCitationTag(item.citation)}
+                              {item.citation && renderCitationTag(item.citation, item.field)}
                               {renderAmendmentsTimeline(item.field)}
                             </>
                           )}

@@ -16,6 +16,7 @@ const LeaseMainContent = ({
   leaseDetails,
   onUpdateLeaseDetails,
   getLeaseFile,
+  documentId,
 }) => {
   const scrollSectionRef = useRef(null);
   const [showEditCategory, setShowEditCategory] = useState(false);
@@ -430,6 +431,7 @@ const LeaseMainContent = ({
             leaseDetails={leaseDetails}
             onUpdateLeaseDetails={onUpdateLeaseDetails}
             filename={leaseDetails?.filename}
+            documentId={documentId}
           />
         )}
 

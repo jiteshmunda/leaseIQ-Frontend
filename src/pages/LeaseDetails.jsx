@@ -150,7 +150,8 @@ const fetchDocumentDetails = useCallback(
           .includes("main")
       );
 
-      return (mainDoc?._id || docs[0]?._id) ?? null;
+      const newId = (mainDoc?._id || docs[0]?._id) ?? null;
+      return newId;
     });
   }, [lease?.documents]);
   
@@ -435,6 +436,7 @@ const fetchDocumentDetails = useCallback(
   setActiveTab={setActiveTab}
   onUpdateLeaseDetails={handleLeaseDetailsUpdate}
   getLeaseFile={getLeaseFileForCam}
+  documentId={selectedDocId}        // 📄 for citation navigation
 />
   )}
 
