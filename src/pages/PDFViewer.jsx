@@ -21,6 +21,8 @@ const PDFViewer = () => {
   const [highlightText, setHighlightText] = useState("");
   const [highlightMatches, setHighlightMatches] = useState([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [renderedPages, setRenderedPages] = useState(new Set());
+  const [initialScrollDone, setInitialScrollDone] = useState(false);
   
   const pageRefs = useRef({});
   const containerRef = useRef(null);
@@ -107,15 +109,29 @@ const PDFViewer = () => {
     }
   }, [numPages, targetPage]);
 
-  // Scroll to current page
+  // Scroll to target page ONLY after it has been rendered (initial navigation)
   useEffect(() => {
+    if (!initialScrollDone && renderedPages.has(targetPage) && pageRefs.current[targetPage]) {
+      pageRefs.current[targetPage].scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      setInitialScrollDone(true);
+    }
+  }, [renderedPages, targetPage, initialScrollDone]);
+
+  // Scroll to current page (for manual navigation via buttons/input)
+  useEffect(() => {
+    // Skip if this is initial load - that's handled by the effect above
+    if (!initialScrollDone) return;
+    
     if (pageRefs.current[currentPage]) {
       pageRefs.current[currentPage].scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     }
-  }, [currentPage]);
+  }, [currentPage, initialScrollDone]);
 
   // Highlight text on the page
   const performHighlight = useCallback(() => {
@@ -382,6 +398,7 @@ const PDFViewer = () => {
                   renderTextLayer={true}
                   renderAnnotationLayer={true}
                   className="pdf-viewer-page"
+                  onRenderSuccess={() => setRenderedPages(prev => new Set(prev).add(index + 1))}
                 />
               </div>
             ))}
