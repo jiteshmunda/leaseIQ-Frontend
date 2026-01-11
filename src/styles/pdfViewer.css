@@ -51,6 +51,18 @@
   cursor: not-allowed;
 }
 
+/* Ensure SVG icons are visible */
+.pdf-viewer-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: #e0e0e0;
+  flex-shrink: 0;
+}
+
+.pdf-viewer-btn:hover:not(:disabled) svg {
+  stroke: #fff;
+}
+
 .pdf-viewer-btn-sm {
   width: 28px;
   height: 28px;
