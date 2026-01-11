@@ -12,6 +12,7 @@ import QuickAnalysisInfo from "./components/QuickAnalysisInfo";
 import AiLeaseAssistant from "./components/AiLeaseAssistant";
 import BuildPortfolo from "./pages/BuildPortfolio";
 import Signup from "./pages/Signup";
+import PDFViewer from "./pages/PDFViewer";
 
 import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
@@ -34,6 +35,7 @@ function App() {
         <Route path="/quick-analysis-info" element={<PrivateRoute><QuickAnalysisInfo /></PrivateRoute>} />
         <Route path="/ai-lease-assistant" element={<PrivateRoute><AiLeaseAssistant /></PrivateRoute>} />
         <Route path="/build-portfolio" element={<PrivateRoute><BuildPortfolo /></PrivateRoute>} />
+        <Route path="/pdf-viewer" element={<PDFViewer />} />
       </Routes>
 
       <ToastContainer
