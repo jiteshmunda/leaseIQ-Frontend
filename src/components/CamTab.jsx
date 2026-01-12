@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FiChevronRight, FiEdit, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 
-const CamTab = ({ camData, loading, onEditRule }) => {
+const CamTab = ({ camData, loading, }) => {
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [expandedRules, setExpandedRules] = useState(new Set());
 

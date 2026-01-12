@@ -1,8 +1,9 @@
 .login-page {
   min-height: 100vh;
-  background: #7F00FF;  /* fallback for old browsers */
-background: -webkit-linear-gradient(to right, #E100FF, #7F00FF);  /* Chrome 10-25, Safari 5.1-6 */
-background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  /* background removed -> moved to AnimatedBackground component */
+  position: relative;
+  z-index: 1;
+  /* Ensure it stacks correctly above fixed bg if needed, though bg is fixed */
 
   display: flex;
   flex-direction: column;
@@ -114,8 +115,9 @@ background: linear-gradient(to right, #E100FF, #7F00FF); /* W3C, IE 10+/ Edge, F
   color: rgba(255, 255, 255, 0.8);
   font-size: 14px;
 }
+
 .sign-up {
-  
+
   font-weight: 600;
   cursor: pointer;
 }

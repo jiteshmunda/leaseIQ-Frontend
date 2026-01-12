@@ -3,6 +3,7 @@ import { Form, Button, InputGroup } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import "../styles/login.css";
+import AnimatedBackground from "../components/AnimatedBackground";
 import axios from "axios";
 import { showError, showSuccess } from "../service/toast";
 import { encryptPassword } from "../service/encryption";
@@ -22,8 +23,8 @@ const Login = () => {
   });
 
   // Updated validation: removed org_name requirement
-  const isFormValid = 
-    formData.identifier.trim() && 
+  const isFormValid =
+    formData.identifier.trim() &&
     formData.password.trim() /* && 
     formData.org_name.trim() */;
 
@@ -74,52 +75,54 @@ const Login = () => {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-header">
-        <h1 className="logo">LeaseIQ</h1>
-        <p className="subtitle">AI-Powered Lease Management Platform</p>
-      </div>
+    <>
+      <AnimatedBackground />
+      <div className="login-page">
+        <div className="login-header">
+          <h1 className="logo">LeaseIQ</h1>
+          <p className="subtitle">AI-Powered Lease Management Platform</p>
+        </div>
 
-      <div className="login-card">
-        <h2 className="title text-center">Sign In</h2>
+        <div className="login-card">
+          <h2 className="title text-center">Sign In</h2>
 
-        <Form onSubmit={handleLogin}>
-          {/* Username/Email Field */}
-          <Form.Group className="mb-3">
-            <Form.Label>Username/Email</Form.Label>
-            <Form.Control
-              type="text"
-              name="identifier"
-              placeholder="Enter your username or email"
-              value={formData.identifier}
-              onChange={handleChange}
-              disabled={loading}
-            />
-          </Form.Group>
-
-          {/* Password Field */}
-          <Form.Group className="mb-3">
-            <Form.Label>Password</Form.Label>
-            <InputGroup>
+          <Form onSubmit={handleLogin}>
+            {/* Username/Email Field */}
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-bold">Username/Email</Form.Label>
               <Form.Control
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Enter your password"
-                value={formData.password}
+                type="text"
+                name="identifier"
+                placeholder="Enter your username or email"
+                value={formData.identifier}
                 onChange={handleChange}
                 disabled={loading}
               />
-              <InputGroup.Text
-                style={{ cursor: "pointer" }}
-                onClick={() => !loading && setShowPassword(!showPassword)}
-              >
-                {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
-              </InputGroup.Text>
-            </InputGroup>
-          </Form.Group>
+            </Form.Group>
 
-          {/* Organization Name Field - Commented Out */}
-          {/* <Form.Group className="mb-4">
+            {/* Password Field */}
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-bold">Password</Form.Label>
+              <InputGroup>
+                <Form.Control
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                <InputGroup.Text
+                  style={{ cursor: "pointer" }}
+                  onClick={() => !loading && setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                </InputGroup.Text>
+              </InputGroup>
+            </Form.Group>
+
+            {/* Organization Name Field - Commented Out */}
+            {/* <Form.Group className="mb-4">
             <Form.Label>Organization Name</Form.Label>
             <Form.Control
               type="text"
@@ -132,35 +135,36 @@ const Login = () => {
           </Form.Group> 
           */}
 
-          <Button 
-            className="login-btn" 
-            type="submit" 
-            disabled={!isFormValid || loading}
-          >
-            {loading ? "Signing In..." : "Login"}
-          </Button>
+            <Button
+              className="login-btn"
+              type="submit"
+              disabled={!isFormValid || loading}
+            >
+              {loading ? "Signing In..." : "Login"}
+            </Button>
 
-          <div className="signup-link mt-3 text-center">
-            <p>
-              Don't have an account?{" "}
-              <span 
-                className="text-primary sign-up" 
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate("/signup")}
-              >
-                Create New Account
-              </span>
-            </p>
-          </div>
-        </Form>
-      </div>
+            <div className="signup-link mt-3 text-center">
+              <p>
+                Don't have an account?{" "}
+                <span
+                  className="text-primary sign-up"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => navigate("/signup")}
+                >
+                  Create New Account
+                </span>
+              </p>
+            </div>
+          </Form>
+        </div>
 
-      <div className="login-footer">
-        <p>
-          Need help? Contact <span>support@leaseabstract.com</span>
-        </p>
+        <div className="login-footer">
+          <p>
+            Need help? Contact <span>support@leaseabstract.com</span>
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
