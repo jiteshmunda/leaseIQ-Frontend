@@ -93,38 +93,117 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
         nextErrors.property_id = "Please select a property.";
       }
     } else {
-      if (!String(form.property_name || "").trim()) {
+      const propertyName = String(form.property_name || "").trim();
+      if (!propertyName) {
         nextErrors.property_name = "Property name is required.";
       }
-      // Address is optional per current UI label.
+      else if (propertyName.length > 30) {
+        nextErrors.property_name = "Property name must not exceed 30 characters.";
+      }
+      else if (!/^[A-Za-z]/.test(propertyName)) {
+        nextErrors.property_name = "Property name must start with a letter.";
+      }
+      else if (!/^[A-Za-z0-9 ]+$/.test(propertyName)) {
+        nextErrors.property_name =
+          "Property name can contain only letters, numbers, and spaces.";
+      }
+      else {
+        const isDuplicate = properties.some(
+          (p) =>
+            p.property_name?.trim().toLowerCase() ===
+            propertyName.toLowerCase()
+        );
+
+        if (isDuplicate) {
+          nextErrors.property_name = "This property name already exists.";
+        }
+      }
+
+  
+      const address = String(form.address || "").trim();
+      if (!address) {
+        nextErrors.address = "Address is required.";
+      }
+      else if (address.length > 60) {
+        nextErrors.address = "Address must not exceed 60 characters.";
+      }
+      else if (!/^[A-Za-z0-9 ,.-]+$/.test(address)) {
+        nextErrors.address =
+          "Address can contain only letters, numbers, commas, dots, and hyphens.";
+      }
     }
 
     if (!tenantId) {
-      if (!String(form.tenant_name || "").trim()) {
+      const tenantName = String(form.tenant_name || "").trim();
+
+      // Required
+      if (!tenantName) {
         nextErrors.tenant_name = "Tenant name is required.";
       }
-    }
-
-    if (!String(form.unit_number || "").trim()) {
-      nextErrors.unit_number = "Unit number is required.";
-    }
-
-    // Optional: only validate when user provides a value.
-    const squareFeetRaw = String(form.square_ft ?? "").trim();
-    if (squareFeetRaw) {
-      const squareFeet = Number(squareFeetRaw);
-      if (!Number.isFinite(squareFeet) || squareFeet <= 0) {
-        nextErrors.square_ft = "Square feet must be greater than 0.";
+      // Max length: 30 chars
+      else if (tenantName.length > 30) {
+        nextErrors.tenant_name = "Tenant name must not exceed 30 characters.";
+      }
+      // Must start with a letter
+      else if (!/^[A-Za-z]/.test(tenantName)) {
+        nextErrors.tenant_name = "Tenant name must start with a letter.";
+      }
+      // Letters and spaces only
+      else if (!/^[A-Za-z ]+$/.test(tenantName)) {
+        nextErrors.tenant_name =
+          "Tenant name can contain only letters and spaces.";
       }
     }
 
-    const monthlyRentRaw = String(form.monthly_rent ?? "").trim();
-    if (monthlyRentRaw) {
-      const monthlyRent = Number(monthlyRentRaw);
-      if (!Number.isFinite(monthlyRent) || monthlyRent <= 0) {
-        nextErrors.monthly_rent = "Monthly rent must be greater than 0.";
+
+    const unitNumber = String(form.unit_number || "").trim();
+
+      // Required
+      if (!unitNumber) {
+        nextErrors.unit_number = "Unit number is required.";
       }
-    }
+      // Max length (optional but recommended)
+      else if (unitNumber.length > 15) {
+        nextErrors.unit_number = "Unit number must not exceed 15 characters.";
+      }
+      // Must start with letter or number
+      else if (!/^[A-Za-z0-9]/.test(unitNumber)) {
+        nextErrors.unit_number = "Unit number must start with a letter or number.";
+      }
+      // Allowed characters only (letters, numbers, hyphen)
+      else if (!/^[A-Za-z0-9-]+$/.test(unitNumber)) {
+        nextErrors.unit_number =
+          "Unit number can contain only letters, numbers, and hyphens.";
+      }
+
+
+      const squareFeetRaw = String(form.square_ft ?? "").trim();
+
+        if (squareFeetRaw) {
+          if (!/^\d+$/.test(squareFeetRaw)) {
+            nextErrors.square_ft = "Square feet must contain only numbers.";
+          }
+          else if (squareFeetRaw.length > 7) {
+            nextErrors.square_ft = "Square feet value is too large.";
+          }
+          else if (Number(squareFeetRaw) <= 0) {
+            nextErrors.square_ft = "Square feet must be greater than 0.";
+          }
+        }
+
+        const monthlyRentRaw = String(form.monthly_rent ?? "").trim();
+
+        if (monthlyRentRaw) {
+          if (!/^\d+$/.test(monthlyRentRaw)) {
+            nextErrors.monthly_rent = "Monthly rent must contain only numbers.";
+          }
+          else if (monthlyRentRaw.length > 9) {
+            nextErrors.monthly_rent = "Monthly rent value is too large.";
+          }
+          else if (Number(monthlyRentRaw) <= 0) {
+            nextErrors.monthly_rent = "Monthly rent must be greater than 0.";
+          }
+        }
 
     if (!document) {
       nextErrors.document = "Please upload the lease document (PDF).";
@@ -251,7 +330,9 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
 
               {useExistingProperty ? (
                 <Form.Group className="mb-3">
-                  <Form.Label>Select Property</Form.Label>
+                  <Form.Label>
+                    Select Property <span className="text-danger">*</span>
+                  </Form.Label>
                   <Form.Select
                     name="property_id"
                     onChange={handleChange}
@@ -273,7 +354,10 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
               ) : (
                 <>
                   <Form.Group className="mb-3">
-                    <Form.Label>Property Name</Form.Label>
+                  
+                    <Form.Label>
+                      Property Name <span className="text-danger">*</span>
+                    </Form.Label>
                     <Form.Control
                       name="property_name"
                       onChange={handleChange}
@@ -287,13 +371,19 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label>Address</Form.Label>
+                    <Form.Label>
+                      Address <span className="text-danger">*</span>
+                    </Form.Label>
                     <Form.Control
                       name="address"
                       onChange={handleChange}
                       value={form.address}
+                      isInvalid={submitAttempted && !!errors.address}
                       disabled={loading}
                     />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.address}
+                    </Form.Control.Feedback>
                   </Form.Group>
                 </>
               )}
@@ -303,7 +393,9 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
             <Col md={6}>
               <h6>Tenant</h6>
               <Form.Group className="mb-3">
-                <Form.Label>Tenant Name</Form.Label>
+                <Form.Label>
+                  Tenant Name <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   type="text"
                   name="tenant_name"
@@ -328,7 +420,9 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
           <Row>
             <Col md={4}>
               <Form.Group className="mb-3">
-                <Form.Label>Unit Number</Form.Label>
+                <Form.Label>
+                  Unit Number <span className="text-danger">*</span>
+                </Form.Label>
                 <Form.Control
                   name="unit_number"
                   onChange={handleChange}
@@ -343,45 +437,55 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
             </Col>
 
             <Col md={4}>
-              <Form.Group className="mb-3">
-                <Form.Label>Square Feet</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="square_ft"
-                  onChange={handleChange}
-                  value={form.square_ft}
-                  isInvalid={submitAttempted && !!errors.square_ft}
-                  disabled={loading}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.square_ft}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
+  <Form.Group className="mb-3">
+    <Form.Label>Square Feet</Form.Label>
+    <Form.Control
+      type="number"
+      name="square_ft"
+      onChange={handleChange}
+      onInput={(e) => {
+        // remove anything that's not a digit
+        e.target.value = e.target.value.replace(/\D/g, '');
+      }}
+      value={form.square_ft}
+      isInvalid={submitAttempted && !!errors.square_ft}
+      disabled={loading}
+    />
+    <Form.Control.Feedback type="invalid">
+      {errors.square_ft}
+    </Form.Control.Feedback>
+  </Form.Group>
+</Col>
 
-            <Col md={4}>
-              <Form.Group className="mb-3">
-                <Form.Label>Monthly Rent</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="monthly_rent"
-                  onChange={handleChange}
-                  value={form.monthly_rent}
-                  isInvalid={submitAttempted && !!errors.monthly_rent}
-                  disabled={loading}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {errors.monthly_rent}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
+<Col md={4}>
+  <Form.Group className="mb-3">
+    <Form.Label>Monthly Rent</Form.Label>
+    <Form.Control
+      type="number"
+      name="monthly_rent"
+      onChange={handleChange}
+      onInput={(e) => {
+        e.target.value = e.target.value.replace(/\D/g, '');
+      }}
+      value={form.monthly_rent}
+      isInvalid={submitAttempted && !!errors.monthly_rent}
+      disabled={loading}
+    />
+    <Form.Control.Feedback type="invalid">
+      {errors.monthly_rent}
+    </Form.Control.Feedback>
+  </Form.Group>
+</Col>
+
           </Row>
 
           <hr />
 
           {/* DOCUMENT UPLOAD */}
           <Form.Group className="mb-3">
-            <Form.Label>Upload Main Lease (PDF)</Form.Label>
+            <Form.Label>
+              Upload Main Lease (PDF) <span className="text-danger">*</span>
+            </Form.Label>
             <Form.Control
               type="file"
               accept=".pdf,application/pdf"

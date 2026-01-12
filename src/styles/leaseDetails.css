@@ -1311,7 +1311,35 @@ details:not([open]) .accordion-summary::after {
   cursor: pointer;
 }
 
+@media (max-width: 768px) {
+  .lease-body {
+    flex-direction: column;
+    height: auto;
+  }
 
+  .lease-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    max-height: 45vh;        /* ⬅️ key fix */
+    overflow-y: auto;
+  }
+
+  .upload-box {
+    padding: 12px;
+    font-size: 13px;
+  }
+
+  .doc-list {
+    max-height: 30vh;
+    overflow-y: auto;
+  }
+
+  .lease-content {
+    min-height: 55vh;
+    overflow-y: visible;
+  }
+}
 
 
 

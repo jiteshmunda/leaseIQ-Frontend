@@ -83,9 +83,9 @@ const QuickAnalysisInfo = () => {
             </div>
 
             <div className="qai-header-right">
-              <button
-                className="btn btn-outline-light btn-sm"
-                onClick={() => setShowAddToPortfolio(true)}
+              <button 
+              className="btn btn-outline-light btn-sm"
+              onClick={() => setShowAddToPortfolio(true)}
               >
                 Add to Portfolio
               </button>
@@ -95,9 +95,9 @@ const QuickAnalysisInfo = () => {
                 onClose={() => setShowAddToPortfolio(false)}
                 onSuccess={() => setShowAddToPortfolio(false)}
               />
-              <button
-                className="btn btn-outline-light btn-sm"
-                onClick={handleAnalyzeAnotherLease}
+              <button 
+              className="btn btn-outline-light btn-sm"
+              onClick={handleAnalyzeAnotherLease}
               >
                 Analyze Another Lease
               </button>
@@ -108,17 +108,19 @@ const QuickAnalysisInfo = () => {
                 onClick={() => setShowAiAssistant(true)}
               /> */}
 
-              <DownloadLeaseDetailsDocx
-                leaseDetails={leaseDetails}
-                selectedDocumentName={parsedLeaseData?.leaseName || leaseDetails?.lease || "Lease"}
-                disabled={!leaseDetails}
-                buttonClassName="qai-header-icon-button"
-                iconClassName="qai-header-icon qai-docx-icon"
-              />
-              <X
-                className="qai-header-icon"
-                onClick={() => navigate("/landing")}
-              />
+              <div className="qai-header-icons">
+                <DownloadLeaseDetailsDocx
+                  leaseDetails={leaseDetails}
+                  selectedDocumentName={parsedLeaseData?.leaseName || leaseDetails?.lease || "Lease"}
+                  disabled={!leaseDetails}
+                  buttonClassName="qai-header-icon-button"
+                  iconClassName="qai-header-icon qai-docx-icon"
+                />
+                <X
+                  className="qai-header-icon"
+                  onClick={() => navigate("/landing")}
+                />
+              </div>
             </div>
           </div>
 

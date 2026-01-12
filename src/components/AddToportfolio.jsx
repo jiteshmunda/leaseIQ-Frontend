@@ -152,28 +152,94 @@ function AddToportfolio({ show, onClose, onSuccess }) {
   };
 
   const validate = () => {
-    const e = {};
+      const e = {};
 
-    if (useExistingProperty) {
-      if (!form.property_id) e.property_id = "Select property";
-    } else {
-      if (!form.property_name) e.property_name = "Property name required";
+  /* ---------------- PROPERTY ---------------- */
+  if (useExistingProperty) {
+    if (!form.property_id) {
+      e.property_id = "Select property";
+    }
+  } else {
+    const propertyName = String(form.property_name || "").trim();
+
+    if (!propertyName) {
+      e.property_name = "Property name required";
+    } else if (propertyName.length > 30) {
+      e.property_name = "Property name must not exceed 30 characters";
+    } else if (!/^[A-Za-z]/.test(propertyName)) {
+      e.property_name = "Property name must start with a letter";
+    } else if (!/^[A-Za-z0-9 ]+$/.test(propertyName)) {
+      e.property_name =
+        "Property name can contain only letters, numbers, and spaces";
     }
 
-    if (useExistingTenant) {
-      if (!tenantId) e.tenant_id = "Select tenant";
-    } else {
-      if (!form.tenant_name) e.tenant_name = "Tenant name required";
+    const address = String(form.address || "").trim();
+    if (!address) {
+      e.address = "Address is required";
+    } else if (address.length > 60) {
+      e.address = "Address must not exceed 60 characters";
+    } else if (!/^[A-Za-z0-9 ,.-]+$/.test(address)) {
+      e.address =
+        "Address can contain only letters, numbers, commas, dots and hyphens";
     }
+  }
 
-    if (!form.unit_number) e.unit_number = "Unit number required";
-    if (form.square_ft !== "" && form.square_ft !== null && form.square_ft !== undefined) {
-      if (Number(form.square_ft) <= 0) e.square_ft = "Sqft must be greater than 0";
+  /* ---------------- TENANT ---------------- */
+  if (useExistingTenant) {
+    if (!tenantId) {
+      e.tenant_id = "Select tenant";
     }
+  } else {
+    const tenantName = String(form.tenant_name || "").trim();
 
-    if (form.monthly_rent !== "" && form.monthly_rent !== null && form.monthly_rent !== undefined) {
-      if (Number(form.monthly_rent) <= 0) e.monthly_rent = "Rent must be greater than 0";
+    if (!tenantName) {
+      e.tenant_name = "Tenant name required";
+    } else if (tenantName.length > 30) {
+      e.tenant_name = "Tenant name must not exceed 30 characters";
+    } else if (!/^[A-Za-z]/.test(tenantName)) {
+      e.tenant_name = "Tenant name must start with a letter";
+    } else if (!/^[A-Za-z ]+$/.test(tenantName)) {
+      e.tenant_name = "Tenant name can contain only letters and spaces";
     }
+  }
+
+  /* ---------------- UNIT NUMBER ---------------- */
+  const unitNumber = String(form.unit_number || "").trim();
+
+  if (!unitNumber) {
+    e.unit_number = "Unit number required";
+  } else if (unitNumber.length > 15) {
+    e.unit_number = "Unit number must not exceed 15 characters";
+  } else if (!/^[A-Za-z0-9]/.test(unitNumber)) {
+    e.unit_number = "Unit number must start with a letter or number";
+  } else if (!/^[A-Za-z0-9-]+$/.test(unitNumber)) {
+    e.unit_number =
+      "Unit number can contain only letters, numbers, and hyphens";
+  }
+
+  /* ---------------- SQUARE FEET (OPTIONAL) ---------------- */
+  const sqft = String(form.square_ft ?? "").trim();
+  if (sqft) {
+    if (!/^\d+$/.test(sqft)) {
+      e.square_ft = "Square feet must contain only numbers";
+    } else if (sqft.length > 7) {
+      e.square_ft = "Square feet value is too large";
+    } else if (Number(sqft) <= 0) {
+      e.square_ft = "Square feet must be greater than 0";
+    }
+  }
+
+  /* ---------------- MONTHLY RENT (OPTIONAL) ---------------- */
+  const rent = String(form.monthly_rent ?? "").trim();
+  if (rent) {
+    if (!/^\d+$/.test(rent)) {
+      e.monthly_rent = "Monthly rent must contain only numbers";
+    } else if (rent.length > 9) {
+      e.monthly_rent = "Monthly rent value is too large";
+    } else if (Number(rent) <= 0) {
+      e.monthly_rent = "Monthly rent must be greater than 0";
+    }
+  }
 
     if (!document) e.document = "Upload lease PDF";
 
@@ -283,7 +349,10 @@ function AddToportfolio({ show, onClose, onSuccess }) {
           <Row className="mb-3">
             {/* PROPERTY COLUMN */}
             <Col md={6}>
-              <h6>Property</h6>
+              <h6>
+                Property
+                <span className="required-star">*</span>
+              </h6>
 
               <Form.Check
                 className="mb-2"
@@ -297,7 +366,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
                   name="property_id"
                   value={form.property_id}
                   onChange={handleChange}
-                  isInvalid={submitAttempted && errors.property_id}
+                  isInvalid={submitAttempted && !!errors.property_id}
                 >
                   <option value="">Select Property</option>
                   {properties.map((p) => (
@@ -314,27 +383,34 @@ function AddToportfolio({ show, onClose, onSuccess }) {
                     value={form.property_name}
                     placeholder="Property name"
                     onChange={handleChange}
-                    isInvalid={submitAttempted && errors.property_name}
+                    isInvalid={submitAttempted && !!errors.property_name}
                     disabled={loading}
                   />
+                  {submitAttempted && errors.property_name && (
+                    <Form.Text className="text-danger">{errors.property_name}</Form.Text>
+                  )}
+
                   <Form.Control
                     name="address"
                     value={form.address}
                     placeholder="Address"
                     onChange={handleChange}
-                    isInvalid={submitAttempted && errors.address}
+                    isInvalid={submitAttempted && !!errors.address}
                     disabled={loading}
                   />
+                  {submitAttempted && errors.address && (
+                    <Form.Text className="text-danger">{errors.address}</Form.Text>
+                  )}
                 </>
-              )}
-              {submitAttempted && errors.property_id && (
-                <Form.Text className="text-danger">{errors.property_id}</Form.Text>
               )}
             </Col>
 
             {/* TENANT COLUMN */}
             <Col md={6}>
-              <h6>Tenant</h6>
+              <h6>
+                Tenant
+                <span className="required-star">*</span>
+              </h6>
 
               <Form.Check
                 className="mb-2"
@@ -382,7 +458,10 @@ function AddToportfolio({ show, onClose, onSuccess }) {
           {/* UNIT DETAILS */}
           <Row className="mb-3">
             <Col>
-            <h6>Unit</h6>
+            <h6>
+              Unit
+              <span className="required-star">*</span>
+            </h6>
               <Form.Control 
                 name="unit_number"
                 value={form.unit_number}
@@ -397,12 +476,13 @@ function AddToportfolio({ show, onClose, onSuccess }) {
             </Col>
             <Col>
             <h6>Square Feet</h6>
-              <Form.Control 
-                type="number" 
+              <Form.Control
+                type="number"
                 name="square_ft"
                 value={form.square_ft}
-                placeholder="Square Feet" 
+                placeholder="Square Feet"
                 onChange={handleChange}
+                onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '')} 
                 isInvalid={submitAttempted && errors.square_ft}
                 disabled={loading}
               />
@@ -412,12 +492,15 @@ function AddToportfolio({ show, onClose, onSuccess }) {
             </Col>
             <Col>
             <h6>Monthly Rent</h6>
-              <Form.Control 
-                type="number" 
+              <Form.Control
+                type="number"
                 name="monthly_rent"
                 value={form.monthly_rent}
-                placeholder="Monthly Rent" 
+                placeholder="Monthly Rent"
                 onChange={handleChange}
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/\D/g, '');
+                }}
                 isInvalid={submitAttempted && errors.monthly_rent}
                 disabled={loading}
               />

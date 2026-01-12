@@ -16,6 +16,11 @@
   border-radius: 8px;
   padding: 10px 12px;
 }
+.required-star {
+  color: #dc3545; /* Bootstrap danger red */
+  margin-left: 4px;
+}
+
 
 .add-unit-card .form-control:focus {
   box-shadow: none;
