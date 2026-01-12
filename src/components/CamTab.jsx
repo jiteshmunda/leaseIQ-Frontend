@@ -287,7 +287,7 @@ const CamTab = ({ camData, loading, onEditRule }) => {
 
                               <div className="cam-detail-section">
                                 <h4>Tenant Impact</h4>
-                                <p>{rule.tenantImpact}</p>
+                                <p className="cam-tenant-impact">{rule.tenantImpact}</p>
                               </div>
 
                               {rule.updateHistory && rule.updateHistory.length > 0 && (

@@ -1,7 +1,13 @@
 import React from "react";
-import { FiChevronDown } from "react-icons/fi";
+import { FiChevronDown, FiExternalLink, FiFileText } from "react-icons/fi";
 import "../styles/RentSchedulesTab.css";
 import FieldWithTooltip from "./Fieldwithamendments";
+import {
+  canNavigateToCitation,
+  getCitationDisplayText,
+  openPdfWithCitation,
+} from "../service/citationUtils";
+import { showError } from "../service/toast";
 const hasAmendments = (field) =>
   !!(
     field &&
@@ -21,7 +27,7 @@ const formatAmendmentsLabel = (filename, contextLabel) => {
   return `${base} — ${ctx}`;
 };
 
-const renderAmendments = (field, label, filename) => {
+const renderAmendments = (field, label, filename, renderCitationTag) => {
   if (!field || !Array.isArray(field.amendments) || !field.amendments.length) {
     return null;
   }
@@ -58,8 +64,14 @@ const renderAmendments = (field, label, filename) => {
             )}
             {am?.amendment_citation && (
               <div>
-                <strong>Citation: </strong>
-                {am.amendment_citation}
+                {renderCitationTag
+                  ? renderCitationTag(am.amendment_citation, null, "small")
+                  : (
+                    <>
+                      <strong>Citation: </strong>
+                      {am.amendment_citation}
+                    </>
+                  )}
               </div>
             )}
             {am?.description && (
@@ -75,7 +87,7 @@ const renderAmendments = (field, label, filename) => {
   );
 };
 
-const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
+const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId }) => {
   const getFieldCitation = (field) => {
     if (!field || typeof field !== "object") return "";
     if (typeof field.citation === "string") return field.citation;
@@ -83,6 +95,52 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
       if (typeof field.citation.value === "string") return field.citation.value;
     }
     return "";
+  };
+
+  const handleCitationClick = async (citation) => {
+    if (!documentId) {
+      showError("Document not available for citation navigation");
+      return;
+    }
+
+    try {
+      await openPdfWithCitation(documentId, citation);
+    } catch (err) {
+      console.error("Failed to open citation:", err);
+      showError("Failed to open PDF. Please try again.");
+    }
+  };
+
+  const renderCitationTag = (citation, field, size) => {
+    if (!citation) return null;
+
+    const citationObj = field?.citation || citation;
+    const displayText = getCitationDisplayText(citationObj) || citation;
+    const isNavigable = documentId && canNavigateToCitation(citationObj);
+
+    const sizeClass = size === "small" ? " small" : "";
+
+    if (isNavigable) {
+      return (
+        <button
+          type="button"
+          className={`provision-citation-tag provision-citation-clickable${sizeClass}`}
+          onClick={() => handleCitationClick(citationObj)}
+          title="Click to view in PDF"
+        >
+          <FiFileText className="provision-citation-icon" />
+          <span className="provision-citation-text">{displayText}</span>
+          <FiExternalLink className="provision-citation-link-icon" size={12} />
+        </button>
+      );
+    }
+
+    return (
+      <div className={`provision-citation-tag${sizeClass}`}>
+        <FiFileText className="provision-citation-icon" />
+        <span className="provision-citation-text">{displayText}</span>
+      </div>
+    );
   };
 
   const renderField = (field, fallback = "-") => {
@@ -97,7 +155,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
         ) : (
           <div>{value}</div>
         )}
-        {citation ? <span className="citation">Citation : {citation}</span> : null}
+        {citation ? renderCitationTag(citation, field, "small") : null}
       </>
     );
   };
@@ -132,12 +190,19 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
                 />
               </label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.calculationType) || "N/A"}</p>
-              {getFieldCitation(chargeSchedules?.lateFee?.calculationType) ? (
-                <span className="citation">
-                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.calculationType)}
-                </span>
-              ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.calculationType, undefined, filename)}
+              {getFieldCitation(chargeSchedules?.lateFee?.calculationType)
+                ? renderCitationTag(
+                    getFieldCitation(chargeSchedules?.lateFee?.calculationType),
+                    chargeSchedules?.lateFee?.calculationType,
+                    "small"
+                  )
+                : null}
+              {renderAmendments(
+                chargeSchedules?.lateFee?.calculationType,
+                undefined,
+                filename,
+                renderCitationTag
+              )}
             </div>
 
             <div
@@ -155,12 +220,19 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
                 />
               </label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.graceDays) || "N/A"}</p>
-              {getFieldCitation(chargeSchedules?.lateFee?.graceDays) ? (
-                <span className="citation">
-                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.graceDays)}
-                </span>
-              ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.graceDays, undefined, filename)}
+              {getFieldCitation(chargeSchedules?.lateFee?.graceDays)
+                ? renderCitationTag(
+                    getFieldCitation(chargeSchedules?.lateFee?.graceDays),
+                    chargeSchedules?.lateFee?.graceDays,
+                    "small"
+                  )
+                : null}
+              {renderAmendments(
+                chargeSchedules?.lateFee?.graceDays,
+                undefined,
+                filename,
+                renderCitationTag
+              )}
             </div>
 
             <div
@@ -178,12 +250,19 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
                 />
               </label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.percent) || "N/A"}</p>
-              {getFieldCitation(chargeSchedules?.lateFee?.percent) ? (
-                <span className="citation">
-                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.percent)}
-                </span>
-              ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.percent, undefined, filename)}
+              {getFieldCitation(chargeSchedules?.lateFee?.percent)
+                ? renderCitationTag(
+                    getFieldCitation(chargeSchedules?.lateFee?.percent),
+                    chargeSchedules?.lateFee?.percent,
+                    "small"
+                  )
+                : null}
+              {renderAmendments(
+                chargeSchedules?.lateFee?.percent,
+                undefined,
+                filename,
+                renderCitationTag
+              )}
             </div>
 
             <div
@@ -207,12 +286,19 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
                   chargeSchedules?.lateFee?.secondFeeCalculationType
                 ) || "N/A"}
               </p>
-              {getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType) ? (
-                <span className="citation">
-                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType)}
-                </span>
-              ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.secondFeeCalculationType, undefined, filename)}
+              {getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType)
+                ? renderCitationTag(
+                    getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType),
+                    chargeSchedules?.lateFee?.secondFeeCalculationType,
+                    "small"
+                  )
+                : null}
+              {renderAmendments(
+                chargeSchedules?.lateFee?.secondFeeCalculationType,
+                undefined,
+                filename,
+                renderCitationTag
+              )}
             </div>
 
             <div
@@ -235,12 +321,19 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
                 {getFieldValue(chargeSchedules?.lateFee?.secondFeeGrace) ||
                   "N/A"}
               </p>
-              {getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace) ? (
-                <span className="citation">
-                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace)}
-                </span>
-              ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.secondFeeGrace, undefined, filename)}
+              {getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace)
+                ? renderCitationTag(
+                    getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace),
+                    chargeSchedules?.lateFee?.secondFeeGrace,
+                    "small"
+                  )
+                : null}
+              {renderAmendments(
+                chargeSchedules?.lateFee?.secondFeeGrace,
+                undefined,
+                filename,
+                renderCitationTag
+              )}
             </div>
 
             <div
@@ -263,12 +356,19 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
                 {getFieldValue(chargeSchedules?.lateFee?.secondFeePercent) ||
                   "N/A"}
               </p>
-              {getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent) ? (
-                <span className="citation">
-                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent)}
-                </span>
-              ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.secondFeePercent, undefined, filename)}
+              {getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent)
+                ? renderCitationTag(
+                    getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent),
+                    chargeSchedules?.lateFee?.secondFeePercent,
+                    "small"
+                  )
+                : null}
+              {renderAmendments(
+                chargeSchedules?.lateFee?.secondFeePercent,
+                undefined,
+                filename,
+                renderCitationTag
+              )}
             </div>
 
             <div
@@ -286,12 +386,19 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
                 />
               </label>
               <p>{getFieldValue(chargeSchedules?.lateFee?.perDayFee) || "N/A"}</p>
-              {getFieldCitation(chargeSchedules?.lateFee?.perDayFee) ? (
-                <span className="citation">
-                  Citation : {getFieldCitation(chargeSchedules?.lateFee?.perDayFee)}
-                </span>
-              ) : null}
-              {renderAmendments(chargeSchedules?.lateFee?.perDayFee, undefined, filename)}
+              {getFieldCitation(chargeSchedules?.lateFee?.perDayFee)
+                ? renderCitationTag(
+                    getFieldCitation(chargeSchedules?.lateFee?.perDayFee),
+                    chargeSchedules?.lateFee?.perDayFee,
+                    "small"
+                  )
+                : null}
+              {renderAmendments(
+                chargeSchedules?.lateFee?.perDayFee,
+                undefined,
+                filename,
+                renderCitationTag
+              )}
             </div>
           </div>
         </div>
@@ -346,14 +453,14 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename }) => {
                             <summary className="amendments-summary">
                               Amendments
                             </summary>
-                            {renderAmendments(item, undefined, filename)}
-                            {renderAmendments(item?.period, undefined, filename)}
-                            {renderAmendments(item?.dateFrom, undefined, filename)}
-                            {renderAmendments(item?.dateTo, undefined, filename)}
-                            {renderAmendments(item?.monthlyAmount, undefined, filename)}
-                            {renderAmendments(item?.annualAmount, undefined, filename)}
-                            {renderAmendments(item?.areaRentable, undefined, filename)}
-                            {renderAmendments(item?.amountPerArea, undefined, filename)}
+                            {renderAmendments(item, undefined, filename, renderCitationTag)}
+                            {renderAmendments(item?.period, undefined, filename, renderCitationTag)}
+                            {renderAmendments(item?.dateFrom, undefined, filename, renderCitationTag)}
+                            {renderAmendments(item?.dateTo, undefined, filename, renderCitationTag)}
+                            {renderAmendments(item?.monthlyAmount, undefined, filename, renderCitationTag)}
+                            {renderAmendments(item?.annualAmount, undefined, filename, renderCitationTag)}
+                            {renderAmendments(item?.areaRentable, undefined, filename, renderCitationTag)}
+                            {renderAmendments(item?.amountPerArea, undefined, filename, renderCitationTag)}
                           </details>
                         </td>
                       </tr>

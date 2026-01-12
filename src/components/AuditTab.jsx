@@ -1,25 +1,26 @@
 import { useState } from "react";
-import { FiChevronRight, FiFileText, FiAlertTriangle, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import {
+  FiChevronRight,
+  FiFileText,
+  FiAlertTriangle,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiExternalLink,
+} from "react-icons/fi";
+import {
+  openPdfWithCitation,
+  canNavigateToCitation,
+  getCitationDisplayText,
+} from "../service/citationUtils";
+import { showError } from "../service/toast";
 
-const AuditTab = ({ audit, risks = [] }) => {
+const AuditTab = ({ audit, risks = [], documentId }) => {
   const [expandedIndexes, setExpandedIndexes] = useState([]);
 
   const isPlainObject = (value) =>
     value != null &&
     typeof value === "object" &&
     !Array.isArray(value);
-
-  const isPrimitive = (value) => {
-    const t = typeof value;
-    return value == null || t === "string" || t === "number" || t === "boolean";
-  };
-
-  const labelizeKey = (key) =>
-    String(key ?? "")
-      .replace(/[_-]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim()
-      .replace(/\b\w/g, (c) => c.toUpperCase());
 
   const resolveAuditObject = (value) => {
     if (Array.isArray(value)) return { audit_items: value };
@@ -139,7 +140,21 @@ const AuditTab = ({ audit, risks = [] }) => {
     return null;
   };
 
-  // Render citation tag (similar to provisions)
+  const handleCitationClick = async (citationObj) => {
+    if (!documentId) {
+      showError("Document not available for citation navigation");
+      return;
+    }
+
+    try {
+      await openPdfWithCitation(documentId, citationObj);
+    } catch (err) {
+      console.error("Failed to open citation:", err);
+      showError("Failed to open PDF. Please try again.");
+    }
+  };
+
+  // Render citation tag (same UI/behavior as other tabs)
   const renderCitationTag = (pages, citation) => {
     if (!pages && !citation) return null;
 
@@ -147,10 +162,31 @@ const AuditTab = ({ audit, risks = [] }) => {
     if (citation) parts.push(citation);
     if (pages) parts.push(`Page ${pages.join(", ")}`);
 
+    // Use a single citation payload so citationUtils can parse it.
+    // If it contains "Page X", citationUtils can navigate.
+    const citationPayload = parts.join(" • ");
+    const displayText = getCitationDisplayText(citationPayload) || citationPayload;
+    const isNavigable = documentId && canNavigateToCitation(citationPayload);
+
+    if (isNavigable) {
+      return (
+        <button
+          type="button"
+          className="provision-citation-tag provision-citation-clickable"
+          onClick={() => handleCitationClick(citationPayload)}
+          title="Click to view in PDF"
+        >
+          <FiFileText className="provision-citation-icon" />
+          <span className="provision-citation-text">{displayText}</span>
+          <FiExternalLink className="provision-citation-link-icon" size={12} />
+        </button>
+      );
+    }
+
     return (
-      <div className="audit-citation-tag">
-        <FiFileText className="audit-citation-icon" />
-        <span className="audit-citation-text">{parts.join(" • ")}</span>
+      <div className="provision-citation-tag">
+        <FiFileText className="provision-citation-icon" />
+        <span className="provision-citation-text">{displayText}</span>
       </div>
     );
   };

@@ -1,42 +1,4 @@
-function pemToArrayBuffer(publicKeyPem) {
-  if (!publicKeyPem || typeof publicKeyPem !== "string") {
-    throw new Error("Public key is missing");
-  }
 
-  const b64 = publicKeyPem
-    .replace(/-----BEGIN PUBLIC KEY-----/g, "")
-    .replace(/-----END PUBLIC KEY-----/g, "")
-    .replace(/\s+/g, "");
-
-  if (!b64) {
-    throw new Error(
-      "Invalid public key format. Expected PEM with BEGIN PUBLIC KEY header."
-    );
-  }
-
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i += 1) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
-
-async function importRsaPublicKey(publicKeyPem) {
-  if (!globalThis.crypto?.subtle) {
-    throw new Error("Web Crypto API is not available in this browser/context");
-  }
-
-  const keyData = pemToArrayBuffer(publicKeyPem);
-
-  return globalThis.crypto.subtle.importKey(
-    "spki",
-    keyData,
-    { name: "RSA-OAEP", hash: "SHA-256" },
-    false,
-    ["encrypt"]
-  );
-}
 
 function arrayBufferToBase64(buf) {
   const bytes = new Uint8Array(buf);
@@ -47,13 +9,83 @@ function arrayBufferToBase64(buf) {
   return btoa(binary);
 }
 
-export async function encryptPassword(password, publicKeyPem) {
-  const key = await importRsaPublicKey(publicKeyPem);
+function base64ToUint8Array(b64) {
+  if (typeof b64 !== "string" || !b64.trim()) {
+    throw new Error("Encryption key is missing");
+  }
+  const normalized = b64.trim();
+  const binary = atob(normalized);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function getConfiguredAesKeyBase64() {
+  try {
+    return (
+      import.meta.env.VITE_AUTH_KEY
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+async function encryptPasswordAesGcm(password, aesKeyBase64) {
+  if (!globalThis.crypto?.subtle) {
+    throw new Error("Web Crypto API is not available in this browser/context");
+  }
+
+  const keyBytes = base64ToUint8Array(aesKeyBase64);
+  if (keyBytes.byteLength !== 32) {
+    throw new Error(
+      `Invalid AES key length: expected 32 bytes for aes-256-gcm, got ${keyBytes.byteLength}`
+    );
+  }
+
+  const key = await globalThis.crypto.subtle.importKey(
+    "raw",
+    keyBytes,
+    { name: "AES-GCM" },
+    false,
+    ["encrypt"]
+  );
+
+  const iv = new Uint8Array(12);
+  globalThis.crypto.getRandomValues(iv);
+
   const encoded = new TextEncoder().encode(password);
-  const ciphertext = await globalThis.crypto.subtle.encrypt(
-    { name: "RSA-OAEP" },
+  const cipherWithTagBuf = await globalThis.crypto.subtle.encrypt(
+    { name: "AES-GCM", iv, tagLength: 128 },
     key,
     encoded
   );
-  return arrayBufferToBase64(ciphertext);
+  const cipherWithTag = new Uint8Array(cipherWithTagBuf);
+  const tagLengthBytes = 16;
+  if (cipherWithTag.length < tagLengthBytes) {
+    throw new Error("Encryption failed: missing auth tag");
+  }
+
+
+  const ciphertext = cipherWithTag.slice(0, cipherWithTag.length - tagLengthBytes);
+  const authTag = cipherWithTag.slice(cipherWithTag.length - tagLengthBytes);
+  const combined = new Uint8Array(iv.length + authTag.length + ciphertext.length);
+  combined.set(iv, 0);
+  combined.set(authTag, iv.length);
+  combined.set(ciphertext, iv.length + authTag.length);
+
+  return arrayBufferToBase64(combined.buffer);
+}
+
+export async function encryptPassword(password, publicKeyPem) {
+  const normalizedPassword = typeof password === "string" ? password : "";
+  void publicKeyPem;
+
+  const aesKeyBase64 = getConfiguredAesKeyBase64();
+  if (aesKeyBase64) {
+    return encryptPasswordAesGcm(normalizedPassword, aesKeyBase64);
+  }
+
+  return normalizedPassword;
 }

@@ -1,4 +1,7 @@
 import React from "react";
+import { FiFileText, FiExternalLink } from "react-icons/fi";
+import { openPdfWithCitation, canNavigateToCitation, getCitationDisplayText } from "../service/citationUtils";
+import { showError } from "../service/toast";
 import FieldWithTooltip from "./Fieldwithamendments";
 
 const getFieldCitation = (field) => {
@@ -25,40 +28,95 @@ const formatAmendmentsLabel = (filename) => {
   return trimmed.replace(/\.[^.]+$/i, "");
 };
 
-const renderAmendments = (field, filename) => {
-  if (!field || !Array.isArray(field.amendments) || !field.amendments.length) {
-    return null;
-  }
-
-  return (
-    <div className="amendments-block">
-      <span className="amendments-label">{formatAmendmentsLabel(filename)}</span>
-      <ul className="amendments-list">
-        {field.amendments.map((am, idx) => (
-          <li key={idx}>
-            {am?.effective_date ? <strong>{am.effective_date}: </strong> : null}
-            {am?.description || (
-              <span>
-                {am?.previous_value && (
-                  <span>
-                    Previous: {am.previous_value}{" "}
-                  </span>
-                )}
-                {am?.new_value && <span>New: {am.new_value}</span>}
-              </span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
+const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename, documentId }) => {
   const parkingSpacesField =
     spaceInfo?.parking?.value && typeof spaceInfo.parking.value === "object"
       ? spaceInfo.parking.value
       : spaceInfo?.parking;
+
+  // Handle citation click to open PDF viewer
+  const handleCitationClick = async (citation) => {
+    if (!documentId) {
+      showError("Document not available for citation navigation");
+      return;
+    }
+
+    try {
+      await openPdfWithCitation(documentId, citation);
+    } catch (err) {
+      console.error("Failed to open citation:", err);
+      showError("Failed to open PDF. Please try again.");
+    }
+  };
+
+  // Enhanced citation tag component - now clickable
+  const renderCitationTag = (citation, field, size) => {
+    if (!citation) return null;
+    
+    // Get the full citation object if available (for structured citations)
+    const citationObj = field?.citation || citation;
+    const displayText = getCitationDisplayText(citationObj) || citation;
+    const isNavigable = documentId && canNavigateToCitation(citationObj);
+    
+    const sizeClass = size === "small" ? " small" : "";
+    
+    if (isNavigable) {
+      return (
+        <button
+          type="button"
+          className={`provision-citation-tag provision-citation-clickable${sizeClass}`}
+          onClick={() => handleCitationClick(citationObj)}
+          title="Click to view in PDF"
+        >
+          <FiFileText className="provision-citation-icon" />
+          <span className="provision-citation-text">{displayText}</span>
+          <FiExternalLink className="provision-citation-link-icon" size={12} />
+        </button>
+      );
+    }
+    
+    return (
+      <div className={`provision-citation-tag${sizeClass}`}>
+        <FiFileText className="provision-citation-icon" />
+        <span className="provision-citation-text">{displayText}</span>
+      </div>
+    );
+  };
+
+  // Render amendments with citation support
+  const renderAmendments = (field, filename) => {
+    if (!field || !Array.isArray(field.amendments) || !field.amendments.length) {
+      return null;
+    }
+
+    return (
+      <div className="amendments-block">
+        <span className="amendments-label">{formatAmendmentsLabel(filename)}</span>
+        <ul className="amendments-list">
+          {field.amendments.map((am, idx) => (
+            <li key={idx}>
+              {am?.effective_date ? <strong>{am.effective_date}: </strong> : null}
+              {am?.description || (
+                <span>
+                  {am?.previous_value && (
+                    <span>
+                      Previous: {am.previous_value}{" "}
+                    </span>
+                  )}
+                  {am?.new_value && <span>New: {am.new_value}</span>}
+                </span>
+              )}
+              {am?.amendment_citation && (
+                <div style={{ marginTop: "4px" }}>
+                  {renderCitationTag(am.amendment_citation, null, "small")}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
 
   return (
     <section className="card">
@@ -79,9 +137,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.premises) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.premises) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.premises)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.premises) && renderCitationTag(getFieldCitation(spaceInfo?.premises), spaceInfo?.premises)}
           {renderAmendments(spaceInfo?.premises, filename)}
         </div>
         <div
@@ -96,9 +152,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.unit) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.unit) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.unit)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.unit) && renderCitationTag(getFieldCitation(spaceInfo?.unit), spaceInfo?.unit)}
           {renderAmendments(spaceInfo?.unit, filename)}
         </div>
         <div
@@ -116,9 +170,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             {getFieldValue(spaceInfo?.building) ||
               leaseMeta?.property?.property_name || "N/A"}
           </p>
-          {getFieldCitation(spaceInfo?.building) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.building)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.building) && renderCitationTag(getFieldCitation(spaceInfo?.building), spaceInfo?.building)}
           {renderAmendments(spaceInfo?.building, filename)}
         </div>
         <div
@@ -133,9 +185,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.floor) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.floor) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.floor)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.floor) && renderCitationTag(getFieldCitation(spaceInfo?.floor), spaceInfo?.floor)}
           {renderAmendments(spaceInfo?.floor, filename)}
         </div>
         <div
@@ -150,9 +200,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.zipCode) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.zipCode) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.zipCode)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.zipCode) && renderCitationTag(getFieldCitation(spaceInfo?.zipCode), spaceInfo?.zipCode)}
           {renderAmendments(spaceInfo?.zipCode, filename)}
         </div>
         <div
@@ -172,9 +220,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
                 ? `${leaseMeta.unit.square_ft} sqft`
                 : "N/A")}
           </p>
-          {getFieldCitation(spaceInfo?.areaRentable) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.areaRentable)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.areaRentable) && renderCitationTag(getFieldCitation(spaceInfo?.areaRentable), spaceInfo?.areaRentable)}
           {renderAmendments(spaceInfo?.areaRentable, filename)}
         </div>
         <div
@@ -189,9 +235,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.areaUsable) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.areaUsable) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.areaUsable)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.areaUsable) && renderCitationTag(getFieldCitation(spaceInfo?.areaUsable), spaceInfo?.areaUsable)}
           {renderAmendments(spaceInfo?.areaUsable, filename)}
         </div>
         <div
@@ -206,9 +250,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.city) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.city) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.city)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.city) && renderCitationTag(getFieldCitation(spaceInfo?.city), spaceInfo?.city)}
           {renderAmendments(spaceInfo?.city, filename)}
         </div>
         <div
@@ -223,9 +265,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.state) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.state) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.state)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.state) && renderCitationTag(getFieldCitation(spaceInfo?.state), spaceInfo?.state)}
           {renderAmendments(spaceInfo?.state, filename)}
         </div>
         <div
@@ -240,9 +280,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.notes) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.notes) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.notes)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.notes) && renderCitationTag(getFieldCitation(spaceInfo?.notes), spaceInfo?.notes)}
           {renderAmendments(spaceInfo?.notes, filename)}
         </div>
         <div
@@ -257,9 +295,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.commonArea) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.commonArea) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.commonArea)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.commonArea) && renderCitationTag(getFieldCitation(spaceInfo?.commonArea), spaceInfo?.commonArea)}
           {renderAmendments(spaceInfo?.commonArea, filename)}
         </div>
         <div
@@ -274,9 +310,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(parkingSpacesField) || "N/A"}</p>
-          {getFieldCitation(parkingSpacesField) ? (
-            <span className="citation">Citation : {getFieldCitation(parkingSpacesField)}</span>
-          ) : null}
+          {getFieldCitation(parkingSpacesField) && renderCitationTag(getFieldCitation(parkingSpacesField), parkingSpacesField)}
           {renderAmendments(parkingSpacesField, filename)}
         </div>
         <div
@@ -291,9 +325,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.parking?.type) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.parking?.type) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.parking?.type)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.parking?.type) && renderCitationTag(getFieldCitation(spaceInfo?.parking?.type), spaceInfo?.parking?.type)}
           {renderAmendments(spaceInfo?.parking?.type, filename)}
         </div>
         <div
@@ -308,9 +340,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.storageArea) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.storageArea) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.storageArea)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.storageArea) && renderCitationTag(getFieldCitation(spaceInfo?.storageArea), spaceInfo?.storageArea)}
           {renderAmendments(spaceInfo?.storageArea, filename)}
         </div>
         <div
@@ -325,9 +355,7 @@ const SpaceTab = ({ leaseMeta, spaceInfo, getFieldValue, filename }) => {
             />
           </label>
           <p>{getFieldValue(spaceInfo?.status) || "N/A"}</p>
-          {getFieldCitation(spaceInfo?.status) ? (
-            <span className="citation">Citation : {getFieldCitation(spaceInfo?.status)}</span>
-          ) : null}
+          {getFieldCitation(spaceInfo?.status) && renderCitationTag(getFieldCitation(spaceInfo?.status), spaceInfo?.status)}
           {renderAmendments(spaceInfo?.status, filename)}
         </div>
       </div>

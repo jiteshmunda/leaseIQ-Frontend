@@ -47,7 +47,18 @@ function AddToportfolio({ show, onClose, onSuccess }) {
     try {
       // Extract content type and base64 data
       const arr = base64Data.split(',');
-      const mime = arr[0].match(/:(.*?);/)[1];
+      if (arr.length < 2) {
+        console.error("Invalid base64 format: missing comma separator");
+        return null;
+      }
+      
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      if (!mimeMatch || !mimeMatch[1]) {
+        console.error("Invalid base64 format: missing MIME type");
+        return null;
+      }
+      
+      const mime = mimeMatch[1];
       const bstr = atob(arr[1]);
       let n = bstr.length;
       const u8arr = new Uint8Array(n);
@@ -85,8 +96,6 @@ function AddToportfolio({ show, onClose, onSuccess }) {
     if (!show) return;
 
     const loadStoredDocument = async () => {
-      if (document) return;
-
       const uploaded = getStoredLeaseData().uploadedFile;
 
       // Preferred path: IndexedDB
@@ -130,7 +139,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
     api.get(`${BASE_URL}/api/tenants`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(res => setTenants(res.data.data || []));
-  }, [show, token, document, getStoredLeaseData]);
+  }, [show, token, getStoredLeaseData]);
 
   useEffect(() => {
     if (!show) resetState();
@@ -302,6 +311,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
                   <Form.Control
                     className="mb-2"
                     name="property_name"
+                    value={form.property_name}
                     placeholder="Property name"
                     onChange={handleChange}
                     isInvalid={submitAttempted && errors.property_name}
@@ -309,6 +319,7 @@ function AddToportfolio({ show, onClose, onSuccess }) {
                   />
                   <Form.Control
                     name="address"
+                    value={form.address}
                     placeholder="Address"
                     onChange={handleChange}
                     isInvalid={submitAttempted && errors.address}
@@ -373,7 +384,8 @@ function AddToportfolio({ show, onClose, onSuccess }) {
             <Col>
             <h6>Unit</h6>
               <Form.Control 
-                name="unit_number" 
+                name="unit_number"
+                value={form.unit_number}
                 placeholder="Unit No" 
                 onChange={handleChange}
                 isInvalid={submitAttempted && errors.unit_number}
@@ -387,7 +399,8 @@ function AddToportfolio({ show, onClose, onSuccess }) {
             <h6>Square Feet</h6>
               <Form.Control 
                 type="number" 
-                name="square_ft" 
+                name="square_ft"
+                value={form.square_ft}
                 placeholder="Square Feet" 
                 onChange={handleChange}
                 isInvalid={submitAttempted && errors.square_ft}
@@ -401,7 +414,8 @@ function AddToportfolio({ show, onClose, onSuccess }) {
             <h6>Monthly Rent</h6>
               <Form.Control 
                 type="number" 
-                name="monthly_rent" 
+                name="monthly_rent"
+                value={form.monthly_rent}
                 placeholder="Monthly Rent" 
                 onChange={handleChange}
                 isInvalid={submitAttempted && errors.monthly_rent}

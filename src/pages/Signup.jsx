@@ -8,7 +8,6 @@ import { showError, showSuccess } from "../service/toast";
 import "../styles/signup.css";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const AUTH_PUBLIC_KEY = import.meta.env.VITE_AUTH_PUBLIC_KEY; 
 
 function Signup() {
   const navigate = useNavigate();
@@ -65,17 +64,14 @@ function Signup() {
       setLoading(true);
 
       const isIndividual = formData.org_option === "individual";
-      const encryptedPassword = await encryptPassword(
-              formData.password,
-              AUTH_PUBLIC_KEY
-            );
+      const passwordPayload = await encryptPassword(formData.password);
 
       if (isIndividual) {
         const payload = {
           name: formData.name,
           email: formData.email,
           username: formData.username,
-          password: encryptedPassword,
+          password: passwordPayload,
         };
         await axios.post(`${BASE_URL}/api/auth/signup`, payload);
       } else {
@@ -83,7 +79,7 @@ function Signup() {
         const payload = {
           name: formData.name,
           email: formData.email,
-          password: formData.password,
+          password: passwordPayload,
           org_option: formData.org_option,
           org_name: formData.org_name,
         };

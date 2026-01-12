@@ -26,7 +26,7 @@ const ProvisionsTab = ({
   onEditCategory,
   leaseDetails,
   onUpdateLeaseDetails,
-  filename,
+  filename, // eslint-disable-line no-unused-vars
   documentId,
 }) => {
   const [editing, setEditing] = useState(null);
@@ -236,16 +236,10 @@ const ProvisionsTab = ({
 
   const isAccordionOpen = (key) => openAccordions.has(key);
 
-  const formatAmendmentsLabel = (name) => {
-    if (typeof name !== "string") return "";
-    return name.replace(/\.[^.]+$/i, "").trim();
-  };
-
   // Enhanced amendment rendering with timeline visualization
   const renderAmendmentsTimeline = (field) => {
     if (!hasAmendments(field)) return null;
 
-    const label = formatAmendmentsLabel(filename) || "Amendments";
     const amendments = field.amendments;
 
     return (
@@ -526,7 +520,7 @@ const ProvisionsTab = ({
                           ) : (
                             <>
                               <div className="provision-text-content">
-                                <p className="provision-description">{item.display}</p>
+                                <div className="provision-description">{item.display}</div>
                                 {item.canEdit && (
                                   <button
                                     type="button"

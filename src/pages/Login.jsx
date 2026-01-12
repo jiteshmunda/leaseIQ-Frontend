@@ -8,7 +8,7 @@ import { showError, showSuccess } from "../service/toast";
 import { encryptPassword } from "../service/encryption";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const AUTH_PUBLIC_KEY = import.meta.env.VITE_AUTH_PUBLIC_KEY;
+const AUTH_KEY = import.meta.env.VITE_AUTH_KEY;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -43,17 +43,14 @@ const Login = () => {
       const identifier = formData.identifier.trim();
       const isEmail = /@/.test(identifier);
 
-      const encryptedPassword = await encryptPassword(
-        formData.password,
-        AUTH_PUBLIC_KEY
-      );
+      const passwordPayload = await encryptPassword(formData.password);
 
       const res = await axios.post(
         `${BASE_URL}/api/auth/login`,
         {
           ...(isEmail ? { email: identifier } : { username: identifier }),
-          password: encryptedPassword,
-          passwordEncrypted: true,
+          password: passwordPayload,
+          passwordEncrypted: Boolean(AUTH_KEY),
           /* org_name: formData.org_name */ // Disabled in API payload
         },
         {

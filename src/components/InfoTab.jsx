@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
-import { FiEdit } from "react-icons/fi";
+import { FiEdit, FiFileText, FiExternalLink } from "react-icons/fi";
+import { openPdfWithCitation, canNavigateToCitation, getCitationDisplayText } from "../service/citationUtils";
+import { showError } from "../service/toast";
 import FieldWithTooltip from "./Fieldwithamendments";
 
 const getFieldCitation = (field) => {
@@ -26,35 +28,6 @@ const formatAmendmentsLabel = (filename) => {
   return trimmed.replace(/\.[^.]+$/i, "");
 };
 
-const renderAmendments = (field, filename) => {
-  if (!field || !Array.isArray(field.amendments) || !field.amendments.length) {
-    return null;
-  }
-
-  return (
-    <div className="amendments-block">
-      <span className="amendments-label">{formatAmendmentsLabel(filename)}</span>
-      <ul className="amendments-list">
-        {field.amendments.map((am, idx) => (
-          <li key={idx}>
-            {am?.effective_date ? <strong>{am.effective_date}: </strong> : null}
-            {am?.description || (
-              <span>
-                {am?.previous_value && (
-                  <span>
-                    Previous: {am.previous_value}{" "}
-                  </span>
-                )}
-                {am?.new_value && <span>New: {am.new_value}</span>}
-              </span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
 const InfoTab = ({
   leaseInfo,
   chargeSchedules,
@@ -66,6 +39,7 @@ const InfoTab = ({
   leaseDetails,
   onUpdateLeaseDetails,
   filename,
+  documentId,
 }) => {
   const renderInlineBold = (text) => {
     const source = String(text ?? "");
@@ -378,6 +352,90 @@ const InfoTab = ({
     setIsEditingSummary(false);
   };
 
+  // Handle citation click to open PDF viewer
+  const handleCitationClick = async (citation) => {
+    if (!documentId) {
+      showError("Document not available for citation navigation");
+      return;
+    }
+
+    try {
+      await openPdfWithCitation(documentId, citation);
+    } catch (err) {
+      console.error("Failed to open citation:", err);
+      showError("Failed to open PDF. Please try again.");
+    }
+  };
+
+  // Enhanced citation tag component - now clickable
+  const renderCitationTag = (citation, field, size) => {
+    if (!citation) return null;
+    
+    // Get the full citation object if available (for structured citations)
+    const citationObj = field?.citation || citation;
+    const displayText = getCitationDisplayText(citationObj) || citation;
+    const isNavigable = documentId && canNavigateToCitation(citationObj);
+    
+    const sizeClass = size === "small" ? " small" : "";
+    
+    if (isNavigable) {
+      return (
+        <button
+          type="button"
+          className={`provision-citation-tag provision-citation-clickable${sizeClass}`}
+          onClick={() => handleCitationClick(citationObj)}
+          title="Click to view in PDF"
+        >
+          <FiFileText className="provision-citation-icon" />
+          <span className="provision-citation-text">{displayText}</span>
+          <FiExternalLink className="provision-citation-link-icon" size={12} />
+        </button>
+      );
+    }
+    
+    return (
+      <div className={`provision-citation-tag${sizeClass}`}>
+        <FiFileText className="provision-citation-icon" />
+        <span className="provision-citation-text">{displayText}</span>
+      </div>
+    );
+  };
+
+  // Render amendments with citation support
+  const renderAmendments = (field, filename) => {
+    if (!field || !Array.isArray(field.amendments) || !field.amendments.length) {
+      return null;
+    }
+
+    return (
+      <div className="amendments-block">
+        <span className="amendments-label">{formatAmendmentsLabel(filename)}</span>
+        <ul className="amendments-list">
+          {field.amendments.map((am, idx) => (
+            <li key={idx}>
+              {am?.effective_date ? <strong>{am.effective_date}: </strong> : null}
+              {am?.description || (
+                <span>
+                  {am?.previous_value && (
+                    <span>
+                      Previous: {am.previous_value}{" "}
+                    </span>
+                  )}
+                  {am?.new_value && <span>New: {am.new_value}</span>}
+                </span>
+              )}
+              {am?.amendment_citation && (
+                <div style={{ marginTop: "4px" }}>
+                  {renderCitationTag(am.amendment_citation, null, "small")}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   const leaseInfoSource = leaseDetails?.info?.leaseInformation || leaseInfo || {};
 
   return (
@@ -428,9 +486,7 @@ const InfoTab = ({
             ) : (
               <p>{getFieldValue(leaseInfo?.lease) || "N/A"}</p>
             )}
-            {getFieldCitation(leaseInfoSource?.lease) ? (
-              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.lease)}</span>
-            ) : null}
+            {getFieldCitation(leaseInfoSource?.lease) && renderCitationTag(getFieldCitation(leaseInfoSource?.lease), leaseInfoSource?.lease)}
             {renderAmendments(leaseInfoSource?.lease, filename)}
           </div>
           <div
@@ -456,9 +512,7 @@ const InfoTab = ({
               <p>{getFieldValue(leaseInfo?.property) || "N/A"}</p>
             )}
 
-            {getFieldCitation(leaseInfoSource?.property) ? (
-              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.property)}</span>
-            ) : null}
+            {getFieldCitation(leaseInfoSource?.property) && renderCitationTag(getFieldCitation(leaseInfoSource?.property), leaseInfoSource?.property)}
             {renderAmendments(leaseInfoSource?.property, filename)}
 
           </div>
@@ -485,9 +539,7 @@ const InfoTab = ({
             ) : (
               <p>{getFieldValue(leaseInfo?.leaseFrom) || "N/A"}</p>
             )}
-            {getFieldCitation(leaseInfoSource?.leaseFrom) ? (
-              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.leaseFrom)}</span>
-            ) : null}
+            {getFieldCitation(leaseInfoSource?.leaseFrom) && renderCitationTag(getFieldCitation(leaseInfoSource?.leaseFrom), leaseInfoSource?.leaseFrom)}
             {renderAmendments(leaseInfoSource?.leaseFrom, filename)}
           </div>
           <div
@@ -512,9 +564,7 @@ const InfoTab = ({
             ) : (
               <p>{getFieldValue(leaseInfo?.leaseTo) || "N/A"}</p>
             )}
-            {getFieldCitation(leaseInfoSource?.leaseTo) ? (
-              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.leaseTo)}</span>
-            ) : null}
+            {getFieldCitation(leaseInfoSource?.leaseTo) && renderCitationTag(getFieldCitation(leaseInfoSource?.leaseTo), leaseInfoSource?.leaseTo)}
             {renderAmendments(leaseInfoSource?.leaseTo, filename)}
           </div>
           <div
@@ -543,9 +593,7 @@ const InfoTab = ({
                   : "N/A"}
               </p>
             )}
-            {getFieldCitation(leaseInfoSource?.squareFeet) ? (
-              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.squareFeet)}</span>
-            ) : null}
+            {getFieldCitation(leaseInfoSource?.squareFeet) && renderCitationTag(getFieldCitation(leaseInfoSource?.squareFeet), leaseInfoSource?.squareFeet)}
             {renderAmendments(leaseInfoSource?.squareFeet, filename)}
           </div>
           <div
@@ -570,9 +618,7 @@ const InfoTab = ({
             ) : (
               <p>{getFieldValue(leaseInfo?.baseRent) || "N/A"}</p>
             )}
-            {getFieldCitation(leaseInfoSource?.baseRent) ? (
-              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.baseRent)}</span>
-            ) : null}
+            {getFieldCitation(leaseInfoSource?.baseRent) && renderCitationTag(getFieldCitation(leaseInfoSource?.baseRent), leaseInfoSource?.baseRent)}
             {renderAmendments(leaseInfoSource?.baseRent, filename)}
           </div>
           <div
@@ -602,9 +648,7 @@ const InfoTab = ({
                   derivedSecurityDeposit || "N/A"}
               </p>
             )}
-            {getFieldCitation(leaseInfoSource?.securityDeposit) ? (
-              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.securityDeposit)}</span>
-            ) : null}
+            {getFieldCitation(leaseInfoSource?.securityDeposit) && renderCitationTag(getFieldCitation(leaseInfoSource?.securityDeposit), leaseInfoSource?.securityDeposit)}
             {renderAmendments(leaseInfoSource?.securityDeposit, filename)}
           </div>
           <div
@@ -631,9 +675,7 @@ const InfoTab = ({
             ) : (
               <p>{getFieldValue(leaseInfo?.renewalOptions) || "N/A"}</p>
             )}
-            {getFieldCitation(leaseInfoSource?.renewalOptions) ? (
-              <span className="citation">Citation : {getFieldCitation(leaseInfoSource?.renewalOptions)}</span>
-            ) : null}
+            {getFieldCitation(leaseInfoSource?.renewalOptions) && renderCitationTag(getFieldCitation(leaseInfoSource?.renewalOptions), leaseInfoSource?.renewalOptions)}
             {renderAmendments(leaseInfoSource?.renewalOptions, filename)}
           </div>
         </div>

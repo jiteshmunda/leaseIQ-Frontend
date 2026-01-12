@@ -404,6 +404,7 @@ const LeaseMainContent = ({
             formatDisplayValue={formatDisplayValue}
             onUpdateLeaseDetails={onUpdateLeaseDetails}
             filename={leaseDetails?.filename}
+            documentId={documentId}
           />
         )}
 
@@ -412,6 +413,7 @@ const LeaseMainContent = ({
             spaceInfo={spaceInfo}
             getFieldValue={getFieldValue}
             filename={leaseDetails?.filename}
+            documentId={documentId}
           />
         )}
 
@@ -420,6 +422,7 @@ const LeaseMainContent = ({
             chargeSchedules={chargeSchedules}
             getFieldValue={getFieldValue}
             filename={leaseDetails?.filename}
+            documentId={documentId}
           />
         )}
 
@@ -435,7 +438,14 @@ const LeaseMainContent = ({
           />
         )}
 
-        {activeTab === "Audit" && <AuditTab audit={auditObject} risks={auditRisks} filename={leaseDetails?.filename} />}
+        {activeTab === "Audit" && (
+          <AuditTab
+            audit={auditObject}
+            risks={auditRisks}
+            filename={leaseDetails?.filename}
+            documentId={documentId}
+          />
+        )}
 
         {activeTab === "CAM" && (
           <>

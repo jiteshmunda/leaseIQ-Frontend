@@ -1502,6 +1502,9 @@ details:not([open]) .accordion-summary::after {
   border-radius: 10px;
   border: 1px solid #e5e7eb;
 }
+.cam-metadata-bar:hover{
+border: 2px solid #0369a1;
+}
 
 .cam-metadata-item {
   color: #4b5563;
@@ -1761,6 +1764,14 @@ details:not([open]) .accordion-summary::after {
   font-style: italic;
   color: #374151 !important;
 }
+.cam-tenant-impact{
+  background: #fff;
+  padding: 1rem;
+  border-radius: 6px;
+  border-left: 3px solid #16a34a;
+  font-style: italic;
+  color: #374151 !important;
+}
 
 .cam-update-item {
   padding: 0.5rem 0.75rem;
@@ -1769,6 +1780,7 @@ details:not([open]) .accordion-summary::after {
   border-radius: 4px;
   font-size: 0.875rem;
   color: #4b5563;
+  border-left : 3px solid #e7d45c;
 }
 
 .cam-update-item:last-child {
