@@ -184,7 +184,7 @@ const TenantDashboard = () => {
         {/* RIGHT COLUMN */}
         <div className="unit-rent text-end">
             <small>Monthly Rent</small>
-            <h6>{lease.monthly_rent || "$0"}</h6>
+            <h6> ${lease.monthly_rent || "0"}</h6>
             <span className="sqft">{lease.square_ft || "0"} sq ft</span>
         </div>
         </div>
