@@ -330,7 +330,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
 
               {useExistingProperty ? (
                 <Form.Group className="mb-3">
-                  <Form.Label>
+                  <Form.Label className="fw-bold">
                     Select Property <span className="text-danger">*</span>
                   </Form.Label>
                   <Form.Select
@@ -355,7 +355,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                 <>
                   <Form.Group className="mb-3">
                   
-                    <Form.Label>
+                    <Form.Label className="fw-bold">
                       Property Name <span className="text-danger">*</span>
                     </Form.Label>
                     <Form.Control
@@ -371,7 +371,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
                   </Form.Group>
 
                   <Form.Group className="mb-3">
-                    <Form.Label>
+                    <Form.Label className="fw-bold">
                       Address <span className="text-danger">*</span>
                     </Form.Label>
                     <Form.Control
@@ -393,7 +393,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
             <Col md={6}>
               <h6>Tenant</h6>
               <Form.Group className="mb-3">
-                <Form.Label>
+                <Form.Label className="fw-bold">
                   Tenant Name <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
@@ -420,7 +420,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
           <Row>
             <Col md={4}>
               <Form.Group className="mb-3">
-                <Form.Label>
+                <Form.Label className="fw-bold">
                   Unit Number <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
@@ -438,7 +438,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
 
             <Col md={4}>
   <Form.Group className="mb-3">
-    <Form.Label>Square Feet</Form.Label>
+    <Form.Label className="fw-bold">Square Feet</Form.Label>
     <Form.Control
       type="number"
       name="square_ft"
@@ -459,7 +459,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
 
 <Col md={4}>
   <Form.Group className="mb-3">
-    <Form.Label>Monthly Rent</Form.Label>
+    <Form.Label className="fw-bold">Monthly Rent</Form.Label>
     <Form.Control
       type="number"
       name="monthly_rent"
@@ -483,7 +483,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
 
           {/* DOCUMENT UPLOAD */}
           <Form.Group className="mb-3">
-            <Form.Label>
+            <Form.Label className="fw-bold">
               Upload Main Lease (PDF) <span className="text-danger">*</span>
             </Form.Label>
             <Form.Control
@@ -506,7 +506,7 @@ const AddUnit = ({ show, onClose,onSuccess, tenantName=" ", tenantId }) => {
               {errors.document}
             </Form.Control.Feedback>
             <small className="text-muted">
-              Document type will be saved as <b>Main Lease</b>
+              Document type will be saved as <b className="fw-bold">Main Lease</b>
             </small>
           </Form.Group>
 

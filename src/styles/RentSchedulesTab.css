@@ -1,9 +1,23 @@
 .base-rent-card {
-  overflow-x: auto;                 
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 /* MOBILE */
+.field-cell-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Ensure citation tag doesn't wrap and helps stack width logic */
+.field-cell-container .provision-citation-tag {
+  white-space: nowrap !important;
+  width: fit-content;
+  max-width: none;
+}
+
+
 @media (max-width: 480px) {
 
   .latefee-grid {
@@ -27,6 +41,7 @@
     margin-bottom: 12px !important;
   }
 }
+
 summary.accordion-summary::after {
   content: none !important;
   display: none !important;
@@ -39,4 +54,3 @@ summary.accordion-summary::-webkit-details-marker {
 summary.accordion-summary {
   list-style: none;
 }
-

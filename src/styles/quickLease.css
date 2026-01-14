@@ -3,7 +3,8 @@
 ========================= */
 .quick-lease-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #6f6cff 0%, #f04fa3 100%);
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
 }
@@ -164,12 +165,7 @@
 }
 
 /* Full page background */
-.quick-lease-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #6f6cff 0%, #f04fa3 100%);
-  display: flex;
-  flex-direction: column;
-}
+
 
 /* Back button */
 .quick-lease-back {

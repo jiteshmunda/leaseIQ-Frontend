@@ -131,7 +131,6 @@ function AddToportfolio({ show, onClose, onSuccess }) {
 
     loadStoredDocument();
 
-    // Fetch properties and tenants
     api.get(`${BASE_URL}/api/properties`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(res => setProperties(res.data.data || []));

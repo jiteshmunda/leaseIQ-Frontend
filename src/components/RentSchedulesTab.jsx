@@ -143,20 +143,20 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
     );
   };
 
-  const renderField = (field, fallback = "-") => {
+  const renderField = (field, fallback = "-", showTooltip = true) => {
     const value = getFieldValue?.(field) || fallback;
     const citation = getFieldCitation(field);
     const hasAmends = hasAmendments(field);
 
     return (
-      <>
-        {hasAmends ? (
+      <div className="field-cell-container">
+        {hasAmends && showTooltip ? (
           <FieldWithTooltip value={value} amendments={field.amendments} filename={filename} />
         ) : (
           <div>{value}</div>
         )}
         {citation ? renderCitationTag(citation, field, "small") : null}
-      </>
+      </div>
     );
   };
 
@@ -176,11 +176,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
         <div className="accordion-body">
           <div className="latefee-grid">
             <div
-              className={`latefee-card ${
-                hasAmendments(chargeSchedules?.lateFee?.calculationType)
-                  ? "has-amendments"
-                  : ""
-              }`}
+              className={`latefee-card ${hasAmendments(chargeSchedules?.lateFee?.calculationType)
+                ? "has-amendments"
+                : ""
+                }`}
             >
               <label>
                 <FieldWithTooltip
@@ -192,10 +191,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
               <p>{getFieldValue(chargeSchedules?.lateFee?.calculationType) || "N/A"}</p>
               {getFieldCitation(chargeSchedules?.lateFee?.calculationType)
                 ? renderCitationTag(
-                    getFieldCitation(chargeSchedules?.lateFee?.calculationType),
-                    chargeSchedules?.lateFee?.calculationType,
-                    "small"
-                  )
+                  getFieldCitation(chargeSchedules?.lateFee?.calculationType),
+                  chargeSchedules?.lateFee?.calculationType,
+                  "small"
+                )
                 : null}
               {renderAmendments(
                 chargeSchedules?.lateFee?.calculationType,
@@ -206,11 +205,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
             </div>
 
             <div
-              className={`latefee-card ${
-                hasAmendments(chargeSchedules?.lateFee?.graceDays)
-                  ? "has-amendments"
-                  : ""
-              }`}
+              className={`latefee-card ${hasAmendments(chargeSchedules?.lateFee?.graceDays)
+                ? "has-amendments"
+                : ""
+                }`}
             >
               <label>
                 <FieldWithTooltip
@@ -222,10 +220,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
               <p>{getFieldValue(chargeSchedules?.lateFee?.graceDays) || "N/A"}</p>
               {getFieldCitation(chargeSchedules?.lateFee?.graceDays)
                 ? renderCitationTag(
-                    getFieldCitation(chargeSchedules?.lateFee?.graceDays),
-                    chargeSchedules?.lateFee?.graceDays,
-                    "small"
-                  )
+                  getFieldCitation(chargeSchedules?.lateFee?.graceDays),
+                  chargeSchedules?.lateFee?.graceDays,
+                  "small"
+                )
                 : null}
               {renderAmendments(
                 chargeSchedules?.lateFee?.graceDays,
@@ -236,11 +234,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
             </div>
 
             <div
-              className={`latefee-card ${
-                hasAmendments(chargeSchedules?.lateFee?.percent)
-                  ? "has-amendments"
-                  : ""
-              }`}
+              className={`latefee-card ${hasAmendments(chargeSchedules?.lateFee?.percent)
+                ? "has-amendments"
+                : ""
+                }`}
             >
               <label>
                 <FieldWithTooltip
@@ -252,10 +249,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
               <p>{getFieldValue(chargeSchedules?.lateFee?.percent) || "N/A"}</p>
               {getFieldCitation(chargeSchedules?.lateFee?.percent)
                 ? renderCitationTag(
-                    getFieldCitation(chargeSchedules?.lateFee?.percent),
-                    chargeSchedules?.lateFee?.percent,
-                    "small"
-                  )
+                  getFieldCitation(chargeSchedules?.lateFee?.percent),
+                  chargeSchedules?.lateFee?.percent,
+                  "small"
+                )
                 : null}
               {renderAmendments(
                 chargeSchedules?.lateFee?.percent,
@@ -266,11 +263,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
             </div>
 
             <div
-              className={`latefee-card ${
-                hasAmendments(chargeSchedules?.lateFee?.secondFeeCalculationType)
-                  ? "has-amendments"
-                  : ""
-              }`}
+              className={`latefee-card ${hasAmendments(chargeSchedules?.lateFee?.secondFeeCalculationType)
+                ? "has-amendments"
+                : ""
+                }`}
             >
               <label>
                 <FieldWithTooltip
@@ -288,10 +284,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
               </p>
               {getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType)
                 ? renderCitationTag(
-                    getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType),
-                    chargeSchedules?.lateFee?.secondFeeCalculationType,
-                    "small"
-                  )
+                  getFieldCitation(chargeSchedules?.lateFee?.secondFeeCalculationType),
+                  chargeSchedules?.lateFee?.secondFeeCalculationType,
+                  "small"
+                )
                 : null}
               {renderAmendments(
                 chargeSchedules?.lateFee?.secondFeeCalculationType,
@@ -302,11 +298,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
             </div>
 
             <div
-              className={`latefee-card ${
-                hasAmendments(chargeSchedules?.lateFee?.secondFeeGrace)
-                  ? "has-amendments"
-                  : ""
-              }`}
+              className={`latefee-card ${hasAmendments(chargeSchedules?.lateFee?.secondFeeGrace)
+                ? "has-amendments"
+                : ""
+                }`}
             >
               <label>
                 <FieldWithTooltip
@@ -323,10 +318,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
               </p>
               {getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace)
                 ? renderCitationTag(
-                    getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace),
-                    chargeSchedules?.lateFee?.secondFeeGrace,
-                    "small"
-                  )
+                  getFieldCitation(chargeSchedules?.lateFee?.secondFeeGrace),
+                  chargeSchedules?.lateFee?.secondFeeGrace,
+                  "small"
+                )
                 : null}
               {renderAmendments(
                 chargeSchedules?.lateFee?.secondFeeGrace,
@@ -337,11 +332,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
             </div>
 
             <div
-              className={`latefee-card ${
-                hasAmendments(chargeSchedules?.lateFee?.secondFeePercent)
-                  ? "has-amendments"
-                  : ""
-              }`}
+              className={`latefee-card ${hasAmendments(chargeSchedules?.lateFee?.secondFeePercent)
+                ? "has-amendments"
+                : ""
+                }`}
             >
               <label>
                 <FieldWithTooltip
@@ -358,10 +352,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
               </p>
               {getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent)
                 ? renderCitationTag(
-                    getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent),
-                    chargeSchedules?.lateFee?.secondFeePercent,
-                    "small"
-                  )
+                  getFieldCitation(chargeSchedules?.lateFee?.secondFeePercent),
+                  chargeSchedules?.lateFee?.secondFeePercent,
+                  "small"
+                )
                 : null}
               {renderAmendments(
                 chargeSchedules?.lateFee?.secondFeePercent,
@@ -372,11 +366,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
             </div>
 
             <div
-              className={`latefee-card ${
-                hasAmendments(chargeSchedules?.lateFee?.perDayFee)
-                  ? "has-amendments"
-                  : ""
-              }`}
+              className={`latefee-card ${hasAmendments(chargeSchedules?.lateFee?.perDayFee)
+                ? "has-amendments"
+                : ""
+                }`}
             >
               <label>
                 <FieldWithTooltip
@@ -388,10 +381,10 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
               <p>{getFieldValue(chargeSchedules?.lateFee?.perDayFee) || "N/A"}</p>
               {getFieldCitation(chargeSchedules?.lateFee?.perDayFee)
                 ? renderCitationTag(
-                    getFieldCitation(chargeSchedules?.lateFee?.perDayFee),
-                    chargeSchedules?.lateFee?.perDayFee,
-                    "small"
-                  )
+                  getFieldCitation(chargeSchedules?.lateFee?.perDayFee),
+                  chargeSchedules?.lateFee?.perDayFee,
+                  "small"
+                )
                 : null}
               {renderAmendments(
                 chargeSchedules?.lateFee?.perDayFee,
@@ -408,7 +401,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
       <section className="card base-rent-card">
         <h3 className="card-title">Base Rent Schedule</h3>
 
-        <table className="rent-table">
+        <table className="rent-table table-responsive">
           <thead>
             <tr>
               <th>Period</th>
@@ -438,13 +431,13 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
                     <tr
                       className={rowHasAmendments ? "has-amendments-row" : ""}
                     >
-                      <td>{renderField(item.period) || "-"}</td>
-                      <td>{renderField(item.dateFrom) || "-"}</td>
-                      <td>{renderField(item.dateTo) || "-"}</td>
-                      <td>{renderField(item.monthlyAmount) || "-"}</td>
-                      <td>{renderField(item.annualAmount) || "-"}</td>
-                      <td>{renderField(item.areaRentable) || "-"}</td>
-                      <td>{renderField(item.amountPerArea) || "-"}</td>
+                      <td>{renderField(item.period, "-", false)}</td>
+                      <td>{renderField(item.dateFrom, "-", false)}</td>
+                      <td>{renderField(item.dateTo, "-", false)}</td>
+                      <td>{renderField(item.monthlyAmount, "-", false)}</td>
+                      <td>{renderField(item.annualAmount, "-", false)}</td>
+                      <td>{renderField(item.areaRentable, "-", false)}</td>
+                      <td>{renderField(item.amountPerArea, "-", false)}</td>
                     </tr>
                     {rowHasAmendments && (
                       <tr className="amendments-row">

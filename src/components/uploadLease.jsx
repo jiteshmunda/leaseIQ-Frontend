@@ -2,7 +2,7 @@ import { useState } from "react";
 import "../styles/uploadLease.css";
 import { useNavigate } from "react-router-dom";
 import { showError, showSuccess } from "../service/toast";
-
+import AnimatedBackground from "./AnimatedBackground";
 
 const UploadLeaseStep = ({ onBack, onSubmit, loading }) => {
   const [file, setFile] = useState(null);
@@ -31,6 +31,8 @@ const handleUpload = () => {
 };
 
   return (
+    <>
+    <AnimatedBackground />
     <div className="upload-lease-page">
       <div className="upload-wrapper">
 
@@ -120,6 +122,7 @@ const handleUpload = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

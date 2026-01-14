@@ -2,7 +2,7 @@ import { useState } from "react";
 import "../styles/addProperty.css";
 import { useNavigate } from "react-router-dom";
 import { showError, showSuccess } from "../service/toast";
-
+import AnimatedBackground from "./AnimatedBackground";
 const AddProperty = ({ data, setData, onNext }) => {
   const [propertyName, setPropertyName] = useState(data.propertyName || "");
   const [address, setAddress] = useState(data.address || "");
@@ -64,6 +64,8 @@ const handleBlur = (field) => {
 
 
   return (
+    <>
+    <AnimatedBackground />
     <div className="add-property-page">
       <div className="property-wrapper">
         <div className="back-link" onClick={() => navigate("/landing")}>
@@ -132,6 +134,7 @@ const handleBlur = (field) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

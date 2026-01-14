@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../styles/addUnitSuite.css";
 import { showError, showSuccess } from "../service/toast";
+import AnimatedBackground from "./AnimatedBackground";
 
 const AddUnitSuite = ({ data, setData, onBack, onNext }) => {
   const [errors, setErrors] = useState({});
@@ -9,8 +10,6 @@ const [touched, setTouched] = useState({});
   const [unitNumber, setUnitNumber] = useState(data.unitNumber || "");
   const [tenantName, setTenantName] = useState(data.tenantName || "");
   const [squareFootage, setSquareFootage] = useState(data.squareFootage || "");
-
-  // ALL required fields validation (same logic as before)
   const isFormValid =
   unitNumber.trim() !== "" &&
   tenantName.trim() !== "" &&
@@ -83,6 +82,8 @@ else if (!/^[a-zA-Z0-9\s-]+$/.test(unit)) {
 
 
   return (
+    <>
+    <AnimatedBackground />
     <div className="add-unit-page-background">
       <div className="unit-wrapper">
 
@@ -172,6 +173,7 @@ else if (!/^[a-zA-Z0-9\s-]+$/.test(unit)) {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

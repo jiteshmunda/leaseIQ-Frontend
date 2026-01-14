@@ -28,7 +28,15 @@ function Signup() {
   });
 
   const handleTypeSelect = (type) => {
-    setFormData((prev) => ({ ...prev, org_option: type }));
+    // Switching flows should not keep old validation messages/fields.
+    setErrors({});
+    setFormData((prev) => ({
+      ...prev,
+      org_option: type,
+      // Avoid carrying org values between create/join/individual flows
+      org_name: "",
+      username: "",
+    }));
     setStep(2);
   };
 
@@ -80,7 +88,7 @@ function Signup() {
         const payload = {
           name: formData.name,
           email: formData.email,
-          password: passwordPayload,
+          password: formData.password,
           org_option: formData.org_option,
           org_name: formData.org_name,
         };
@@ -173,7 +181,14 @@ function Signup() {
       <div className="signup-page">
         <PageHeader />
         <div className="signup-card">
-          <div className="back-nav mb-3" onClick={() => setStep(1)} style={{ cursor: "pointer" }}>
+          <div
+            className="back-nav mb-3"
+            onClick={() => {
+              setErrors({});
+              setStep(1);
+            }}
+            style={{ cursor: "pointer" }}
+          >
             <span className="text-primary small d-flex align-items-center">
               <ArrowLeft size={16} className="me-1" /> Change account type
             </span>

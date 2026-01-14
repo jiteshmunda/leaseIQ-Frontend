@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Container, Row, Col, Card, Button, Form, InputGroup, Badge,Navbar,} from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Form, InputGroup, Badge, Navbar, } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/dashboard.css";
 import AddUnit from "../components/AddUnit";
 import AddTenant from "../components/AddTenant";
-import {Home, Plus,CalendarDays, Users, DollarSign, AlertCircle, Building } from "lucide-react";
+import { Home, Plus, CalendarDays, Users, DollarSign, AlertCircle, Building } from "lucide-react";
 import FloatingSignOut from "../components/FloatingSingout";
+import PaginationComponent from "../components/PaginationComponent";
 import api from "../service/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const criticalItems = [];
@@ -18,6 +19,10 @@ const Dashboard = () => {
 
   const [showAddUnit, setShowAddUnit] = useState(false);
   const [showAddTenant, setShowAddTenant] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const fetchTenants = useCallback(async () => {
     try {
@@ -40,41 +45,41 @@ const Dashboard = () => {
     }
   }, [showAddUnit, fetchTenants]);
 
-const totalMonthlyRent = tenants.reduce(
-  (sum, tenant) => sum + Number(tenant.monthly_rent || 0),
-  0
-);
-const filteredTenants = tenants.filter((tenant) =>
-  tenant.tenant_name
-    .toLowerCase()
-    .includes(search.toLowerCase())
-);
+  const totalMonthlyRent = tenants.reduce(
+    (sum, tenant) => sum + Number(tenant.monthly_rent || 0),
+    0
+  );
+  const filteredTenants = tenants.filter((tenant) =>
+    tenant.tenant_name
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   return (
     <>
-    <Navbar bg="white" className="dashboard-navbar">
-      <FloatingSignOut />
-     <Container fluid>
-      <Navbar.Brand className="d-flex align-items-center gap-2">
-         <Home onClick={() => navigate("/landing")} /> <span>Portfolio</span>
-      </Navbar.Brand>
+      <Navbar bg="white" className="dashboard-navbar">
+        <FloatingSignOut />
+        <Container fluid>
+          <Navbar.Brand className="d-flex align-items-center gap-2">
+            <Home onClick={() => navigate("/landing")} /> <span>Portfolio</span>
+          </Navbar.Brand>
 
-      <Button
-        variant="outline-primary"
-        onClick={() => setShowAddUnit(true)}
-      >
-        <Plus size={16} /> Add Tenent
-      </Button>
-       <AddUnit show={showAddUnit}
-       onClose={() => setShowAddUnit(false)}
-       onSuccess={fetchTenants}
-/>
-     </Container>
-     </Navbar>
-    <Container fluid className="p-4 dashboard-container">
+          <Button
+            variant="outline-primary"
+            onClick={() => setShowAddUnit(true)}
+          >
+            <Plus size={16} /> Add Tenent
+          </Button>
+          <AddUnit show={showAddUnit}
+            onClose={() => setShowAddUnit(false)}
+            onSuccess={fetchTenants}
+          />
+        </Container>
+      </Navbar>
+      <Container fluid className="p-4 dashboard-container">
 
-      {/* TITLE + FILTER */}
-      {/* <Row className="align-items-center mb-4">
+        {/* TITLE + FILTER */}
+        {/* <Row className="align-items-center mb-4">
          <Col xs={12} md={6}>
           <h5 className="mb-3 mb-md-0">Upcoming Critical Items</h5>
         </Col> 
@@ -90,55 +95,55 @@ const filteredTenants = tenants.filter((tenant) =>
         </Col>
       </Row> */}
 
-      {/* KPI CARDS */}
-      <Row className="mb-4">
-  {/* TOTAL TENANTS */}
-  <Col md={4}>
-    <Card className="kpi-card">
-      <Card.Body>
-        <div className="kpi-header">
-          <span className="kpi-title">Total Tenants</span>
-          <Users className="kpi-icon text-primary" />
-        </div>
+        {/* KPI CARDS */}
+        <Row className="mb-4">
+          {/* TOTAL TENANTS */}
+          <Col md={4}>
+            <Card className="kpi-card blue-border">
+              <Card.Body>
+                <div className="kpi-header">
+                  <span className="kpi-title">Total Tenants</span>
+                  <Users className="kpi-icon blue text-primary" />
+                </div>
 
-        <h2 className="kpi-value">{tenants.length}</h2>
-        <small className="text-muted">Across all properties</small>
-      </Card.Body>
-    </Card>
-  </Col>
+                <h2 className="kpi-value">{tenants.length}</h2>
+                <small className="text-muted">Across all properties</small>
+              </Card.Body>
+            </Card>
+          </Col>
 
-  {/* MONTHLY REVENUE */}
-  <Col md={4}>
-    <Card className="kpi-card">
-      <Card.Body>
-        <div className="kpi-header">
-          <span className="kpi-title">Monthly Revenue</span>
-          <DollarSign className="kpi-icon text-success" />
-        </div>
+          {/* MONTHLY REVENUE */}
+          <Col md={4}>
+            <Card className="kpi-card green-border">
+              <Card.Body>
+                <div className="kpi-header">
+                  <span className="kpi-title">Monthly Revenue</span>
+                  <DollarSign className="kpi-icon green text-success" />
+                </div>
 
-        <h2 className="kpi-value">{totalMonthlyRent}</h2>
-        <small className="text-muted">Total rent collection</small>
-      </Card.Body>
-    </Card>
-  </Col>
+                <h2 className="kpi-value">{totalMonthlyRent}</h2>
+                <small className="text-muted">Total rent collection</small>
+              </Card.Body>
+            </Card>
+          </Col>
 
-  {/* CRITICAL ITEMS */}
-  <Col md={4}>
-    <Card className="kpi-card">
-      <Card.Body>
-        <div className="kpi-header">
-          <span className="kpi-title">Critical Items</span>
-          <AlertCircle className="kpi-icon text-danger" />
-        </div>
+          {/* CRITICAL ITEMS */}
+          <Col md={4}>
+            <Card className="kpi-card red-border">
+              <Card.Body>
+                <div className="kpi-header">
+                  <span className="kpi-title">Critical Items</span>
+                  <AlertCircle className="kpi-icon red text-danger" />
+                </div>
 
-        <h2 className="kpi-value">{criticalItems.length}</h2>
-        <small className="text-muted">Next 30 days</small>
-      </Card.Body>
-    </Card>
-  </Col>
-</Row>
+                <h2 className="kpi-value">{criticalItems.length}</h2>
+                <small className="text-muted">Next 30 days</small>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
 
-{/* <Card className="mb-4 shadow-sm">
+        {/* <Card className="mb-4 shadow-sm">
   <Card.Body>
     <h6 className="mb-3">Critical Dates</h6>
 
@@ -178,71 +183,82 @@ const filteredTenants = tenants.filter((tenant) =>
 </Card> */}
 
 
-       {/* HEADER */}
-      <Row className="align-items-center mb-4">
-        <Col>
-          <h4>Tenants</h4>
-        </Col>
+        {/* HEADER */}
+        <Row className="align-items-center mb-4">
+          <Col>
+            <h4>Tenants</h4>
+          </Col>
 
-        <Col className="d-flex justify-content-end gap-3 lease-actions">
-          <InputGroup style={{ maxWidth: "260px" }}>
-            <Form.Control
-            placeholder="Search tenants..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <Col className="d-flex justify-content-end gap-3 lease-actions">
+            <InputGroup style={{ maxWidth: "260px" }}>
+              <Form.Control
+                placeholder="Search tenants..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1); // Reset to first page on search
+                }}
+              />
 
-          </InputGroup>
+            </InputGroup>
             {/* <button
               className="add-unit-btn"
               onClick={() => setShowAddTenant(true)}
             >
               <Plus size={16} /> Add Tenant
             </button> */}
-        </Col>
-      </Row>
-      {filteredTenants.map((tenant) => (
-  <Card key={tenant._id}
-    className="mb-3 shadow-sm lease-card"
-    onClick={() =>
-      navigate(`/tenant/${tenant._id}`, {
-        state: { tenantName: tenant.tenant_name },
-      })
-    }
-  >
-    <Card.Body>
-      <Row className="align-items-center">
+          </Col>
+        </Row>
+        {filteredTenants
+          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+          .map((tenant) => (
+            <Card key={tenant._id}
+              className="mb-3 shadow-sm lease-card"
+              onClick={() =>
+                navigate(`/tenant/${tenant._id}`, {
+                  state: { tenantName: tenant.tenant_name },
+                })
+              }
+            >
+              <Card.Body>
+                <Row className="align-items-center">
 
-        <Col md={8} className="d-flex gap-3 align-items-start">
-          <div className="tenant-icon">
-            <Building size={24} />
-          </div>
+                  <Col md={8} className="d-flex gap-3 align-items-start">
+                    <div className="tenant-icon">
+                      <Building size={24} />
+                    </div>
 
-          <div>
-            <h6 className="mb-1">{tenant.tenant_name}</h6>
-            <small className="text-muted">
-               {tenant.total_units} Units • {/*{tenant.total_sqft} sq ft • */}
-              {/* Expires {tenant.lease_expiry} */}
-            </small>
-          </div>
-        </Col>
+                    <div>
+                      <h6 className="mb-1">{tenant.tenant_name}</h6>
+                      <small className="text-muted">
+                        {tenant.total_units} Units • {/*{tenant.total_sqft} sq ft • */}
+                        {/* Expires {tenant.lease_expiry} */}
+                      </small>
+                    </div>
+                  </Col>
 
-        <Col md={4} className="text-end">
-          <small className="text-muted">Monthly Rent</small>
-          <h6 className="mb-0"><DollarSign size={16} />{tenant.monthly_rent}</h6>
-        </Col>
+                  <Col md={4} className="text-end">
+                    <small className="text-muted">Monthly Rent</small>
+                    <h6 className="mb-0">$ {tenant.monthly_rent}</h6>
+                  </Col>
 
-      </Row>
-    </Card.Body>
-  </Card>
-))}
+                </Row>
+              </Card.Body>
+            </Card>
+          ))}
+
+        <PaginationComponent
+          currentPage={currentPage}
+          totalPages={Math.ceil(filteredTenants.length / itemsPerPage)}
+          onPageChange={setCurrentPage}
+        />
 
 
-    </Container>
-     
-    {showAddTenant && (
-      <AddTenant onClose={() => setShowAddTenant(false)} />
-    )}
+      </Container>
+
+      {showAddTenant && (
+        <AddTenant onClose={() => setShowAddTenant(false)} />
+      )}
     </>
   );
 };

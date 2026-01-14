@@ -1,6 +1,7 @@
 //import { useLocation } from "react-router-dom";
 import React from "react";
 import "../styles/analyzingLease.css";
+import AnimatedBackground from "./AnimatedBackground";
 
 const steps = [
   "Document uploaded",
@@ -15,6 +16,8 @@ const AnalyzingLease = ({ activeStep = 0 }) => {
   const progress = Math.round(((activeStep + 1) / steps.length) * 100);
 
   return (
+    <>
+    <AnimatedBackground />
     <div className="analyzing-page">
       <div className="analyzing-card">
         <h2>Analyzing your lease...</h2>
@@ -59,6 +62,7 @@ const AnalyzingLease = ({ activeStep = 0 }) => {
         </p>
       </div>
     </div>
+    </>
   );
 };
 

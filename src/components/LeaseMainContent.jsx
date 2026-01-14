@@ -32,7 +32,7 @@ const LeaseMainContent = ({
   });
   const [isUpdatingCamRule, setIsUpdatingCamRule] = useState(false);
   const [isLoadingCam, setIsLoadingCam] = useState(false);
-  
+
   const { runCamAnalysis } = useLeaseAnalyzer();
 
   useEffect(() => {
@@ -58,18 +58,18 @@ const LeaseMainContent = ({
   const spaceInfo = leaseDetails?.space?.space;
 
   const normalizeChargeSchedules = (raw = {}) => {
-  const cs = raw?.["charge-schedules"] ?? {};
-  const schedules = cs.chargeSchedules ?? {};
+    const cs = raw?.["charge-schedules"] ?? {};
+    const schedules = cs.chargeSchedules ?? {};
 
-  return {
-    baseRent: Array.isArray(schedules.baseRent)
-      ? schedules.baseRent
-      : [],
-    // Preferred shape (per analyzer): charge-schedules.chargeSchedules.lateFee
-    // Fallback for any older payloads: charge-schedules.lateFee
-    lateFee: schedules.lateFee ?? cs.lateFee ?? {},
+    return {
+      baseRent: Array.isArray(schedules.baseRent)
+        ? schedules.baseRent
+        : [],
+      // Preferred shape (per analyzer): charge-schedules.chargeSchedules.lateFee
+      // Fallback for any older payloads: charge-schedules.lateFee
+      lateFee: schedules.lateFee ?? cs.lateFee ?? {},
+    };
   };
-};
 
 
   const chargeSchedules = normalizeChargeSchedules(leaseDetails);
@@ -84,40 +84,51 @@ const LeaseMainContent = ({
       : rawAudit;
 
   // Handle risk_register_sections specially - flatten nested issues arrays
-  const auditSource = (() => {
-    if (auditObject?.audit_checklist) return auditObject.audit_checklist;
-    if (auditObject?.identified_risks) return auditObject.identified_risks;
-    if (auditObject?.risk_register) return auditObject.risk_register;
-    if (auditObject?.risks) return auditObject.risks;
+  const { auditSource, auditSourceKey } = (() => {
+    if (auditObject?.audit_checklist) {
+      return { auditSource: auditObject.audit_checklist, auditSourceKey: "audit_checklist" };
+    }
+    if (auditObject?.identified_risks) {
+      return { auditSource: auditObject.identified_risks, auditSourceKey: "identified_risks" };
+    }
+    if (auditObject?.risk_register) {
+      return { auditSource: auditObject.risk_register, auditSourceKey: "risk_register" };
+    }
+    if (auditObject?.risks) {
+      return { auditSource: auditObject.risks, auditSourceKey: "risks" };
+    }
     if (auditObject?.risk_register_sections) {
       // Flatten: each section has { section_name, issues: [...] }
       // Extract all issues and carry section_name as category fallback
-      return auditObject.risk_register_sections.flatMap((section) =>
-        (section.issues || []).map((issue) => ({
+      const flattened = auditObject.risk_register_sections.flatMap((section, sectionIndex) =>
+        (section.issues || []).map((issue, issueIndex) => ({
           ...issue,
           _section_name: section.section_name, // preserve section context
+          _audit_section_index: sectionIndex,
+          _audit_issue_index: issueIndex,
         }))
       );
+      return { auditSource: flattened, auditSourceKey: "risk_register_sections" };
     }
-    return [];
+    return { auditSource: [], auditSourceKey: null };
   })();
 
   const auditRisks = Array.isArray(auditSource)
     ? auditSource.map((item) => {
-        if (item.page_number == null) {
-          const refs = Array.isArray(item.page_reference)
-            ? item.page_reference
-            : Array.isArray(item.page_references)
+      if (item.page_number == null) {
+        const refs = Array.isArray(item.page_reference)
+          ? item.page_reference
+          : Array.isArray(item.page_references)
             ? item.page_references
             : null;
 
-          if (refs && refs.length > 0) {
-            return { ...item, page_number: refs[0] };
-          }
+        if (refs && refs.length > 0) {
+          return { ...item, page_number: refs[0] };
         }
+      }
 
-        return item;
-      })
+      return item;
+    })
     : [];
 
   const normalizeCitationsText = (citations) => {
@@ -374,7 +385,7 @@ const LeaseMainContent = ({
 
 
   return (
-     <>
+    <>
 
       {/* Tabs */}
       <div className="tabs">
@@ -390,8 +401,8 @@ const LeaseMainContent = ({
         ))}
       </div>
 
-                {/* ===== SCROLLABLE SECTION ===== */}
-                <div className="scroll-section" ref={scrollSectionRef}>
+      {/* ===== SCROLLABLE SECTION ===== */}
+      <div className="scroll-section" ref={scrollSectionRef}>
         {activeTab === "Info" && (
           <InfoTab
             leaseDetails={leaseDetails}
@@ -442,8 +453,11 @@ const LeaseMainContent = ({
           <AuditTab
             audit={auditObject}
             risks={auditRisks}
+            auditSourceKey={auditSourceKey}
             filename={leaseDetails?.filename}
             documentId={documentId}
+            onUpdateLeaseDetails={onUpdateLeaseDetails}
+            leaseDetails={leaseDetails}
           />
         )}
 
@@ -470,152 +484,152 @@ const LeaseMainContent = ({
 
       </div>
 
-{showEditCategory && (
-  <div
-    className="modal fade show"
-    style={{ display: "block", backgroundColor: "rgba(0,0,0,.4)" }}
-  >
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content">
+      {showEditCategory && (
+        <div
+          className="modal fade show"
+          style={{ display: "block", backgroundColor: "rgba(0,0,0,.4)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
 
-        {/* Header */}
-        <div className="modal-header">
-          <h5 className="modal-title">Edit Category</h5>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowEditCategory(false)}
-          />
-        </div>
+              {/* Header */}
+              <div className="modal-header">
+                <h5 className="modal-title">Edit Category</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowEditCategory(false)}
+                />
+              </div>
 
-        {/* Body */}
-        <div className="modal-body">
-          <div className="mb-3">
-            <label className="form-label">Category Name</label>
-            <input
-              type="text"
-              className="form-control"
-              value={editCategoryName}
-              onChange={(e) => setEditCategoryName(e.target.value)}
-            />
+              {/* Body */}
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label">Category Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editCategoryName}
+                    onChange={(e) => setEditCategoryName(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="modal-footer">
+                <button
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => setShowEditCategory(false)}
+                  disabled={isUpdatingCategory}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={handleUpdateCategory}
+                  disabled={isUpdatingCategory}
+                >
+                  Update
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Footer */}
-        <div className="modal-footer">
-          <button
-            className="btn btn-outline-secondary btn-sm"
-            onClick={() => setShowEditCategory(false)}
-            disabled={isUpdatingCategory}
-          >
-            Cancel
-          </button>
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={handleUpdateCategory}
-            disabled={isUpdatingCategory}
-          >
-            Update
-          </button>
-        </div>
+      {showEditCam && editCamRule && (
+        <div
+          className="modal fade show"
+          style={{ display: "block", backgroundColor: "rgba(0,0,0,.4)" }}
+        >
+          <div className="modal-dialog modal-dialog-centered modal-lg cam-edit-modal">
+            <div className="modal-content">
 
-      </div>
-    </div>
-  </div>
-)}
+              <div className="modal-header">
+                <h5 className="modal-title">Edit CAM Rule</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowEditCam(false)}
+                />
+              </div>
 
-{showEditCam && editCamRule && (
-  <div
-    className="modal fade show"
-    style={{ display: "block", backgroundColor: "rgba(0,0,0,.4)" }}
-  >
-    <div className="modal-dialog modal-dialog-centered modal-lg cam-edit-modal">
-      <div className="modal-content">
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label">Rule Title</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editCamForm.title}
+                    onChange={(e) => setEditCamForm((s) => ({ ...s, title: e.target.value }))}
+                    disabled={isUpdatingCamRule}
+                  />
+                </div>
 
-        <div className="modal-header">
-          <h5 className="modal-title">Edit CAM Rule</h5>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowEditCam(false)}
-          />
-        </div>
+                <div className="mb-3">
+                  <label className="form-label">Rule Content</label>
+                  <textarea
+                    className="form-control"
+                    value={editCamForm.content}
+                    style={{
+                      height: "auto",
+                      minHeight: 140,
+                      resize: "vertical",
+                      overflow: "auto",
+                    }}
+                    onInput={(e) => {
+                      e.target.style.height = "auto";
+                      e.target.style.height = e.target.scrollHeight + "px";
+                    }}
+                    ref={(el) => {
+                      if (el) {
+                        el.style.height = "auto";
+                        el.style.height = el.scrollHeight + "px";
+                      }
+                    }}
+                    onChange={(e) => setEditCamForm((s) => ({ ...s, content: e.target.value }))}
+                    disabled={isUpdatingCamRule}
+                  />
+                </div>
 
-        <div className="modal-body">
-          <div className="mb-3">
-            <label className="form-label">Rule Title</label>
-            <input
-              type="text"
-              className="form-control"
-              value={editCamForm.title}
-              onChange={(e) => setEditCamForm((s) => ({ ...s, title: e.target.value }))}
-              disabled={isUpdatingCamRule}
-            />
+
+                <div className="mb-3">
+                  <label className="form-label">
+                    Citations (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={editCamForm.citationsText}
+                    onChange={(e) => setEditCamForm((s) => ({ ...s, citationsText: e.target.value }))}
+                    disabled={isUpdatingCamRule}
+                  />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="modal-footer">
+                <button
+                  className="btn btn-outline-secondary btn-sm"
+                  onClick={() => setShowEditCam(false)}
+                  disabled={isUpdatingCamRule}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={handleUpdateCamRule}
+                  disabled={isUpdatingCamRule}
+                >
+                  Update Rule
+                </button>
+              </div>
+
+            </div>
           </div>
-
-          <div className="mb-3">
-  <label className="form-label">Rule Content</label>
-  <textarea
-    className="form-control"
-    value={editCamForm.content}
-    style={{
-      height: "auto",
-      minHeight: 140,
-      resize: "vertical",
-      overflow: "auto",
-    }}
-    onInput={(e) => {
-      e.target.style.height = "auto";
-      e.target.style.height = e.target.scrollHeight + "px";
-    }}
-    ref={(el) => {
-      if (el) {
-        el.style.height = "auto";
-        el.style.height = el.scrollHeight + "px";
-      }
-    }}
-    onChange={(e) => setEditCamForm((s) => ({ ...s, content: e.target.value }))}
-    disabled={isUpdatingCamRule}
-  />
-</div>
-
-
-          <div className="mb-3">
-            <label className="form-label">
-              Citations (comma-separated)
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              value={editCamForm.citationsText}
-              onChange={(e) => setEditCamForm((s) => ({ ...s, citationsText: e.target.value }))}
-              disabled={isUpdatingCamRule}
-            />
-          </div>
         </div>
-
-        {/* Footer */}
-        <div className="modal-footer">
-          <button
-            className="btn btn-outline-secondary btn-sm"
-            onClick={() => setShowEditCam(false)}
-            disabled={isUpdatingCamRule}
-          >
-            Cancel
-          </button>
-          <button
-            className="btn btn-outline-primary btn-sm"
-            onClick={handleUpdateCamRule}
-            disabled={isUpdatingCamRule}
-          >
-            Update Rule
-          </button>
-        </div>
-
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
 
 

@@ -9,6 +9,7 @@ import {
 } from "react-icons/fi";
 import FloatingSignOut from "../components/FloatingSingout";
 import Gif from "../assets/icon-with-3d-house-financial-bill-clock-coins.jpg";
+import AnimatedBackground from "../components/AnimatedBackground";
 
 const AnalysisSuccess = () => {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ const AnalysisSuccess = () => {
   const leaseId = location.state?.leaseId;
 
   return (
+    <>
+    <AnimatedBackground />
     <div className="success-page">
       <FloatingSignOut />
 
@@ -72,6 +75,7 @@ const AnalysisSuccess = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
