@@ -1,4 +1,4 @@
-import { useState, useEffect,useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import api from "../service/api.js";
 import {
   FiArrowLeft,
@@ -48,69 +48,69 @@ const LeaseDetails = () => {
 
     try {
       const res = await api.get(`${BASE_URL}/api/leases/document/${documentId}`);
-        const url = res?.data?.url || res?.data?.data?.url;
+      const url = res?.data?.url || res?.data?.data?.url;
       window.open(url, "_blank", "noopener,noreferrer");
-    if (!url) {
-      throw new Error("Missing URL in response");
-    } else {
+      if (!url) {
+        throw new Error("Missing URL in response");
+      } else {
         window.open(url, "_blank", "noopener,noreferrer");
       }
-    }  catch (error) {
-    const msg =
-      error?.response?.data?.message ||
-      "Failed to open document";
-    showError(msg);
-  }
-};
-const fetchDocumentDetails = useCallback(
-  async (docId) => {
-    if (!docId) {
-      setDocumentDetails(null);
-      setCurrentVersionId(null);
-      return;
+    } catch (error) {
+      const msg =
+        error?.response?.data?.message ||
+        "Failed to open document";
+      showError(msg);
     }
-
-    setDetailsLoading(true);
-    setDocumentDetails(null);
-    try {
-      const res = await api.get(
-        `${BASE_URL}/api/leases/${leaseId}/details/${docId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const payload =
-        res?.data?.data ||
-        res?.data?.lease_details ||
-        res?.data;
-
-      // Preserve version metadata (if present) alongside the
-      // actual extracted lease details.
-      setCurrentVersionId(payload?.version ?? null);
-      setDocumentDetails(payload?.details ?? payload);
-
-    } catch (err) {
-      showError("Failed to load document details", err);
-      setDocumentDetails(null);
-    } finally {
-      setDetailsLoading(false);
-    }
-  },
-  [leaseId, token]
-);
-
-
-    const fetchLease = useCallback(async () => {
-      const res = await api.get(
-        `${BASE_URL}/api/leases/${leaseId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.data?.data?.lease_details) {
-        console.log('Fetched lease_details:', res.data.data.lease_details);
-      } else {
-        console.log('Fetched lease_details: not found in response', res.data?.data);
+  };
+  const fetchDocumentDetails = useCallback(
+    async (docId) => {
+      if (!docId) {
+        setDocumentDetails(null);
+        setCurrentVersionId(null);
+        return;
       }
-      setLease(res.data.data);
-    }, [leaseId, token]);
+
+      setDetailsLoading(true);
+      setDocumentDetails(null);
+      try {
+        const res = await api.get(
+          `${BASE_URL}/api/leases/${leaseId}/details/${docId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        const payload =
+          res?.data?.data ||
+          res?.data?.lease_details ||
+          res?.data;
+
+        // Preserve version metadata (if present) alongside the
+        // actual extracted lease details.
+        setCurrentVersionId(payload?.version ?? null);
+        setDocumentDetails(payload?.details ?? payload);
+
+      } catch (err) {
+        showError("Failed to load document details", err);
+        setDocumentDetails(null);
+      } finally {
+        setDetailsLoading(false);
+      }
+    },
+    [leaseId, token]
+  );
+
+
+  const fetchLease = useCallback(async () => {
+    const res = await api.get(
+      `${BASE_URL}/api/leases/${leaseId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.data?.data?.lease_details) {
+      console.log('Fetched lease_details:', res.data.data.lease_details);
+    } else {
+      console.log('Fetched lease_details: not found in response', res.data?.data);
+    }
+    setLease(res.data.data);
+  }, [leaseId, token]);
 
   useEffect(() => {
     const run = async () => {
@@ -124,10 +124,10 @@ const fetchDocumentDetails = useCallback(
   }, [fetchLease]);
 
   useEffect(() => {
-  if (selectedDocId) {
-    fetchDocumentDetails(selectedDocId);
-  }
-}, [selectedDocId, fetchDocumentDetails]);
+    if (selectedDocId) {
+      fetchDocumentDetails(selectedDocId);
+    }
+  }, [selectedDocId, fetchDocumentDetails]);
 
   useEffect(() => {
     setActiveTab("Info");
@@ -154,7 +154,7 @@ const fetchDocumentDetails = useCallback(
       return newId;
     });
   }, [lease?.documents]);
-  
+
 
 
   const closeUploadModal = () => {
@@ -269,7 +269,7 @@ const fetchDocumentDetails = useCallback(
       // Get document URL from backend
       const res = await api.get(`${BASE_URL}/api/leases/document/${selectedDocId}`);
       const url = res?.data?.url || res?.data?.data?.url;
-      
+
       if (!url) {
         throw new Error("Document URL not found");
       }
@@ -281,7 +281,7 @@ const fetchDocumentDetails = useCallback(
       }
 
       const blob = await response.blob();
-      
+
       // Get document name from lease documents
       const doc = lease?.documents?.find((d) => d._id === selectedDocId);
       const fileName = doc?.document_name || "lease-document.pdf";
@@ -307,18 +307,18 @@ const fetchDocumentDetails = useCallback(
       setLease((prev) =>
         prev
           ? {
-              ...prev,
-              lease_details: {
-                ...(prev.lease_details || {}),
-                details: updatedLeaseDetails,
-              },
-            }
+            ...prev,
+            lease_details: {
+              ...(prev.lease_details || {}),
+              details: updatedLeaseDetails,
+            },
+          }
           : prev
       );
 
-          // Keep the currently viewed document details in sync so
-          // the UI reflects the latest edits immediately.
-          setDocumentDetails(updatedLeaseDetails);
+      // Keep the currently viewed document details in sync so
+      // the UI reflects the latest edits immediately.
+      setDocumentDetails(updatedLeaseDetails);
 
       showSuccess("Lease details updated successfully");
     } catch {
@@ -341,6 +341,17 @@ const fetchDocumentDetails = useCallback(
       <FloatingSignOut />
 
       <header className="lease-header">
+        {/* Animated Background Elements */}
+        <div className="navbar-animation-bg">
+          <ul className="navbar-circles">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+          </ul>
+        </div>
+
         <div className="header-left">
           <FiArrowLeft
             className="header-back"
@@ -351,17 +362,14 @@ const fetchDocumentDetails = useCallback(
             }
           />
           <div className="header-text">
-            <h1>{lease?.tenant?.tenant_name} - Lease Abstraction</h1>
-            <p>
+            <div className="lease-title">{lease?.tenant?.tenant_name} - Lease Abstraction</div>
+            <div className="lease-subtitle">
               {lease?.property?.property_name} · {lease?.unit?.unit_number}
-            </p>
+            </div>
           </div>
         </div>
 
         <div className="header-right">
-          {/* <button className="ai-btn" onClick={() => setShowAiAssistant(true)}>
-            <FiMessageSquare /> AI Assistant
-          </button> */}
           <DownloadLeaseDetailsDocx
             leaseDetails={documentDetails}
             selectedDocumentName={selectedDocumentName}
@@ -373,7 +381,7 @@ const fetchDocumentDetails = useCallback(
       <div className="lease-body">
         <aside className="lease-sidebar">
           <h4>{lease?.tenant?.tenant_name}</h4>
-          <span className="muted">Document Library</span>
+          <span className="sidebar-label">Document Library</span>
 
           <div
             className="upload-box"
@@ -399,7 +407,16 @@ const fetchDocumentDetails = useCallback(
                 }}
               >
                 <div className="doc-row">
-                  <div className="doc-name">{doc.document_name}</div>
+                  <div className="doc-icon-wrapper">
+                    <FiFileText size={16} />
+                  </div>
+                  <div className="doc-info">
+                    <div className="doc-name">{doc.document_name}</div>
+                    <div className="doc-meta">
+                      {doc.document_type} ·{" "}
+                      {new Date(doc.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
 
                   <button
                     type="button"
@@ -410,35 +427,31 @@ const fetchDocumentDetails = useCallback(
                       openDocumentUrl(doc._id);
                     }}
                   >
-                    <FiEye size={10} className="eye-btn"/>
+                    <FiEye />
                   </button>
                 </div>
-                <span>
-                  {doc.document_type} ·{" "}
-                  {new Date(doc.created_at).toLocaleDateString()}
-                </span>
               </div>
             ))}
           </div>
         </aside>
 
         <main className="lease-content">
-  {detailsLoading || !documentDetails ? (
-    <div className="lease-content-loading">
-      Loading document details…
-    </div>
-  ) : (
-    <LeaseMainContent
-  key={selectedDocId}               // 🔑 force remount
-  leaseMeta={null}                  // ❌ block old fallback bugs
-  leaseDetails={documentDetails}    // ✅ ONLY document API
-  activeTab={activeTab}
-  setActiveTab={setActiveTab}
-  onUpdateLeaseDetails={handleLeaseDetailsUpdate}
-  getLeaseFile={getLeaseFileForCam}
-  documentId={selectedDocId}        // 📄 for citation navigation
-/>
-  )}
+          {detailsLoading || !documentDetails ? (
+            <div className="lease-content-loading">
+              Loading document details…
+            </div>
+          ) : (
+            <LeaseMainContent
+              key={selectedDocId}               // 🔑 force remount
+              leaseMeta={null}                  // ❌ block old fallback bugs
+              leaseDetails={documentDetails}    // ✅ ONLY document API
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              onUpdateLeaseDetails={handleLeaseDetailsUpdate}
+              getLeaseFile={getLeaseFileForCam}
+              documentId={selectedDocId}        // 📄 for citation navigation
+            />
+          )}
 
 
           <AiLeaseAssistant
@@ -487,8 +500,8 @@ const fetchDocumentDetails = useCallback(
                     {isUploadingDocument
                       ? "Uploading document..."
                       : pendingUploadFile
-                      ? `Selected: ${pendingUploadFile.name}`
-                      : "Drag and drop PDF here"}
+                        ? `Selected: ${pendingUploadFile.name}`
+                        : "Drag and drop PDF here"}
                   </p>
 
                   <button

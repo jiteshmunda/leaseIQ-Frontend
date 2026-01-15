@@ -18,6 +18,7 @@
   color: #6d28d9;
   border-bottom: 2px solid #6d28d9;
 }
+
 /* ===== HEADER ===== */
 .qai-header {
   background: #f9fafb;
@@ -25,12 +26,131 @@
 
 /* Purple bar */
 .qai-header-bar {
-  background: linear-gradient(90deg, #5b2be0, #8b3dff);
+  background: linear-gradient(-45deg, #4f46e5, #6a26e0, #7240e7);
+  background-size: 400% 400%;
+  animation: headerGradientShift 8s ease infinite;
   color: white;
   padding: 16px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes headerGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animation Elements */
+.header-animation-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.header-circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.header-circles li {
+  position: absolute;
+  display: block;
+  list-style: none;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.25);
+  animation: headerAnimate 15s linear infinite;
+  bottom: -50px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.header-circles li:nth-child(1) {
+  left: 10%;
+  width: 45px;
+  height: 45px;
+  animation-delay: 0s;
+  animation-duration: 12s;
+}
+
+.header-circles li:nth-child(2) {
+  left: 30%;
+  width: 25px;
+  height: 25px;
+  animation-delay: 1s;
+  animation-duration: 8s;
+}
+
+.header-circles li:nth-child(3) {
+  left: 50%;
+  width: 35px;
+  height: 35px;
+  animation-delay: 2s;
+  animation-duration: 10s;
+}
+
+.header-circles li:nth-child(4) {
+  left: 70%;
+  width: 55px;
+  height: 55px;
+  animation-delay: 0s;
+  animation-duration: 14s;
+}
+
+.header-circles li:nth-child(5) {
+  left: 90%;
+  width: 30px;
+  height: 30px;
+  animation-delay: 3s;
+  animation-duration: 9s;
+}
+
+@keyframes headerAnimate {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.7;
+  }
+
+  80% {
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: translateY(-150px) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.qai-header-left,
+.qai-header-right {
+  position: relative;
+  z-index: 1;
 }
 
 .qai-header-left h4 {
@@ -95,12 +215,15 @@
   top: 0;
   z-index: 20;
 }
+
 .qai-content-row {
   height: calc(100vh - 120px);
 }
+
 .qai-tabs-row {
   position: sticky;
-  top: 180px; /* height of header + summary */
+  top: 180px;
+  /* height of header + summary */
   z-index: 25;
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
@@ -165,7 +288,8 @@
 
 .qai-header-icons {
   display: flex;
-  align-items: center;   /* 🔑 fixes vertical misalignment */
+  align-items: center;
+  /* 🔑 fixes vertical misalignment */
   gap: 14px;
 }
 
@@ -190,6 +314,7 @@
   background: #fff7ed;
   color: #c2410c;
 }
+
 .quick-analysis-info {
   height: 100vh;
   display: flex;
@@ -204,6 +329,7 @@
   z-index: 50;
   background: #fff;
 }
+
 .qai-header-icon {
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -302,15 +428,15 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: stretch;   
+    align-items: stretch;
     padding: 12px 14px 14px;
     gap: 10px;
   }
 
   /* LEFT SECTION — FILE NAME + STATUS */
   .qai-header-left {
-    text-align: left;       
-    padding-right: 90px; 
+    text-align: left;
+    padding-right: 90px;
   }
 
   .qai-header-left h4 {
@@ -345,6 +471,7 @@
     text-align: center;
   }
 }
+
 @media (max-width: 576px) {
 
   .qai-summary {

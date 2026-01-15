@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Building2, LandPlot, DollarSign, TrendingUp } from "lucide-react";
-import { Container, Row, Col, Card, Button, Badge } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Badge, Navbar } from "react-bootstrap";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom"
 import AddUnit from "../components/AddUnit";
@@ -68,27 +68,34 @@ const TenantDashboard = () => {
   return (
     <>
       {/* NAVBAR / HEADER */}
-      <div className="tenant-navbar">
+      <Navbar className="tenant-navbar">
+        {/* Animated Background Elements */}
+        <div className="navbar-animation-bg">
+          <ul className="navbar-circles">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+          </ul>
+        </div>
         <FloatingSignOut />
-        <Container fluid>
+        <Container fluid className="navbar-content">
           {/* Back */}
-          <div className="back-link d-flex align-items-center gap-2 mb-3 text-dark" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft size={16} />
-            <span>Back to Dashboard</span>
-          </div>
 
-          {/* Title */}
-          <div className="d-flex align-items-center gap-3">
-            <div className="tenant-icon">
-              <Building2 size={22} />
-            </div>
-            <div>
-              <div className="tenant-title">{tenantName || tenantId}</div>
-              <div className="tenant-subtitle">Tenant Dashboard</div>
-            </div>
-          </div>
+          <Navbar.Brand className="d-flex align-items-center gap-2">
+            <ArrowLeft size={16} className="text-white back-btn" onClick={() => navigate("/dashboard")} />
+            <span className="tenant-title">{tenantName || tenantId}</span>
+          </Navbar.Brand>
+
+          <Button
+            variant="outline-primary"
+            className="add-unit-navbar-btn"
+            onClick={() => setShowAddUnit(true)}>
+            <Plus size={16} /> Add Unit
+          </Button>
         </Container>
-      </div>
+      </Navbar>
 
       <Container fluid className="tenant-dashboard p-4">
 
@@ -153,11 +160,6 @@ const TenantDashboard = () => {
         {/* UNITS HEADER */}
         <div className="units-header d-flex justify-content-between align-items-center mb-3">
           <h5>Units</h5>
-          <Button
-            className="add-unit-btn"
-            onClick={() => setShowAddUnit(true)}>
-            <Plus size={16} /> Add Unit
-          </Button>
         </div>
 
         {/* DYNAMIC UNIT CARDS */}

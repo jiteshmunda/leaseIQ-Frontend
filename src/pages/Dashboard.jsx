@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/dashboard.css";
 import AddUnit from "../components/AddUnit";
 import AddTenant from "../components/AddTenant";
-import { Home, Plus, CalendarDays, Users, DollarSign, AlertCircle, Building } from "lucide-react";
+import { Home, Plus, CalendarDays, Users, DollarSign, AlertCircle, Building, LayoutDashboard } from "lucide-react";
 import FloatingSignOut from "../components/FloatingSingout";
 import PaginationComponent from "../components/PaginationComponent";
 import api from "../service/api";
@@ -57,11 +57,21 @@ const Dashboard = () => {
 
   return (
     <>
-      <Navbar bg="white" className="dashboard-navbar">
+      <Navbar className="dashboard-navbar">
+        {/* Animated Background Elements */}
+        <div className="navbar-animation-bg">
+          <ul className="navbar-circles">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+          </ul>
+        </div>
         <FloatingSignOut />
-        <Container fluid>
+        <Container fluid className="navbar-content">
           <Navbar.Brand className="d-flex align-items-center gap-2">
-            <Home onClick={() => navigate("/landing")} /> <span>Portfolio</span>
+            <LayoutDashboard onClick={() => navigate("/landing")} /> <span>Portfolio</span>
           </Navbar.Brand>
 
           <Button
@@ -129,11 +139,11 @@ const Dashboard = () => {
 
           {/* CRITICAL ITEMS */}
           <Col md={4}>
-            <Card className="kpi-card red-border">
+            <Card className="kpi-card orange-border">
               <Card.Body>
                 <div className="kpi-header">
                   <span className="kpi-title">Critical Items</span>
-                  <AlertCircle className="kpi-icon red text-danger" />
+                  <AlertCircle className="kpi-icon orange text-orange" />
                 </div>
 
                 <h2 className="kpi-value">{criticalItems.length}</h2>

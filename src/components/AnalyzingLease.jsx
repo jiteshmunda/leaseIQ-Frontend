@@ -1,5 +1,5 @@
-//import { useLocation } from "react-router-dom";
 import React from "react";
+import { CheckCircle2, Loader2, Info } from "lucide-react";
 import "../styles/analyzingLease.css";
 import AnimatedBackground from "./AnimatedBackground";
 
@@ -17,51 +17,61 @@ const AnalyzingLease = ({ activeStep = 0 }) => {
 
   return (
     <>
-    <AnimatedBackground />
-    <div className="analyzing-page">
-      <div className="analyzing-card">
-        <h2>Analyzing your lease...</h2>
+      <AnimatedBackground />
+      <div className="analyzing-page">
+        <div className="analyzing-card">
+          <h2>Analyzing your lease...</h2>
 
-        <p className="subtitle-analyzinglease">
-          Our AI is extracting key information from your document
-        </p>
+          <p className="subtitle-analyzinglease">
+            Our AI is extracting key information from your document with precision
+          </p>
 
-        <div className="progress-header">
-          <span>Processing</span>
-          <span className="progress-percent">{progress}%</span>
-        </div>
-
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="steps">
-          {steps.map((label, index) => (
-            <div className="step-row" key={index}>
-              {index <= activeStep ? (
-                <span className="step-check">✓</span>
-              ) : (
-                <span className="step-loader" />
-              )}
-              <span
-                className={`step-text ${
-                  index <= activeStep ? "done" : ""
-                }`}
-              >
-                {label}
-              </span>
+          <div className="progress-container">
+            <div className="progress-header">
+              <span className="progress-label">Processing</span>
+              <span className="progress-percent">{progress}%</span>
             </div>
-          ))}
-        </div>
 
-        <p className="footer-text">
-          This typically takes 2–3 minutes
-        </p>
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="steps-list">
+            {steps.map((label, index) => {
+              const isCompleted = index < activeStep;
+              const isActive = index === activeStep;
+
+              return (
+                <div
+                  className={`step-item ${isCompleted ? "completed" : ""} ${isActive ? "active" : ""}`}
+                  key={index}
+                >
+                  <div className="step-icon-wrapper">
+                    {isCompleted ? (
+                      <CheckCircle2 className="step-check-icon" size={20} />
+                    ) : isActive ? (
+                      <Loader2 className="loader-spin" size={20} />
+                    ) : (
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e5e7eb' }} />
+                    )}
+                  </div>
+                  <span className="step-text">
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="footer-text">
+            <Info size={14} /> This typically takes 2–3 minutes
+          </p>
+        </div>
       </div>
-    </div>
     </>
   );
 };

@@ -15,6 +15,7 @@ function Signup() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
   const [formData, setFormData] = useState({
@@ -37,6 +38,8 @@ function Signup() {
       org_name: "",
       username: "",
     }));
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     setStep(2);
   };
 
@@ -185,6 +188,8 @@ function Signup() {
             className="back-nav mb-3"
             onClick={() => {
               setErrors({});
+              setShowPassword(false);
+              setShowConfirmPassword(false);
               setStep(1);
             }}
             style={{ cursor: "pointer" }}
@@ -199,13 +204,13 @@ function Signup() {
           <Form onSubmit={handleSignup}>
             <Form.Group className="mb-2">
               <Form.Label className="small fw-bold">Full Name</Form.Label>
-              <Form.Control name="name" placeholder="John Doe" onChange={handleChange} isInvalid={!!errors.name} disabled={loading} />
+              <Form.Control name="name" placeholder="Enter Full Name" onChange={handleChange} isInvalid={!!errors.name} disabled={loading} />
               <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group className="mb-2">
               <Form.Label className="small fw-bold">Email</Form.Label>
-              <Form.Control name="email" type="email" placeholder="john@example.com" onChange={handleChange} isInvalid={!!errors.email} disabled={loading} />
+              <Form.Control name="email" type="email" placeholder="Enter Email" onChange={handleChange} isInvalid={!!errors.email} disabled={loading} />
               <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
             </Form.Group>
 
@@ -213,7 +218,7 @@ function Signup() {
             {formData.org_option !== "join_existing" && (
               <Form.Group className="mb-2">
                 <Form.Label className="small fw-bold">Username</Form.Label>
-                <Form.Control name="username" placeholder="testorgadmin" onChange={handleChange} isInvalid={!!errors.username} disabled={loading} />
+                <Form.Control name="username" placeholder="Enter Username" onChange={handleChange} isInvalid={!!errors.username} disabled={loading} />
                 <Form.Control.Feedback type="invalid">{errors.username}</Form.Control.Feedback>
               </Form.Group>
             )}
@@ -234,8 +239,13 @@ function Signup() {
               <Col md={6}>
                 <Form.Group className="mb-2">
                   <Form.Label className="small fw-bold">Confirm Password</Form.Label>
-                  <Form.Control name="confirmPassword" type="password" placeholder="Confirm" onChange={handleChange} isInvalid={!!errors.confirmPassword} disabled={loading} />
-                  <Form.Control.Feedback type="invalid">{errors.confirmPassword}</Form.Control.Feedback>
+                  <InputGroup hasValidation>
+                    <Form.Control name="confirmPassword" type={showConfirmPassword ? "text" : "password"} placeholder="Confirm Password" onChange={handleChange} isInvalid={!!errors.confirmPassword} disabled={loading} />
+                    <InputGroup.Text onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ cursor: "pointer" }}>
+                      {showConfirmPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </InputGroup.Text>
+                    <Form.Control.Feedback type="invalid">{errors.confirmPassword}</Form.Control.Feedback>
+                  </InputGroup>
                 </Form.Group>
               </Col>
             </Row>
@@ -244,7 +254,7 @@ function Signup() {
             {formData.org_option !== "individual" && (
               <Form.Group className="mb-3">
                 <Form.Label className="small fw-bold">Organization Name</Form.Label>
-                <Form.Control name="org_name" placeholder="My New Property Company" onChange={handleChange} isInvalid={!!errors.org_name} disabled={loading} />
+                <Form.Control name="org_name" placeholder="Enter Organization Name" onChange={handleChange} isInvalid={!!errors.org_name} disabled={loading} />
                 <Form.Control.Feedback type="invalid">{errors.org_name}</Form.Control.Feedback>
               </Form.Group>
             )}

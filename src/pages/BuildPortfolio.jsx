@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { showSuccess,showError } from "../service/toast.js";
+import { showSuccess, showError } from "../service/toast.js";
 import api from "../service/api.js";
 
 import FloatingSignOut from "../components/FloatingSingout.jsx";
@@ -25,66 +25,72 @@ const BuildPortfolio = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async ({ file, docType }) => {
-  try {
-    setLoading(true);
-    setStep("analyzing");
+    try {
+      setLoading(true);
+      setStep("analyzing");
 
-    const analysisForm = new FormData();
-    analysisForm.append("assets", file);
+      const analysisForm = new FormData();
+      analysisForm.append("assets", file);
 
-    const leaseDetails = await runLeaseAnalysis({
-      formData: analysisForm,
-      onStepChange: (currentIndex, total) => {
-        const totalAnalyzer = total || analyzerSteps || 1;
-        const uiSteps = 6; // number of steps in AnalyzingLease
+      const leaseDetails = await runLeaseAnalysis({
+        formData: analysisForm,
+        onStepChange: (currentIndex, total) => {
+          const totalAnalyzer = total || analyzerSteps || 1;
+          const uiSteps = 6; // number of steps in AnalyzingLease
 
-        const fraction = (currentIndex + 1) / totalAnalyzer;
-        const uiIndex = Math.min(
-          uiSteps - 1,
-          Math.max(0, Math.floor(fraction * uiSteps) - 1)
-        );
+          const fraction = (currentIndex + 1) / totalAnalyzer;
+          const uiIndex = Math.min(
+            uiSteps - 1,
+            Math.max(0, Math.floor(fraction * uiSteps) - 1)
+          );
 
-        setAnalyzingStep(uiIndex);
-      },
-    });
-
-    const portfolioForm = new FormData();
-
-    portfolioForm.append("property_name", propertyData.propertyName);
-    portfolioForm.append("address", propertyData.address);
-    portfolioForm.append("unit_number", unitData.unitNumber);
-    portfolioForm.append("tenant_name", unitData.tenantName);
-    portfolioForm.append("square_ft", unitData.squareFootage);
-    portfolioForm.append("document_type", docType);
-
-    // ✅ REQUIRED by backend
-    portfolioForm.append(
-      "lease_details",
-      JSON.stringify(leaseDetails)
-    );
-    portfolioForm.append("assets", file);
-
-    const res = await api.post(
-      `${BASE_URL}/api/portfolio/`,
-      portfolioForm,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+          setAnalyzingStep(uiIndex);
         },
-      }
-    );
-    const leaseId = res.data?.data?.lease_id;
-    showSuccess("Portfolio created successfully!");
-    navigate("/analysis-success",{ state: { leaseId } });
-  } catch (err) {
-    console.error(err);
-    showError("Lease analysis failed");
-    setStep(3);
-  } finally {
-    setLoading(false);
-  }
-};
+      });
+
+      const portfolioForm = new FormData();
+
+      portfolioForm.append("property_name", propertyData.propertyName);
+      portfolioForm.append("address", propertyData.address);
+      portfolioForm.append("unit_number", unitData.unitNumber);
+      portfolioForm.append("tenant_name", unitData.tenantName);
+      portfolioForm.append("square_ft", unitData.squareFootage);
+      portfolioForm.append("document_type", docType);
+
+      // ✅ REQUIRED by backend
+      portfolioForm.append(
+        "lease_details",
+        JSON.stringify(leaseDetails)
+      );
+      portfolioForm.append("assets", file);
+
+      const res = await api.post(
+        `${BASE_URL}/api/portfolio/`,
+        portfolioForm,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const leaseId = res.data?.data?.lease_id;
+      showSuccess("Portfolio created successfully!");
+      navigate("/analysis-success", {
+        state: {
+          leaseId,
+          tenantName: unitData.tenantName,
+          unitNumber: unitData.unitNumber
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      showError("Lease analysis failed");
+      setStep(3);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
 

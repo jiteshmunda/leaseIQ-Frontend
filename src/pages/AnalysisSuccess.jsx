@@ -1,12 +1,7 @@
+import React from "react";
 import "../styles/analysisSuccess.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  FiCheckCircle,
-  FiCalendar,
-  FiDollarSign,
-  FiFileText,
-  FiHome,
-} from "react-icons/fi";
+import { CheckCircle2, LayoutDashboard, FileText, ArrowRight, User, Boxes } from "lucide-react";
 import FloatingSignOut from "../components/FloatingSingout";
 import Gif from "../assets/icon-with-3d-house-financial-bill-clock-coins.jpg";
 import AnimatedBackground from "../components/AnimatedBackground";
@@ -16,65 +11,86 @@ const AnalysisSuccess = () => {
   const location = useLocation();
 
   const leaseId = location.state?.leaseId;
+  const tenantName = location.state?.tenantName || "New Tenant";
+  const unitNumber = location.state?.unitNumber || "N/A";
 
   return (
     <>
-    <AnimatedBackground />
-    <div className="success-page">
-      <FloatingSignOut />
+      <AnimatedBackground />
+      <div className="success-page">
+        <FloatingSignOut />
 
-      <div className="success-card">
-        <div className="success-icon">
-          <FiCheckCircle size={28} />
-        </div>
+        <div className="success-content-wrapper">
+          <div className="success-card">
+            <div className="success-icon-container">
+              <div className="success-icon-bg">
+                <CheckCircle2 size={42} className="check-icon-main" />
+              </div>
+              <div className="glow-effect" />
+            </div>
 
-        <h2>Lease Analyzed Successfully!</h2>
-        <img src={Gif} sizes="" alt="Lease analyzed" className="success-gif" />
+            <div className="text-content">
+              <h2>Analysis Complete!</h2>
+              <p className="success-subtitle">
+                The lease for <strong>{tenantName}</strong> has been successfully processed and added to your portfolio.
+              </p>
+            </div>
 
-        {/* <div className="stats-grid">
-          <div className="stat-box blue">
-            <FiCalendar className="stat-icon" />
-            <h3>26</h3>
-            <p>key dates found</p>
+            <div className="insight-container">
+              <div className="insight-card-compact">
+                <div className="insight-icon-sm purple">
+                  <User size={18} />
+                </div>
+                <div className="insight-info">
+                  <span className="insight-value">{tenantName}</span>
+                  <span className="insight-label">Tenant Name</span>
+                </div>
+              </div>
+
+              <div className="insight-card-compact">
+                <div className="insight-icon-sm blue">
+                  <Boxes size={18} />
+                </div>
+                <div className="insight-info">
+                  <span className="insight-value">{unitNumber}</span>
+                  <span className="insight-label">Unit Number</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="action-grid">
+              <button
+                className="action-card primary-action"
+                disabled={!leaseId}
+                onClick={() => navigate(`/lease-details/${leaseId}`)}
+              >
+                <div className="action-icon-box">
+                  <FileText size={24} />
+                </div>
+                <div className="action-text">
+                  <span>View Details</span>
+                  <small>Review provisions & rent</small>
+                </div>
+                <ArrowRight size={18} className="arrow-hover" />
+              </button>
+
+              <button
+                className="action-card secondary-action btn-outline-primary"
+                onClick={() => navigate("/dashboard")}
+              >
+                <div className="action-icon-box">
+                  <LayoutDashboard size={24} />
+                </div>
+                <div className="action-text">
+                  <span>Dashboard</span>
+                  <small>Portfolio overview</small>
+                </div>
+                <ArrowRight size={18} className="arrow-hover" />
+              </button>
+            </div>
           </div>
-
-          <div className="stat-box purple">
-            <FiDollarSign className="stat-icon" />
-            <h3>8</h3>
-            <p>rent payment schedules found</p>
-          </div>
-
-          <div className="stat-box pink">
-            <FiFileText className="stat-icon" />
-            <h3>12</h3>
-            <p>important terms found</p>
-          </div>
-
-          <div className="stat-box indigo">
-            <FiHome className="stat-icon" />
-            <h3>4</h3>
-            <p>CAM provisions found</p>
-          </div>
-        </div> */}
-
-        <div className="secondary-actions">
-          <button
-            className="btn-secondary"
-            disabled={!leaseId}
-            onClick={() => navigate(`/lease-details/${leaseId}`)}
-          >
-            View Lease Details
-          </button>
-
-          <button
-            className="btn-secondary"
-            onClick={() => navigate("/dashboard")}
-          >
-            Go to Dashboard →
-          </button>
         </div>
       </div>
-    </div>
     </>
   );
 };

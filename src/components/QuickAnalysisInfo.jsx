@@ -25,7 +25,7 @@ const QuickAnalysisInfo = () => {
   const leaseData = sessionStorage.getItem("quickLeaseAnalysis");
   const parsedLeaseData = leaseData ? JSON.parse(leaseData) : {};
   const [showAddToPortfolio, setShowAddToPortfolio] = useState(false);
-  
+
   const [leaseDetails, setLeaseDetails] = useState(
     parsedLeaseData.leaseDetails || {}
   );
@@ -77,15 +77,26 @@ const QuickAnalysisInfo = () => {
       <div className="quick-analysis-info">
         <div className="qai-fixed-header">
           <div className="qai-header-bar">
+            {/* Animated Background Elements */}
+            <div className="header-animation-bg">
+              <ul className="header-circles">
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+                <li></li>
+              </ul>
+            </div>
+
             <div className="qai-header-left">
               <h4>{parsedLeaseData.leaseName || "Lease Report"}</h4>
               <p>Analysis complete</p>
             </div>
 
             <div className="qai-header-right">
-              <button 
-              className="btn btn-outline-light btn-sm"
-              onClick={() => setShowAddToPortfolio(true)}
+              <button
+                className="btn btn-outline-light btn-sm"
+                onClick={() => setShowAddToPortfolio(true)}
               >
                 Add to Portfolio
               </button>
@@ -95,9 +106,9 @@ const QuickAnalysisInfo = () => {
                 onClose={() => setShowAddToPortfolio(false)}
                 onSuccess={() => setShowAddToPortfolio(false)}
               />
-              <button 
-              className="btn btn-outline-light btn-sm"
-              onClick={handleAnalyzeAnotherLease}
+              <button
+                className="btn btn-outline-light btn-sm"
+                onClick={handleAnalyzeAnotherLease}
               >
                 Analyze Another Lease
               </button>

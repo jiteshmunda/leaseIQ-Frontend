@@ -89,85 +89,165 @@
 
 .admin-review-panel.dropdown-panel {
   position: absolute;
-  top: 70px;
-  /* Positioned directly below the profile nav */
+  top: 75px;
   right: 40px;
-  background: #fff;
-  width: 450px;
-  /* More compact for a dropdown look */
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-  z-index: 999;
-  animation: slideIn 0.3s ease-out;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  width: 380px;
+  border-radius: 20px;
+  padding: 0;
+  /* Remove padding to handle list better */
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  animation: slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  overflow: hidden;
 }
 
-@keyframes slideIn {
+@keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-20px) scale(0.95);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
 .panel-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #7b3ff2;
-  margin-bottom: 15px;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #f8f9ff;
   border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
 }
 
-.request-item {
+.panel-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.notification-count {
+  background: #5a3df0;
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.request-list {
+  padding: 12px;
+  max-height: 480px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  /* Stacked for dropdown width */
-  gap: 10px;
-  padding: 12px 0;
-  border-bottom: 1px solid #f9f9f9;
+  gap: 12px;
 }
 
-.request-item:last-child {
-  border-bottom: none;
+.request-toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.request-toast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: #e2e8f0;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.notification-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #7b3ff2 0%, #5a3df0 100%);
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 .request-info {
   display: flex;
   flex-direction: column;
-  text-align: left;
 }
 
 .req-name {
   font-weight: 600;
-  color: #333;
-  margin: 0;
+  color: #1a202c;
   font-size: 14px;
+  margin: 0;
 }
 
 .req-email {
-  font-size: 12px;
-  color: #777;
+  font-size: 11px;
+  color: #718096;
   margin: 0;
 }
 
 .request-btns {
   display: flex;
-  gap: 8px;
-  justify-content: flex-start;
+  gap: 6px;
 }
 
 .btn-approve,
 .btn-reject {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btn-approve {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.btn-approve:hover {
+  background: #16a34a;
+  color: #fff;
+}
+
+.btn-reject {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.btn-reject:hover {
+  background: #e11d48;
+  color: #fff;
+}
+
+.no-requests-toast {
+  text-align: center;
+  padding: 24px;
+  color: #a0aec0;
+  font-size: 14px;
 }
 
 /* Rest of existing Landing UI styles... */

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
 import FloatingSignOut from "../components/FloatingSingout";
 import api from "../service/api.js";
-import { User, Check, X, Clock, ChevronDown } from "lucide-react";
+import { User, Check, X, Bell, ChevronDown } from "lucide-react";
 import { showError, showSuccess } from "../service/toast";
 import AnimatedBackground from "../components/AnimatedBackground";
 
@@ -134,25 +134,33 @@ const Landing = () => {
         {role === "org_admin" && showAdminPanel && (
           <div className="admin-review-panel dropdown-panel">
             <div className="panel-header">
-              <Clock size={20} />
-              <h4>Pending User Requests ({pendingUsers.length})</h4>
+              <Bell size={20} />
+              <h4>Notifications</h4>
+              {pendingUsers.length > 0 && <span className="notification-count">{pendingUsers.length}</span>}
             </div>
             <div className="request-list">
               {pendingUsers.length === 0 ? (
-                <p className="no-requests">No pending requests at this time.</p>
+                <div className="no-requests-toast">
+                  <p>No new notifications</p>
+                </div>
               ) : (
                 pendingUsers.map((user) => (
-                  <div key={user._id} className="request-item">
-                    <div className="request-info">
-                      <span className="req-name">{user.name}</span>
-                      <span className="req-email">{user.email}</span>
+                  <div key={user._id} className="request-toast">
+                    <div className="toast-content">
+                      <div className="notification-avatar">
+                        {user.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U'}
+                      </div>
+                      <div className="request-info">
+                        <span className="req-name">{user.name}</span>
+                        <span className="req-email">{user.email}</span>
+                      </div>
                     </div>
                     <div className="request-btns">
-                      <button className="btn-approve" onClick={() => handleReview(user._id, "approve")}>
-                        <Check size={16} /> Approve
+                      <button className="btn-approve" onClick={() => handleReview(user._id, "approve")} title="Approve">
+                        <Check size={14} />
                       </button>
-                      <button className="btn-reject" onClick={() => handleReview(user._id, "reject")}>
-                        <X size={16} /> Reject
+                      <button className="btn-reject" onClick={() => handleReview(user._id, "reject")} title="Reject">
+                        <X size={14} />
                       </button>
                     </div>
                   </div>

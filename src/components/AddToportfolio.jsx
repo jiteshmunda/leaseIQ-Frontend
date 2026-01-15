@@ -1,5 +1,19 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Form, Button, Modal, Row, Col } from "react-bootstrap";
+import { Form, Modal, Row, Col } from "react-bootstrap";
+import {
+  Building2,
+  MapPin,
+  User,
+  Hash,
+  Maximize2,
+  CircleDollarSign,
+  FileUp,
+  X,
+  CheckCircle2,
+  Loader2,
+  PlusCircle,
+  AlertCircle
+} from "lucide-react";
 import api from "../service/api";
 import "../styles/addUnit.css";
 import { showError, showSuccess } from "../service/toast";
@@ -22,11 +36,10 @@ function AddToportfolio({ show, onClose, onSuccess }) {
   const getStoredLeaseData = useCallback(() => {
     return JSON.parse(sessionStorage.getItem("quickLeaseAnalysis") || "{}");
   }, []);
-  
-  // Parse the stored lease analysis data
+
   const storedLeaseData = getStoredLeaseData();
   const leaseDetail = storedLeaseData.leaseDetails || {};
-  
+
   const [form, setForm] = useState({
     property_id: "",
     property_name: "",
@@ -40,33 +53,18 @@ function AddToportfolio({ show, onClose, onSuccess }) {
   const [errors, setErrors] = useState({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  // Helper function to convert base64 back to File object
   const base64ToFile = (base64Data, filename) => {
     if (!base64Data) return null;
-    
     try {
-      // Extract content type and base64 data
       const arr = base64Data.split(',');
-      if (arr.length < 2) {
-        console.error("Invalid base64 format: missing comma separator");
-        return null;
-      }
-      
+      if (arr.length < 2) return null;
       const mimeMatch = arr[0].match(/:(.*?);/);
-      if (!mimeMatch || !mimeMatch[1]) {
-        console.error("Invalid base64 format: missing MIME type");
-        return null;
-      }
-      
+      if (!mimeMatch || !mimeMatch[1]) return null;
       const mime = mimeMatch[1];
       const bstr = atob(arr[1]);
       let n = bstr.length;
       const u8arr = new Uint8Array(n);
-      
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-      
+      while (n--) u8arr[n] = bstr.charCodeAt(n);
       return new File([u8arr], filename, { type: mime });
     } catch (error) {
       console.error("Error converting base64 to file:", error);
@@ -97,8 +95,6 @@ function AddToportfolio({ show, onClose, onSuccess }) {
 
     const loadStoredDocument = async () => {
       const uploaded = getStoredLeaseData().uploadedFile;
-
-      // Preferred path: IndexedDB
       if (uploaded?.id) {
         try {
           const record = await getLeaseFile(uploaded.id);
@@ -113,19 +109,14 @@ function AddToportfolio({ show, onClose, onSuccess }) {
         } catch (e) {
           console.error("Failed to load lease file from IndexedDB", e);
         }
-
         showError("Stored lease file not found. Please re-analyze the lease.");
         return;
       }
 
-      // Backward-compatible fallback: base64 stored in sessionStorage
       if (uploaded?.base64) {
         const file = base64ToFile(uploaded.base64, uploaded.name);
-        if (file) {
-          setDocument(file);
-        } else {
-          showError("Failed to load stored lease file");
-        }
+        if (file) setDocument(file);
+        else showError("Failed to load stored lease file");
       }
     };
 
@@ -151,101 +142,56 @@ function AddToportfolio({ show, onClose, onSuccess }) {
   };
 
   const validate = () => {
-      const e = {};
+    const e = {};
+    if (useExistingProperty) {
+      if (!form.property_id) e.property_id = "Select property";
+    } else {
+      const propertyName = String(form.property_name || "").trim();
+      if (!propertyName) e.property_name = "Property name required";
+      else if (propertyName.length > 30) e.property_name = "Max 30 chars";
+      else if (!/^[A-Za-z]/.test(propertyName)) e.property_name = "Must start with letter";
+      else if (!/^[A-Za-z0-9 ]+$/.test(propertyName)) e.property_name = "Letters, numbers, spaces only";
 
-  /* ---------------- PROPERTY ---------------- */
-  if (useExistingProperty) {
-    if (!form.property_id) {
-      e.property_id = "Select property";
-    }
-  } else {
-    const propertyName = String(form.property_name || "").trim();
-
-    if (!propertyName) {
-      e.property_name = "Property name required";
-    } else if (propertyName.length > 30) {
-      e.property_name = "Property name must not exceed 30 characters";
-    } else if (!/^[A-Za-z]/.test(propertyName)) {
-      e.property_name = "Property name must start with a letter";
-    } else if (!/^[A-Za-z0-9 ]+$/.test(propertyName)) {
-      e.property_name =
-        "Property name can contain only letters, numbers, and spaces";
+      const address = String(form.address || "").trim();
+      if (!address) e.address = "Address is required";
+      else if (address.length > 60) e.address = "Max 60 chars";
+      else if (!/^[A-Za-z0-9 ,.-]+$/.test(address)) e.address = "Alphanumeric, basic punctuation only";
     }
 
-    const address = String(form.address || "").trim();
-    if (!address) {
-      e.address = "Address is required";
-    } else if (address.length > 60) {
-      e.address = "Address must not exceed 60 characters";
-    } else if (!/^[A-Za-z0-9 ,.-]+$/.test(address)) {
-      e.address =
-        "Address can contain only letters, numbers, commas, dots and hyphens";
+    if (useExistingTenant) {
+      if (!tenantId) e.tenant_id = "Select tenant";
+    } else {
+      const tenantName = String(form.tenant_name || "").trim();
+      if (!tenantName) e.tenant_name = "Tenant name required";
+      else if (tenantName.length > 30) e.tenant_name = "Max 30 chars";
+      else if (!/^[A-Za-z]/.test(tenantName)) e.tenant_name = "Must start with letter";
+      else if (!/^[A-Za-z ]+$/.test(tenantName)) e.tenant_name = "Letters and spaces only";
     }
-  }
 
-  /* ---------------- TENANT ---------------- */
-  if (useExistingTenant) {
-    if (!tenantId) {
-      e.tenant_id = "Select tenant";
+    const unitNumber = String(form.unit_number || "").trim();
+    if (!unitNumber) e.unit_number = "Unit number required";
+    else if (unitNumber.length > 15) e.unit_number = "Max 15 chars";
+    else if (!/^[A-Za-z0-9]/.test(unitNumber)) e.unit_number = "Must start with letter/number";
+    else if (!/^[A-Za-z0-9-]+$/.test(unitNumber)) e.unit_number = "Letters, numbers, hyphens only";
+
+    const sqft = String(form.square_ft ?? "").trim();
+    if (sqft) {
+      if (!/^\d+$/.test(sqft)) e.square_ft = "Numbers only";
+      else if (sqft.length > 7) e.square_ft = "Value too large";
+      else if (Number(sqft) <= 0) e.square_ft = "Must be > 0";
     }
-  } else {
-    const tenantName = String(form.tenant_name || "").trim();
 
-    if (!tenantName) {
-      e.tenant_name = "Tenant name required";
-    } else if (tenantName.length > 30) {
-      e.tenant_name = "Tenant name must not exceed 30 characters";
-    } else if (!/^[A-Za-z]/.test(tenantName)) {
-      e.tenant_name = "Tenant name must start with a letter";
-    } else if (!/^[A-Za-z ]+$/.test(tenantName)) {
-      e.tenant_name = "Tenant name can contain only letters and spaces";
+    const rent = String(form.monthly_rent ?? "").trim();
+    if (rent) {
+      if (!/^\d+$/.test(rent)) e.monthly_rent = "Numbers only";
+      else if (rent.length > 9) e.monthly_rent = "Value too large";
+      else if (Number(rent) <= 0) e.monthly_rent = "Must be > 0";
     }
-  }
-
-  /* ---------------- UNIT NUMBER ---------------- */
-  const unitNumber = String(form.unit_number || "").trim();
-
-  if (!unitNumber) {
-    e.unit_number = "Unit number required";
-  } else if (unitNumber.length > 15) {
-    e.unit_number = "Unit number must not exceed 15 characters";
-  } else if (!/^[A-Za-z0-9]/.test(unitNumber)) {
-    e.unit_number = "Unit number must start with a letter or number";
-  } else if (!/^[A-Za-z0-9-]+$/.test(unitNumber)) {
-    e.unit_number =
-      "Unit number can contain only letters, numbers, and hyphens";
-  }
-
-  /* ---------------- SQUARE FEET (OPTIONAL) ---------------- */
-  const sqft = String(form.square_ft ?? "").trim();
-  if (sqft) {
-    if (!/^\d+$/.test(sqft)) {
-      e.square_ft = "Square feet must contain only numbers";
-    } else if (sqft.length > 7) {
-      e.square_ft = "Square feet value is too large";
-    } else if (Number(sqft) <= 0) {
-      e.square_ft = "Square feet must be greater than 0";
-    }
-  }
-
-  /* ---------------- MONTHLY RENT (OPTIONAL) ---------------- */
-  const rent = String(form.monthly_rent ?? "").trim();
-  if (rent) {
-    if (!/^\d+$/.test(rent)) {
-      e.monthly_rent = "Monthly rent must contain only numbers";
-    } else if (rent.length > 9) {
-      e.monthly_rent = "Monthly rent value is too large";
-    } else if (Number(rent) <= 0) {
-      e.monthly_rent = "Monthly rent must be greater than 0";
-    }
-  }
 
     if (!document) e.document = "Upload lease PDF";
-
     return e;
   };
 
-  /* -------------------- SUBMIT -------------------- */
   const handleSubmit = async () => {
     setSubmitAttempted(true);
     const e = validate();
@@ -257,8 +203,6 @@ function AddToportfolio({ show, onClose, onSuccess }) {
 
     try {
       setLoading(true);
-
-      // Use the stored document
       if (!document) {
         showError("Lease document is required");
         setLoading(false);
@@ -266,26 +210,15 @@ function AddToportfolio({ show, onClose, onSuccess }) {
       }
 
       const payload = new FormData();
-
       payload.append("unit_number", form.unit_number);
+      if (form.square_ft) payload.append("square_ft", form.square_ft);
+      if (form.monthly_rent) payload.append("monthly_rent", form.monthly_rent);
 
-      if (form.square_ft !== "" && form.square_ft !== null && form.square_ft !== undefined) {
-        payload.append("square_ft", form.square_ft);
-      }
+      if (useExistingTenant) payload.append("tenant_id", tenantId);
+      else payload.append("tenant_name", form.tenant_name);
 
-      if (form.monthly_rent !== "" && form.monthly_rent !== null && form.monthly_rent !== undefined) {
-        payload.append("monthly_rent", form.monthly_rent);
-      }
-
-      if (useExistingTenant) {
-        payload.append("tenant_id", tenantId);
-      } else {
-        payload.append("tenant_name", form.tenant_name);
-      }
-
-      if (useExistingProperty) {
-        payload.append("property_id", form.property_id);
-      } else {
+      if (useExistingProperty) payload.append("property_id", form.property_id);
+      else {
         payload.append("property_name", form.property_name);
         payload.append("address", form.address);
       }
@@ -301,25 +234,20 @@ function AddToportfolio({ show, onClose, onSuccess }) {
         },
       });
 
-      // Cleanup: remove stored file from IndexedDB after successful upload
       try {
         const stored = getStoredLeaseData();
         const fileId = stored?.uploadedFile?.id;
         if (fileId) {
           await deleteLeaseFile(fileId);
-
-          // Remove the reference so we don't try to load a deleted file later
           const next = { ...stored };
-          if (next.uploadedFile) {
-            delete next.uploadedFile.id;
-          }
+          if (next.uploadedFile) delete next.uploadedFile.id;
           sessionStorage.setItem("quickLeaseAnalysis", JSON.stringify(next));
         }
       } catch (e) {
         console.warn("Failed to cleanup stored lease file", e);
       }
 
-      showSuccess("Portfolio added successfully");
+      showSuccess("Added to portfolio successfully");
       onSuccess?.();
       onClose();
     } catch (err) {
@@ -329,209 +257,312 @@ function AddToportfolio({ show, onClose, onSuccess }) {
     }
   };
 
-  // Handle file upload separately (optional manual upload)
-//   const handleFileUpload = (e) => {
-//     const file = e.target.files[0];
-//     if (file) {
-//       setDocument(file);
-//     }
-//   };
-
   return (
-    <Modal show={show} onHide={onClose} centered size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>Add To Portfolio</Modal.Title>
+    <Modal
+      show={show}
+      onHide={onClose}
+      centered
+      size="lg"
+      className="add-unit-modal"
+      backdrop={loading ? "static" : true}
+    >
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner-container">
+            <div className="spinner-ring"></div>
+            <Loader2 className="spinner-icon" size={32} />
+          </div>
+          <p className="loading-text">Saving to Portfolio</p>
+          <p className="loading-subtext">Updating your database...</p>
+        </div>
+      )}
+
+      <Modal.Header closeButton={!loading}>
+        <Modal.Title>
+          <div className="d-flex align-items-center gap-2">
+            <PlusCircle className="text-primary" size={24} />
+            <span>Add To Portfolio</span>
+          </div>
+        </Modal.Title>
       </Modal.Header>
 
       <Modal.Body>
         <Form>
-          <Row className="mb-3">
-            {/* PROPERTY COLUMN */}
-            <Col md={6}>
-              <h6>
-                Property
-                <span className="required-star">*</span>
-              </h6>
+          <div className="form-section-title">
+            <div className="d-flex align-items-center gap-1">
+              <Building2 size={16} />
+              <User size={16} />
+            </div>
+            <span>Property & Tenant Information</span>
+          </div>
 
+          <Row className="mb-4">
+            <Col md={6}>
               <Form.Check
-                className="mb-2"
+                type="switch"
+                id="property-toggle-portfolio"
                 label="Use Existing Property"
                 checked={useExistingProperty}
-                onChange={(e) => setUseExistingProperty(e.target.checked)}
+                className="custom-toggle mb-3"
+                onChange={(e) => {
+                  setUseExistingProperty(e.target.checked);
+                  setSubmitAttempted(false);
+                  setErrors(prev => ({ ...prev, property_id: null, property_name: null, address: null }));
+                }}
+                disabled={loading}
               />
 
               {useExistingProperty ? (
-                <Form.Select
-                  name="property_id"
-                  value={form.property_id}
-                  onChange={handleChange}
-                  isInvalid={submitAttempted && !!errors.property_id}
-                >
-                  <option value="">Select Property</option>
-                  {properties.map((p) => (
-                    <option key={p._id} value={p._id}>
-                      {p.property_name}
-                    </option>
-                  ))}
-                </Form.Select>
+                <Form.Group>
+                  <div className="input-with-icon">
+                    <Building2 size={18} className="field-icon" />
+                    <Form.Select
+                      name="property_id"
+                      value={form.property_id}
+                      onChange={handleChange}
+                      isInvalid={submitAttempted && !!errors.property_id}
+                      disabled={loading}
+                    >
+                      <option value="">Select Property</option>
+                      {properties.map((p) => (
+                        <option key={p._id} value={p._id}>
+                          {p.property_name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.property_id}
+                    </Form.Control.Feedback>
+                  </div>
+                </Form.Group>
               ) : (
                 <>
-                  <Form.Control
-                    className="mb-2"
-                    name="property_name"
-                    value={form.property_name}
-                    placeholder="Property name"
-                    onChange={handleChange}
-                    isInvalid={submitAttempted && !!errors.property_name}
-                    disabled={loading}
-                  />
-                  {submitAttempted && errors.property_name && (
-                    <Form.Text className="text-danger">{errors.property_name}</Form.Text>
-                  )}
+                  <Form.Group className="mb-3">
+                    <div className="input-with-icon">
+                      <Building2 size={18} className="field-icon" />
+                      <Form.Control
+                        name="property_name"
+                        value={form.property_name}
+                        placeholder="Property Name"
+                        onChange={handleChange}
+                        isInvalid={submitAttempted && !!errors.property_name}
+                        disabled={loading}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.property_name}
+                      </Form.Control.Feedback>
+                    </div>
+                  </Form.Group>
 
-                  <Form.Control
-                    name="address"
-                    value={form.address}
-                    placeholder="Address"
-                    onChange={handleChange}
-                    isInvalid={submitAttempted && !!errors.address}
-                    disabled={loading}
-                  />
-                  {submitAttempted && errors.address && (
-                    <Form.Text className="text-danger">{errors.address}</Form.Text>
-                  )}
+                  <Form.Group>
+                    <div className="input-with-icon">
+                      <MapPin size={18} className="field-icon" />
+                      <Form.Control
+                        name="address"
+                        value={form.address}
+                        placeholder="Address"
+                        onChange={handleChange}
+                        isInvalid={submitAttempted && !!errors.address}
+                        disabled={loading}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.address}
+                      </Form.Control.Feedback>
+                    </div>
+                  </Form.Group>
                 </>
               )}
             </Col>
 
-            {/* TENANT COLUMN */}
             <Col md={6}>
-              <h6>
-                Tenant
-                <span className="required-star">*</span>
-              </h6>
-
               <Form.Check
-                className="mb-2"
+                type="switch"
+                id="tenant-toggle-portfolio"
                 label="Use Existing Tenant"
                 checked={useExistingTenant}
+                className="custom-toggle mb-3"
                 onChange={(e) => {
                   setUseExistingTenant(e.target.checked);
                   setTenantId("");
                   setForm((prev) => ({ ...prev, tenant_name: "" }));
+                  setSubmitAttempted(false);
+                  setErrors(prev => ({ ...prev, tenant_id: null, tenant_name: null }));
                 }}
+                disabled={loading}
               />
 
               {useExistingTenant ? (
-                <Form.Select
-                  value={tenantId}
-                  onChange={(e) => setTenantId(e.target.value)}
-                  isInvalid={submitAttempted && errors.tenant_id}
-                >
-                  <option value="">Select Tenant</option>
-                  {tenants.map((t) => (
-                    <option key={t._id} value={t._id}>
-                      {t.tenant_name}
-                    </option>
-                  ))}
-                </Form.Select>
+                <Form.Group>
+                  <div className="input-with-icon">
+                    <User size={18} className="field-icon" />
+                    <Form.Select
+                      value={tenantId}
+                      onChange={(e) => setTenantId(e.target.value)}
+                      isInvalid={submitAttempted && !!errors.tenant_id}
+                      disabled={loading}
+                    >
+                      <option value="">Select Tenant</option>
+                      {tenants.map((t) => (
+                        <option key={t._id} value={t._id}>
+                          {t.tenant_name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.tenant_id}
+                    </Form.Control.Feedback>
+                  </div>
+                </Form.Group>
               ) : (
-                <Form.Control
-                  name="tenant_name"
-                  placeholder="Tenant name"
-                  onChange={handleChange}
-                  value={form.tenant_name}
-                  isInvalid={submitAttempted && errors.tenant_name}
-                  disabled={loading}
-                />
-              )}
-              {submitAttempted && errors.tenant_id && (
-                <Form.Text className="text-danger">{errors.tenant_id}</Form.Text>
-              )}
-              {submitAttempted && errors.tenant_name && (
-                <Form.Text className="text-danger">{errors.tenant_name}</Form.Text>
-              )}
-            </Col>
-          </Row>
-
-          {/* UNIT DETAILS */}
-          <Row className="mb-3">
-            <Col>
-            <h6>
-              Unit
-              <span className="required-star">*</span>
-            </h6>
-              <Form.Control 
-                name="unit_number"
-                value={form.unit_number}
-                placeholder="Unit No" 
-                onChange={handleChange}
-                isInvalid={submitAttempted && errors.unit_number}
-                disabled={loading}
-              />
-              {submitAttempted && errors.unit_number && (
-                <Form.Text className="text-danger">{errors.unit_number}</Form.Text>
-              )}
-            </Col>
-            <Col>
-            <h6>Square Feet</h6>
-              <Form.Control
-                type="number"
-                name="square_ft"
-                value={form.square_ft}
-                placeholder="Square Feet"
-                onChange={handleChange}
-                onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '')} 
-                isInvalid={submitAttempted && errors.square_ft}
-                disabled={loading}
-              />
-              {submitAttempted && errors.square_ft && (
-                <Form.Text className="text-danger">{errors.square_ft}</Form.Text>
-              )}
-            </Col>
-            <Col>
-            <h6>Monthly Rent</h6>
-              <Form.Control
-                type="number"
-                name="monthly_rent"
-                value={form.monthly_rent}
-                placeholder="Monthly Rent"
-                onChange={handleChange}
-                onInput={(e) => {
-                  e.target.value = e.target.value.replace(/\D/g, '');
-                }}
-                isInvalid={submitAttempted && errors.monthly_rent}
-                disabled={loading}
-              />
-              {submitAttempted && errors.monthly_rent && (
-                <Form.Text className="text-danger">{errors.monthly_rent}</Form.Text>
+                <Form.Group>
+                  <div className="input-with-icon">
+                    <User size={18} className="field-icon" />
+                    <Form.Control
+                      name="tenant_name"
+                      placeholder="Tenant Name"
+                      onChange={handleChange}
+                      value={form.tenant_name}
+                      isInvalid={submitAttempted && !!errors.tenant_name}
+                      disabled={loading}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.tenant_name}
+                    </Form.Control.Feedback>
+                  </div>
+                </Form.Group>
               )}
             </Col>
           </Row>
 
-          {/* DOCUMENT UPLOAD (Already pre-filled, but allows override) */}
-          <Row className="mb-3">
-            <Col>
-              <h6>Lease Document</h6>
-              
-              {document && (
-                <Form.Text className="text-muted">
-                  Using file: {document.name}
-                </Form.Text>
-              )}
-              {submitAttempted && errors.document && (
-                <Form.Text className="text-danger">{errors.document}</Form.Text>
-              )}
+          <div className="form-section-title mt-2">
+            <Hash size={16} />
+            <span>Unit Specifications</span>
+          </div>
+
+          <Row className="mb-4">
+            <Col md={4}>
+
+              <Form.Group>
+                <Form.Label className="form-icon-label">
+                  Unit Number <span className="text-danger">*</span>
+                </Form.Label>
+                <div className="input-with-icon">
+                  <Hash size={18} className="field-icon" />
+                  <Form.Control
+                    name="unit_number"
+                    value={form.unit_number}
+                    placeholder="Unit No"
+                    onChange={handleChange}
+                    isInvalid={submitAttempted && !!errors.unit_number}
+                    disabled={loading}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.unit_number}
+                  </Form.Control.Feedback>
+                </div>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+
+              <Form.Group>
+                <Form.Label className="form-icon-label">Square Feet</Form.Label>
+                <div className="input-with-icon">
+                  <Maximize2 size={18} className="field-icon" />
+                  <Form.Control
+                    type="number"
+                    name="square_ft"
+                    value={form.square_ft}
+                    placeholder="Square Feet"
+                    onChange={handleChange}
+                    onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '')}
+                    isInvalid={submitAttempted && !!errors.square_ft}
+                    disabled={loading}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.square_ft}
+                  </Form.Control.Feedback>
+                </div>
+              </Form.Group>
+            </Col>
+            <Col md={4}>
+              <Form.Group>
+                <Form.Label className="form-icon-label">Monthly Rent ($)</Form.Label>
+                <div className="input-with-icon">
+                  <CircleDollarSign size={18} className="field-icon" />
+                  <Form.Control
+                    type="number"
+                    name="monthly_rent"
+                    value={form.monthly_rent}
+                    placeholder="Monthly Rent"
+                    onChange={handleChange}
+                    onInput={(e) => e.target.value = e.target.value.replace(/\D/g, '')}
+                    isInvalid={submitAttempted && !!errors.monthly_rent}
+                    disabled={loading}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.monthly_rent}
+                  </Form.Control.Feedback>
+                </div>
+              </Form.Group>
             </Col>
           </Row>
+
+          <div className="form-section-title mt-2">
+            <FileUp size={16} />
+            <span>Lease Document</span>
+          </div>
+
+          <Form.Group className="mb-2">
+            <div className={`file-upload-container ${document ? "has-file" : ""} ${submitAttempted && errors.document ? "border-danger" : ""}`}>
+              {document ? (
+                <div className="d-flex flex-column align-items-center">
+                  <CheckCircle2 size={40} className="text-success mb-2" />
+                  <p className="mb-0 fw-bold">{document.name}</p>
+                  <small className="text-muted">Analyzed Document Linked</small>
+                </div>
+              ) : (
+                <div className="d-flex flex-column align-items-center">
+                  <AlertCircle size={40} className="text-danger mb-2" />
+                  <p className="mb-0 fw-bold text-danger">No Lease Found</p>
+                  <small className="text-muted">Analyze a lease first to add to portfolio</small>
+                </div>
+              )}
+            </div>
+            {submitAttempted && errors.document && (
+              <div className="text-danger small mt-2 d-flex align-items-center gap-1">
+                <AlertCircle size={14} />
+                {errors.document}
+              </div>
+            )}
+          </Form.Group>
         </Form>
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="secondary" onClick={onClose} disabled={loading}>Cancel</Button>
-        <Button onClick={handleSubmit} disabled={loading}>
-          {loading ? "Adding..." : "Add Portfolio"}
-        </Button>
+        <button
+          className="btn-premium-secondary"
+          onClick={onClose}
+          disabled={loading}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn-premium-primary"
+          onClick={handleSubmit}
+          disabled={loading || !document}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="spinner-border-sm animate-spin" size={18} />
+              <span>Processing...</span>
+            </>
+          ) : (
+            <>
+              <PlusCircle size={18} />
+              <span>Add to Portfolio</span>
+            </>
+          )}
+        </button>
       </Modal.Footer>
     </Modal>
   );
