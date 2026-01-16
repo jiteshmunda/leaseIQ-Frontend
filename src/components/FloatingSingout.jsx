@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import {Button, Modal} from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import "../styles/signout.css";
 
 const DRAG_THRESHOLD = 5; // px
 
-const FloatingSignOut = () => {
+const FloatingSignOut = ({ shiftLeft }) => {
   const navigate = useNavigate();
 
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -46,7 +46,7 @@ const FloatingSignOut = () => {
   };
 
   const handleClick = () => {
-    if (didDrag.current) return; 
+    if (didDrag.current) return;
 
     setShowConfirm(true);
   };
@@ -74,9 +74,9 @@ const FloatingSignOut = () => {
   return (
     <>
       <div
-        className="floating-signout"
+        className={`floating-signout ${shiftLeft ? "shifted" : ""}`}
         style={{
-          right: 24,
+          right: shiftLeft ? 384 : 24,
           bottom: 24,
           transform: `translate(-${offset.x}px, -${offset.y}px)`,
         }}

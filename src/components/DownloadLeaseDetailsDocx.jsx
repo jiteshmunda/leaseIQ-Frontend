@@ -357,8 +357,8 @@ const resolveAuditRisks = (auditObject) => {
         const refs = Array.isArray(item.page_reference)
           ? item.page_reference
           : Array.isArray(item.page_references)
-          ? item.page_references
-          : null;
+            ? item.page_references
+            : null;
 
         if (refs && refs.length > 0) {
           return { ...item, page_number: refs[0] };
@@ -916,12 +916,12 @@ const DownloadLeaseDetailsDocx = ({
               Array.isArray(item?.page_references)
                 ? item.page_references
                 : Array.isArray(item?.page_reference)
-                ? item.page_reference
-                : item?.page_number != null
-                ? [item.page_number]
-                : item?.page != null
-                ? [item.page]
-                : [];
+                  ? item.page_reference
+                  : item?.page_number != null
+                    ? [item.page_number]
+                    : item?.page != null
+                      ? [item.page]
+                      : [];
             const recommendedAction = item?.recommended_action;
 
             children.push(
@@ -999,8 +999,8 @@ const DownloadLeaseDetailsDocx = ({
           const citations = Array.isArray(camSingle.citations)
             ? camSingle.citations.filter(Boolean)
             : camSingle.citations
-            ? [String(camSingle.citations)]
-            : [];
+              ? [String(camSingle.citations)]
+              : [];
           const pageNumber = camSingle.pageNumber || camSingle.page_number;
           if (pageNumber && !citations.some((c) => String(c).includes(String(pageNumber)))) {
             citations.push(`Page ${pageNumber}`);
@@ -1085,7 +1085,7 @@ const DownloadLeaseDetailsDocx = ({
   return (
     <button
       type="button"
-      className={buttonClassName || "ai-btn"}
+      className={buttonClassName || "download-btn"}
       onClick={handleDownload}
       disabled={disabled || isGenerating}
       title={isGenerating ? "Preparing DOCX..." : "Download details as DOCX"}

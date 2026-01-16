@@ -2,12 +2,8 @@ import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Check if parallel execution is enabled via environment variable
 const USE_PARALLEL = import.meta.env.VITE_PARALLEL === "true" || import.meta.env.VITE_PARALLEL === true;
 
-// Exported so callers can know how many backend
-// analysis steps are run, for progress mapping.
-// Note: cam-single is excluded from initial analysis and triggered on-demand
 export const LEASE_ANALYSIS_STEPS = [
   { key: "info", endpoint: "/api/debug/info" },
   { key: "space", endpoint: "/api/debug/space" },
@@ -42,12 +38,8 @@ export const useLeaseAnalyzer = () => {
         leaseDetails[key] = data;
       });
     } else {
-      // Run analysis steps sequentially (original behavior)
       for (let i = 0; i < totalSteps; i++) {
         const step = LEASE_ANALYSIS_STEPS[i];
-
-        // Report both the current index and total number of
-        // analysis steps so callers can normalize progress.
         if (onStepChange) {
           onStepChange(i, totalSteps);
         }

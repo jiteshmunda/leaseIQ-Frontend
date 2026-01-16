@@ -6,11 +6,14 @@ import {
   FiUpload,
   FiFileText,
   FiEye,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import AiLeaseAssistant from "../components/AiLeaseAssistant";
 import LeaseMainContent from "../components/LeaseMainContent";
 import DownloadLeaseDetailsDocx from "../components/DownloadLeaseDetailsDocx";
+import { Sparkles } from "lucide-react";
 import "../styles/leaseDetails.css";
 import FloatingSignOut from "../components/FloatingSingout";
 import { showSuccess, showError } from "../service/toast";
@@ -29,6 +32,30 @@ const LeaseDetails = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [pendingUploadFile, setPendingUploadFile] = useState(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    return localStorage.getItem("leaseSidebarCollapsed") === "true";
+  });
+  const [hoveredDocForTooltip, setHoveredDocForTooltip] = useState(null);
+  const [tooltipTop, setTooltipTop] = useState(0);
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const newState = !prev;
+      localStorage.setItem("leaseSidebarCollapsed", newState);
+      return newState;
+    });
+  };
+
+  const handleMouseEnterDoc = (e, doc) => {
+    if (!isSidebarCollapsed) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredDocForTooltip(doc);
+    setTooltipTop(rect.top + rect.height / 2);
+  };
+
+  const handleMouseLeaveDoc = () => {
+    setHoveredDocForTooltip(null);
+  };
 
   const uploadInputRef = useRef(null);
 
@@ -338,7 +365,7 @@ const LeaseDetails = () => {
 
   return (
     <div className="lease-page">
-      <FloatingSignOut />
+      <FloatingSignOut shiftLeft={showAiAssistant} />
 
       <header className="lease-header">
         {/* Animated Background Elements */}
@@ -370,17 +397,36 @@ const LeaseDetails = () => {
         </div>
 
         <div className="header-right">
+          <div className="ai-btn-wrapper">
+            <button
+              className="ai-button premium-ai-btn"
+              onClick={() => setShowAiAssistant(true)}
+            >
+              <Sparkles className="sparkle-icon" size={18} />
+              <span>AI Assistant</span>
+            </button>
+          </div>
           <DownloadLeaseDetailsDocx
             leaseDetails={documentDetails}
             selectedDocumentName={selectedDocumentName}
             disabled={detailsLoading || !documentDetails}
           />
         </div>
+
       </header>
 
-      <div className="lease-body">
+      <div className={`lease-body ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
         <aside className="lease-sidebar">
-          <h4>{lease?.tenant?.tenant_name}</h4>
+          <div className="sidebar-header">
+            <h4>{lease?.tenant?.tenant_name}</h4>
+            <button
+              className="sidebar-toggle"
+              onClick={toggleSidebar}
+              title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isSidebarCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
+            </button>
+          </div>
           <span className="sidebar-label">Document Library</span>
 
           <div
@@ -399,6 +445,8 @@ const LeaseDetails = () => {
                 role="button"
                 tabIndex={0}
                 onClick={() => setSelectedDocId(doc._id)}
+                onMouseEnter={(e) => handleMouseEnterDoc(e, doc)}
+                onMouseLeave={handleMouseLeaveDoc}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
@@ -406,6 +454,7 @@ const LeaseDetails = () => {
                   }
                 }}
               >
+                {doc._id === selectedDocId && <div className="active-indicator" />}
                 <div className="doc-row">
                   <div className="doc-icon-wrapper">
                     <FiFileText size={16} />
@@ -435,6 +484,15 @@ const LeaseDetails = () => {
           </div>
         </aside>
 
+        {isSidebarCollapsed && hoveredDocForTooltip && (
+          <div
+            className="floating-sidebar-tooltip"
+            style={{ top: tooltipTop }}
+          >
+            {hoveredDocForTooltip.document_name}
+          </div>
+        )}
+
         <main className="lease-content">
           {detailsLoading || !documentDetails ? (
             <div className="lease-content-loading">
@@ -461,84 +519,86 @@ const LeaseDetails = () => {
         </main>
       </div>
 
-      {showUploadModal && (
-        <div
-          className="modal fade show"
-          style={{ display: "block", background: "rgba(0,0,0,.4)" }}
-        >
-          <div className="modal-dialog modal-dialog-centered upload-modal">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5>Upload Amendment</h5>
-                <button
-                  className="btn-close"
-                  onClick={closeUploadModal}
-                  disabled={isUploadingDocument}
-                />
-              </div>
-
-              <div className="modal-body">
-                <input
-                  ref={uploadInputRef}
-                  type="file"
-                  accept=".pdf"
-                  hidden
-                  disabled={isUploadingDocument}
-                  onChange={(e) => setPendingUploadFile(e.target.files?.[0] ?? null)}
-                />
-
-                <div
-                  className="upload-dropzone"
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setPendingUploadFile(e.dataTransfer.files?.[0] ?? null);
-                  }}
-                >
-                  <FiUpload size={22} />
-                  <p>
-                    {isUploadingDocument
-                      ? "Uploading document..."
-                      : pendingUploadFile
-                        ? `Selected: ${pendingUploadFile.name}`
-                        : "Drag and drop PDF here"}
-                  </p>
-
+      {
+        showUploadModal && (
+          <div
+            className="modal fade show"
+            style={{ display: "block", background: "rgba(0,0,0,.4)" }}
+          >
+            <div className="modal-dialog modal-dialog-centered upload-modal">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5>Upload Amendment</h5>
                   <button
-                    className="btn btn-primary btn-sm"
+                    className="btn-close"
+                    onClick={closeUploadModal}
                     disabled={isUploadingDocument}
-                    onClick={() => uploadInputRef.current?.click()}
-                  >
-                    Browse File
-                  </button>
+                  />
+                </div>
 
-                  <button
-                    className="btn btn-outline-primary btn-sm"
-                    style={{ marginLeft: 8 }}
-                    disabled={isUploadingDocument || !pendingUploadFile}
-                    onClick={() => uploadLeaseDocument(pendingUploadFile)}
+                <div className="modal-body">
+                  <input
+                    ref={uploadInputRef}
+                    type="file"
+                    accept=".pdf"
+                    hidden
+                    disabled={isUploadingDocument}
+                    onChange={(e) => setPendingUploadFile(e.target.files?.[0] ?? null)}
+                  />
+
+                  <div
+                    className="upload-dropzone"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setPendingUploadFile(e.dataTransfer.files?.[0] ?? null);
+                    }}
                   >
-                    {isUploadingDocument ? (
-                      <>
-                        <span
-                          className="spinner-border spinner-border-sm"
-                          role="status"
-                          aria-hidden="true"
-                          style={{ marginRight: 6 }}
-                        />
-                        Uploading...
-                      </>
-                    ) : (
-                      "Upload"
-                    )}
-                  </button>
+                    <FiUpload size={22} />
+                    <p>
+                      {isUploadingDocument
+                        ? "Uploading document..."
+                        : pendingUploadFile
+                          ? `Selected: ${pendingUploadFile.name}`
+                          : "Drag and drop PDF here"}
+                    </p>
+
+                    <button
+                      className="btn btn-primary btn-sm"
+                      disabled={isUploadingDocument}
+                      onClick={() => uploadInputRef.current?.click()}
+                    >
+                      Browse File
+                    </button>
+
+                    <button
+                      className="btn btn-outline-primary btn-sm"
+                      style={{ marginLeft: 8 }}
+                      disabled={isUploadingDocument || !pendingUploadFile}
+                      onClick={() => uploadLeaseDocument(pendingUploadFile)}
+                    >
+                      {isUploadingDocument ? (
+                        <>
+                          <span
+                            className="spinner-border spinner-border-sm"
+                            role="status"
+                            aria-hidden="true"
+                            style={{ marginRight: 6 }}
+                          />
+                          Uploading...
+                        </>
+                      ) : (
+                        "Upload"
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 

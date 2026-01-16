@@ -18,6 +18,20 @@ function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
+  const isValidFullName = (value) => {
+    const name = value.trim();
+    if (!name) return false;
+    return /^[\p{L}]+(?: [\p{L}]+)*$/u.test(name);
+  };
+
+  const isStrongPassword = (value) => {
+    const password = value ?? "";
+    const hasLetter = /[A-Za-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSymbol = /[^A-Za-z0-9]/.test(password);
+    return hasLetter && hasNumber && hasSymbol;
+  };
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -45,6 +59,15 @@ function Signup() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "name") {
+      const cleaned = value
+        .replace(/[^\p{L} ]+/gu, "")
+        .replace(/\s{2,}/g, " ");
+      setFormData((prev) => ({ ...prev, [name]: cleaned }));
+      if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
@@ -52,8 +75,11 @@ function Signup() {
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Name is required";
+    else if (!isValidFullName(formData.name)) newErrors.name = "Name must contain only letters and spaces";
     if (!formData.email.match(/^\S+@\S+\.\S+$/)) newErrors.email = "Invalid email format";
     if (formData.password.length < 8) newErrors.password = "Min 8 characters required";
+    else if (!isStrongPassword(formData.password))
+      newErrors.password = "Password must include a letter, a number, and a symbol";
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
 
     // org_name is required for both Create and Join organization options
@@ -204,7 +230,7 @@ function Signup() {
           <Form onSubmit={handleSignup}>
             <Form.Group className="mb-2">
               <Form.Label className="small fw-bold">Full Name</Form.Label>
-              <Form.Control name="name" placeholder="Enter Full Name" onChange={handleChange} isInvalid={!!errors.name} disabled={loading} />
+              <Form.Control name="name" value={formData.name} placeholder="Enter Full Name" onChange={handleChange} isInvalid={!!errors.name} disabled={loading} />
               <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
             </Form.Group>
 

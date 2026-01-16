@@ -154,8 +154,8 @@ function AddToportfolio({ show, onClose, onSuccess }) {
 
       const address = String(form.address || "").trim();
       if (!address) e.address = "Address is required";
-      else if (address.length > 60) e.address = "Max 60 chars";
-      else if (!/^[A-Za-z0-9 ,.-]+$/.test(address)) e.address = "Alphanumeric, basic punctuation only";
+      else if (address.length > 80) e.address = "Max 80 chars";
+      else if (!/^[A-Za-z0-9 ,.()/-]+$/.test(address)) e.address = "Letters/numbers + , . - / ( ) only";
     }
 
     if (useExistingTenant) {

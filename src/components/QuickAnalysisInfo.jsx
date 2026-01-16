@@ -95,7 +95,7 @@ const QuickAnalysisInfo = () => {
 
             <div className="qai-header-right">
               <button
-                className="btn btn-outline-light btn-sm"
+                className="add-btn btn btn-outline-light btn-sm"
                 onClick={() => setShowAddToPortfolio(true)}
               >
                 Add to Portfolio
@@ -107,7 +107,7 @@ const QuickAnalysisInfo = () => {
                 onSuccess={() => setShowAddToPortfolio(false)}
               />
               <button
-                className="btn btn-outline-light btn-sm"
+                className="analyze-btn btn btn-outline-light btn-sm"
                 onClick={handleAnalyzeAnotherLease}
               >
                 Analyze Another Lease

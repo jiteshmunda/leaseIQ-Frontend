@@ -130,10 +130,10 @@ const AddUnit = ({ show, onClose, onSuccess, tenantName = " ", tenantId }) => {
       const address = String(form.address || "").trim();
       if (!address) {
         nextErrors.address = "Address is required.";
-      } else if (address.length > 60) {
-        nextErrors.address = "Address must not exceed 60 characters.";
-      } else if (!/^[A-Za-z0-9 ,.-]+$/.test(address)) {
-        nextErrors.address = "Address can contain only letters, numbers, commas, dots, and hyphens.";
+      } else if (address.length > 80) {
+        nextErrors.address = "Address must not exceed 80 characters.";
+      } else if (!/^[A-Za-z0-9 ,.()/-]+$/.test(address)) {
+        nextErrors.address = "Address can contain only letters, numbers, spaces, commas, dots, hyphens, /, and parentheses.";
       }
     }
 

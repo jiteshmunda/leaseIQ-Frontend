@@ -335,14 +335,41 @@
   transition: opacity 0.2s ease;
 }
 
-.qai-header-icon-button {
-  background: transparent;
-  border: 0;
-  padding: 0;
+.analyze-btn,
+.add-btn {
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(5px);
+  padding: 6px 16px !important;
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: inherit;
+  gap: 0.25rem;
+}
+
+.analyze-btn:hover,
+.add-btn:hover {
+  background: white !important;
+  color: #4f46e5 !important;
+  border-color: white !important;
+  transform: translateY(-1px);
+}
+
+.qai-header-icon-button {
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(5px);
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .qai-docx-icon {

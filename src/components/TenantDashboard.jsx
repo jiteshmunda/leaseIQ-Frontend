@@ -156,14 +156,9 @@ const TenantDashboard = () => {
           </Col>
         </Row>
 
-
-        {/* UNITS HEADER */}
         <div className="units-header d-flex justify-content-between align-items-center mb-3">
-          <h5>Units</h5>
+          <h4>Units</h4>
         </div>
-
-        {/* DYNAMIC UNIT CARDS */}
-
         <div className="leases-list">
           {leases
             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)

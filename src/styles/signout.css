@@ -14,7 +14,7 @@
   z-index: 9999;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
 
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, right 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .floating-signout:active {

@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/dashboard.css";
 import AddUnit from "../components/AddUnit";
 import AddTenant from "../components/AddTenant";
-import { Home, Plus, CalendarDays, Users, DollarSign, AlertCircle, Building, LayoutDashboard } from "lucide-react";
+import { Home, Plus, CalendarDays, Users, DollarSign, AlertCircle, Building, LayoutDashboard, Search } from "lucide-react";
 import FloatingSignOut from "../components/FloatingSingout";
 import PaginationComponent from "../components/PaginationComponent";
 import api from "../service/api";
@@ -219,43 +219,62 @@ const Dashboard = () => {
             </button> */}
           </Col>
         </Row>
-        {filteredTenants
-          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-          .map((tenant) => (
-            <Card key={tenant._id}
-              className="mb-3 shadow-sm lease-card"
-              onClick={() =>
-                navigate(`/tenant/${tenant._id}`, {
-                  state: { tenantName: tenant.tenant_name },
-                })
-              }
+        {filteredTenants.length === 0 ? (
+          <div className="no-results-container">
+            <div className="no-results-icon-wrapper">
+              <Search size={48} className="no-results-icon" />
+            </div>
+            <h5>No tenants found</h5>
+            <p className="text-muted">
+              We couldn't find any tenants matching "<strong>{search}</strong>"
+            </p>
+            <Button
+              variant="outline-primary"
+              className="mt-2"
+              onClick={() => setSearch("")}
             >
-              <Card.Body>
-                <Row className="align-items-center">
+              Clear Search
+            </Button>
+          </div>
+        ) : (
+          filteredTenants
+            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+            .map((tenant) => (
+              <Card key={tenant._id}
+                className="mb-3 shadow-sm lease-card"
+                onClick={() =>
+                  navigate(`/tenant/${tenant._id}`, {
+                    state: { tenantName: tenant.tenant_name },
+                  })
+                }
+              >
+                <Card.Body>
+                  <Row className="align-items-center">
 
-                  <Col md={8} className="d-flex gap-3 align-items-start">
-                    <div className="tenant-icon">
-                      <Building size={24} />
-                    </div>
+                    <Col md={8} className="d-flex gap-3 align-items-start">
+                      <div className="tenant-icon">
+                        <Building size={24} />
+                      </div>
 
-                    <div>
-                      <h6 className="mb-1">{tenant.tenant_name}</h6>
-                      <small className="text-muted">
-                        {tenant.total_units} Units • {/*{tenant.total_sqft} sq ft • */}
-                        {/* Expires {tenant.lease_expiry} */}
-                      </small>
-                    </div>
-                  </Col>
+                      <div>
+                        <h6 className="mb-1">{tenant.tenant_name}</h6>
+                        <small className="text-muted">
+                          {tenant.total_units} Units • {/*{tenant.total_sqft} sq ft • */}
+                          {/* Expires {tenant.lease_expiry} */}
+                        </small>
+                      </div>
+                    </Col>
 
-                  <Col md={4} className="text-end">
-                    <small className="text-muted">Monthly Rent</small>
-                    <h6 className="mb-0">$ {tenant.monthly_rent}</h6>
-                  </Col>
+                    <Col md={4} className="text-end">
+                      <small className="text-muted">Monthly Rent</small>
+                      <h6 className="mb-0">$ {tenant.monthly_rent}</h6>
+                    </Col>
 
-                </Row>
-              </Card.Body>
-            </Card>
-          ))}
+                  </Row>
+                </Card.Body>
+              </Card>
+            ))
+        )}
 
         <PaginationComponent
           currentPage={currentPage}
