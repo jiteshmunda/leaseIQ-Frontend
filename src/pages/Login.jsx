@@ -15,11 +15,13 @@ const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [errors, setErrors] = useState({
+    identifier: "",
+    password: "",
+  });
   const [formData, setFormData] = useState({
     identifier: "",
     password: "",
-    /* org_name: "", */ // Disabled state field
   });
 
   // Updated validation: removed org_name requirement
@@ -32,6 +34,10 @@ const Login = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    });
+    setErrors({
+      ...errors,
+      [e.target.name]: "",
     });
   };
 
@@ -52,14 +58,11 @@ const Login = () => {
           ...(isEmail ? { email: identifier } : { username: identifier }),
           password: passwordPayload,
           passwordEncrypted: Boolean(AUTH_KEY),
-          /* org_name: formData.org_name */ // Disabled in API payload
         },
         {
           headers: { "Content-Type": "application/json" }
         }
       );
-
-      // Save essential data to sessionStorage for the Landing page to use
       sessionStorage.setItem("token", res.data.token);
       sessionStorage.setItem("userId", res.data.user.id);
       sessionStorage.setItem("username", res.data.user.username); // Added to show in UI
@@ -68,7 +71,15 @@ const Login = () => {
       showSuccess("Login successful!");
       navigate("/landing");
     } catch (err) {
-      showError(err.response?.data?.message || "Login failed");
+      const data = err.response?.data;
+
+      if (data?.field === "email_or_username") {
+        setErrors({ identifier: data.message, password: "" });
+      } else if (data?.field === "password") {
+        setErrors({ identifier: "", password: data.message });
+      } else {
+        showError(data?.message || "Login failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -97,7 +108,11 @@ const Login = () => {
                 value={formData.identifier}
                 onChange={handleChange}
                 disabled={loading}
+                isInvalid={!!errors.identifier}
               />
+              <Form.Control.Feedback type="invalid">
+                {errors.identifier}
+              </Form.Control.Feedback>
             </Form.Group>
 
             {/* Password Field */}
@@ -111,6 +126,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   disabled={loading}
+                  isInvalid={!!errors.password}
                 />
                 <InputGroup.Text
                   style={{ cursor: "pointer" }}
@@ -119,21 +135,10 @@ const Login = () => {
                   {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                 </InputGroup.Text>
               </InputGroup>
+              <Form.Control.Feedback type="invalid" style={{ display: !errors.password ? 'block' : 'none' }}>
+                {errors.password}
+              </Form.Control.Feedback>
             </Form.Group>
-
-            {/* Organization Name Field - Commented Out */}
-            {/* <Form.Group className="mb-4">
-            <Form.Label>Organization Name</Form.Label>
-            <Form.Control
-              type="text"
-              name="org_name"
-              placeholder="Enter your organization name"
-              value={formData.org_name}
-              onChange={handleChange}
-              disabled={loading}
-            />
-          </Form.Group> 
-          */}
 
             <Button
               className="login-btn"

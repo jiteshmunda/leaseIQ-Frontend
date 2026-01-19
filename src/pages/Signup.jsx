@@ -258,8 +258,8 @@ function Signup() {
                     <InputGroup.Text onClick={() => setShowPassword(!showPassword)} style={{ cursor: "pointer" }}>
                       {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                     </InputGroup.Text>
-                    <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
                   </InputGroup>
+                  <Form.Control.Feedback type="invalid" style={{ display: !!errors.password ? 'block' : 'none' }}>{errors.password}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -270,8 +270,8 @@ function Signup() {
                     <InputGroup.Text onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={{ cursor: "pointer" }}>
                       {showConfirmPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                     </InputGroup.Text>
-                    <Form.Control.Feedback type="invalid">{errors.confirmPassword}</Form.Control.Feedback>
                   </InputGroup>
+                  <Form.Control.Feedback type="invalid" style={{ display: !!errors.confirmPassword ? 'block' : 'none' }}>{errors.confirmPassword}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>

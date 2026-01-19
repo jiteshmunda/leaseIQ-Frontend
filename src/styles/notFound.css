@@ -1,0 +1,117 @@
+.not-found-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.logout-icon:hover {
+    color: white;
+    transform: translateX(2px);
+}
+
+.not-found-content {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    border-radius: 24px;
+    padding: 4rem;
+    max-width: 600px;
+    width: 90%;
+    animation: fadeInDown 0.8s ease-out;
+    z-index: 10;
+}
+
+.not-found-header h1 {
+    font-size: 8rem;
+    margin: 0;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.not-found-header .logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2rem;
+    display: block;
+}
+
+.not-found-body h2 {
+    font-size: 2.25rem;
+    color: #1a1a1a;
+    margin: 1rem 0 0.5rem;
+    font-weight: 700;
+}
+
+.not-found-body p {
+    color: #4b5563;
+    font-size: 1.125rem;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+.home-btn {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: white;
+    border: none;
+    padding: 1rem 2.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.home-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+    filter: brightness(1.1);
+}
+
+.home-btn:active {
+    transform: translateY(0);
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .not-found-content {
+        padding: 3rem 1.5rem;
+    }
+
+    .not-found-header h1 {
+        font-size: 5rem;
+    }
+
+    .not-found-body h2 {
+        font-size: 1.75rem;
+    }
+}

@@ -13,6 +13,7 @@ import AiLeaseAssistant from "./components/AiLeaseAssistant";
 import BuildPortfolo from "./pages/BuildPortfolio";
 import Signup from "./pages/Signup";
 import PDFViewer from "./pages/PDFViewer";
+import NotFound from "./pages/NotFound";
 
 import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
@@ -23,7 +24,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={ <PublicRoute><Login /></PublicRoute>} />
+        <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
         <Route path="/landing" element={<PrivateRoute><Landing /></PrivateRoute>} />
         <Route path="/analysis-success" element={<PrivateRoute><AnalysisSuccess /></PrivateRoute>} />
@@ -36,6 +37,7 @@ function App() {
         <Route path="/ai-lease-assistant" element={<PrivateRoute><AiLeaseAssistant /></PrivateRoute>} />
         <Route path="/build-portfolio" element={<PrivateRoute><BuildPortfolo /></PrivateRoute>} />
         <Route path="/pdf-viewer" element={<PDFViewer />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       <ToastContainer
