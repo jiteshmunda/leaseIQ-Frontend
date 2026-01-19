@@ -20,10 +20,10 @@ const AnalyzingLease = ({ activeStep = 0 }) => {
       <AnimatedBackground />
       <div className="analyzing-page">
         <div className="analyzing-card">
-          <h2>Analyzing your lease...</h2>
+          <h4>Analyzing your lease...</h4>
 
           <p className="subtitle-analyzinglease">
-            Our AI is extracting key information from your document with precision
+            Analyzing your document for key insights
           </p>
 
           <div className="progress-container">
@@ -68,7 +68,7 @@ const AnalyzingLease = ({ activeStep = 0 }) => {
           </div>
 
           <p className="footer-text">
-            <Info size={14} /> This typically takes 2–3 minutes
+            <Info size={14} /> ETA: 2–3 min
           </p>
         </div>
       </div>

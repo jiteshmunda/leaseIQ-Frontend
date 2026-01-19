@@ -433,9 +433,6 @@
 
 @media (max-width: 576px) {
   .qai-header-icons {
-    position: absolute;
-    top: 12px;
-    right: 14px;
     display: flex;
     gap: 14px;
     align-items: center;

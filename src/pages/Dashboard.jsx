@@ -109,11 +109,11 @@ const Dashboard = () => {
         <Row className="mb-4">
           {/* TOTAL TENANTS */}
           <Col md={4}>
-            <Card className="kpi-card blue-border">
+            <Card className="kpi-card purple-border">
               <Card.Body>
                 <div className="kpi-header">
                   <span className="kpi-title">Total Tenants</span>
-                  <Users className="kpi-icon blue text-primary" />
+                  <Users className="kpi-icon purple" />
                 </div>
 
                 <h2 className="kpi-value">{tenants.length}</h2>
@@ -124,11 +124,11 @@ const Dashboard = () => {
 
           {/* MONTHLY REVENUE */}
           <Col md={4}>
-            <Card className="kpi-card green-border">
+            <Card className="kpi-card purple-border">
               <Card.Body>
                 <div className="kpi-header">
                   <span className="kpi-title">Monthly Revenue</span>
-                  <DollarSign className="kpi-icon green text-success" />
+                  <DollarSign className="kpi-icon purple" />
                 </div>
 
                 <h2 className="kpi-value">{totalMonthlyRent}</h2>
@@ -139,11 +139,11 @@ const Dashboard = () => {
 
           {/* CRITICAL ITEMS */}
           <Col md={4}>
-            <Card className="kpi-card orange-border">
+            <Card className="kpi-card purple-border">
               <Card.Body>
                 <div className="kpi-header">
                   <span className="kpi-title">Critical Items</span>
-                  <AlertCircle className="kpi-icon orange text-orange" />
+                  <AlertCircle className="kpi-icon purple" />
                 </div>
 
                 <h2 className="kpi-value">{criticalItems.length}</h2>

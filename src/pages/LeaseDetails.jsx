@@ -32,13 +32,33 @@ const LeaseDetails = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isUploadingDocument, setIsUploadingDocument] = useState(false);
   const [pendingUploadFile, setPendingUploadFile] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem("leaseSidebarCollapsed") === "true";
   });
   const [hoveredDocForTooltip, setHoveredDocForTooltip] = useState(null);
   const [tooltipTop, setTooltipTop] = useState(0);
 
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+
+    const onChange = () => setIsMobile(mq.matches);
+    onChange();
+
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    }
+
+    // Safari fallback
+    mq.addListener(onChange);
+    return () => mq.removeListener(onChange);
+  }, []);
+
+  const isSidebarCollapsedEffective = isMobile ? false : isSidebarCollapsed;
+
   const toggleSidebar = () => {
+    if (isMobile) return;
     setIsSidebarCollapsed((prev) => {
       const newState = !prev;
       localStorage.setItem("leaseSidebarCollapsed", newState);
@@ -47,7 +67,7 @@ const LeaseDetails = () => {
   };
 
   const handleMouseEnterDoc = (e, doc) => {
-    if (!isSidebarCollapsed) return;
+    if (!isSidebarCollapsedEffective) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setHoveredDocForTooltip(doc);
     setTooltipTop(rect.top + rect.height / 2);
@@ -415,16 +435,16 @@ const LeaseDetails = () => {
 
       </header>
 
-      <div className={`lease-body ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+      <div className={`lease-body ${isSidebarCollapsedEffective ? "sidebar-collapsed" : ""}`}>
         <aside className="lease-sidebar">
           <div className="sidebar-header">
             <h4>{lease?.tenant?.tenant_name}</h4>
             <button
               className="sidebar-toggle"
               onClick={toggleSidebar}
-              title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+              title={isSidebarCollapsedEffective ? "Expand Sidebar" : "Collapse Sidebar"}
             >
-              {isSidebarCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
+              {isSidebarCollapsedEffective ? <FiChevronRight /> : <FiChevronLeft />}
             </button>
           </div>
           <span className="sidebar-label">Document Library</span>
@@ -484,7 +504,7 @@ const LeaseDetails = () => {
           </div>
         </aside>
 
-        {isSidebarCollapsed && hoveredDocForTooltip && (
+        {isSidebarCollapsedEffective && hoveredDocForTooltip && (
           <div
             className="floating-sidebar-tooltip"
             style={{ top: tooltipTop }}

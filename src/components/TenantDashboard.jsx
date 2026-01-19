@@ -117,11 +117,11 @@ const TenantDashboard = () => {
           </Col>
 
           <Col md={3}>
-            <Card className="kpi-card orange-border">
+            <Card className="kpi-card purple-border">
               <Card.Body className="kpi-body">
                 <div className="kpi-header">
                   <small>Total Sq Ft</small>
-                  <LandPlot size={18} className="kpi-icon orange" />
+                  <LandPlot size={18} className="kpi-icon purple" />
                 </div>
                 <h4>{totalSqFt.toLocaleString()}</h4>
                 <span className="kpi-sub">Square footage</span>
@@ -130,11 +130,11 @@ const TenantDashboard = () => {
           </Col>
 
           <Col md={3}>
-            <Card className="kpi-card green-border">
+            <Card className="kpi-card purple-border">
               <Card.Body className="kpi-body">
                 <div className="kpi-header">
                   <small>Monthly Rent</small>
-                  <DollarSign size={18} className="kpi-icon green" />
+                  <DollarSign size={18} className="kpi-icon purple" />
                 </div>
                 <h4>${totalMonthlyRent.toLocaleString()}</h4>
                 <span className="kpi-sub">Total monthly</span>
@@ -143,11 +143,11 @@ const TenantDashboard = () => {
           </Col>
 
           <Col md={3}>
-            <Card className="kpi-card blue-border">
+            <Card className="kpi-card purple-border">
               <Card.Body className="kpi-body">
                 <div className="kpi-header">
                   <small>Avg Rent / Sq Ft</small>
-                  <TrendingUp size={18} className="kpi-icon blue" />
+                  <TrendingUp size={18} className="kpi-icon purple" />
                 </div>
                 <h4>${avgRentPerSqFt.toFixed(2)}</h4>
                 <span className="kpi-sub">Per square foot</span>

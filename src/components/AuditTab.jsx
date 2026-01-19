@@ -553,8 +553,14 @@ const AuditTab = ({ audit, risks = [], auditSourceKey, documentId, onUpdateLease
 
                       {/* Comment badge */}
                       {hasComment && (
-                        <span className="audit-comment-badge" title={commentValue}>
-                          <FiMessageSquare size={12} fill="currentColor" />
+                        <span
+                          className="audit-comment-badge"
+                          title={commentValue}
+                          role="img"
+                          aria-label="Has comment"
+                          tabIndex={0}
+                        >
+                          <FiMessageSquare size={12} fill="currentColor" aria-hidden="true" />
                         </span>
                       )}
                     </div>

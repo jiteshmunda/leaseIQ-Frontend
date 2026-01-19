@@ -3,7 +3,6 @@ import "../styles/analysisSuccess.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CheckCircle2, LayoutDashboard, FileText, ArrowRight, User, Boxes } from "lucide-react";
 import FloatingSignOut from "../components/FloatingSingout";
-import Gif from "../assets/icon-with-3d-house-financial-bill-clock-coins.jpg";
 import AnimatedBackground from "../components/AnimatedBackground";
 
 const AnalysisSuccess = () => {
@@ -30,7 +29,7 @@ const AnalysisSuccess = () => {
             </div>
 
             <div className="text-content">
-              <h2>Analysis Complete!</h2>
+              <h4>Analysis Complete!</h4>
               <p className="success-subtitle">
                 The lease for <strong>{tenantName}</strong> has been successfully processed and added to your portfolio.
               </p>
@@ -69,7 +68,7 @@ const AnalysisSuccess = () => {
                 </div>
                 <div className="action-text">
                   <span>View Details</span>
-                  <small>Review provisions & rent</small>
+                  <small>Review Abstraction</small>
                 </div>
                 <ArrowRight size={18} className="arrow-hover" />
               </button>
