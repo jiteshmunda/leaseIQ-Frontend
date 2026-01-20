@@ -259,7 +259,7 @@ function Signup() {
                       {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                     </InputGroup.Text>
                   </InputGroup>
-                  <Form.Control.Feedback type="invalid" style={{ display: !!errors.password ? 'block' : 'none' }}>{errors.password}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid" style={{ display: errors.password ? 'block' : 'none' }}>{errors.password}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={6}>
@@ -271,7 +271,7 @@ function Signup() {
                       {showConfirmPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                     </InputGroup.Text>
                   </InputGroup>
-                  <Form.Control.Feedback type="invalid" style={{ display: !!errors.confirmPassword ? 'block' : 'none' }}>{errors.confirmPassword}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid" style={{ display: errors.confirmPassword ? 'block' : 'none' }}>{errors.confirmPassword}</Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>

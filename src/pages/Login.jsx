@@ -118,7 +118,7 @@ const Login = () => {
             {/* Password Field */}
             <Form.Group className="mb-3">
               <Form.Label className="fw-bold">Password</Form.Label>
-              <InputGroup>
+              <InputGroup hasValidation>
                 <Form.Control
                   type={showPassword ? "text" : "password"}
                   name="password"
@@ -134,10 +134,10 @@ const Login = () => {
                 >
                   {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                 </InputGroup.Text>
+                <Form.Control.Feedback type="invalid">
+                  {errors.password}
+                </Form.Control.Feedback>
               </InputGroup>
-              <Form.Control.Feedback type="invalid" style={{ display: !errors.password ? 'block' : 'none' }}>
-                {errors.password}
-              </Form.Control.Feedback>
             </Form.Group>
 
             <Button

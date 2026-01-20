@@ -13,7 +13,6 @@ import BuildPortfolo from "./pages/BuildPortfolio";
 import Signup from "./pages/Signup";
 import PDFViewer from "./pages/PDFViewer";
 import NotFound from "./pages/NotFound";
-
 import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
 
