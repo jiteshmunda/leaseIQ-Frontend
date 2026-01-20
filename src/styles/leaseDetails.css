@@ -1067,10 +1067,6 @@ details:not([open]) .accordion-summary::after {
 
 /* ================= PROVISIONS ================= */
 
-.provisions {
-  padding: 16px;
-}
-
 .provisions-card {
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -1340,9 +1336,6 @@ details:not([open]) .accordion-summary::after {
 
 /* ===== AUDIT TAB ===== */
 
-.audit {
-  padding: 16px;
-}
 
 .audit-card {
   background: #fff;
@@ -1891,9 +1884,9 @@ details:not([open]) .accordion-summary::after {
 /* ================= NEW CAM TAB STYLES ================= */
 
 .cam-tab {
-  padding: 1.5rem;
+  /* padding: 1.5rem;
   max-width: 1400px;
-  margin: 0 auto;
+  margin: 0 auto; */
 }
 
 /* Loading State */

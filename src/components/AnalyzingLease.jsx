@@ -13,7 +13,8 @@ const steps = [
 ];
 
 const AnalyzingLease = ({ activeStep = 0 }) => {
-  const progress = Math.round(((activeStep + 1) / steps.length) * 100);
+  const completedSteps = Math.max(0, Math.min(activeStep, steps.length));
+  const progress = Math.round((completedSteps / steps.length) * 100);
 
   return (
     <>
