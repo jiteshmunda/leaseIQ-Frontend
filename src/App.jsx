@@ -4,7 +4,6 @@ import Login from "./pages/Login";
 import Landing from "./pages/Landing";
 import AnalysisSuccess from "./pages/AnalysisSuccess";
 import LeaseDetails from "./pages/LeaseDetails";
-import Unit from "./pages/Unit";
 import Dashboard from "./pages/Dashboard";
 import TenantDashboard from "./components/TenantDashboard";
 import QuickLeaseAnalysisCard from "./components/QuickLeaseAnalysisCard";
@@ -29,7 +28,6 @@ function App() {
         <Route path="/landing" element={<PrivateRoute><Landing /></PrivateRoute>} />
         <Route path="/analysis-success" element={<PrivateRoute><AnalysisSuccess /></PrivateRoute>} />
         <Route path="/lease-details/:leaseId" element={<PrivateRoute><LeaseDetails /></PrivateRoute>} />
-        <Route path="/units" element={<PrivateRoute><Unit /></PrivateRoute>} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
         <Route path="/tenant/:tenantId" element={<PrivateRoute><TenantDashboard /></PrivateRoute>} />
         <Route path="/quick-lease-analysis" element={<PrivateRoute><QuickLeaseAnalysisCard /></PrivateRoute>} />
