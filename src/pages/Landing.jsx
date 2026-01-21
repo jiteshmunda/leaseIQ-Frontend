@@ -103,11 +103,19 @@ const Landing = () => {
         <div className="landing-cards" style={{ cursor: "pointer" }}>
           <div className="landing-card" onClick={() => navigate(portfolioRoute)}>
             <div className="icon-box blue">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 21V3H21V21H3Z" stroke="#5A3DF0" strokeWidth="2" fill="none" />
-                <path d="M7 17V13H11V17H7Z" stroke="#5A3DF0" strokeWidth="2" />
-                <path d="M13 17V7H17V17H13Z" stroke="#5A3DF0" strokeWidth="2" />
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+
+                <path class="box" d="M3 21V3H21V21H3Z"
+                  stroke="#5A3DF0" stroke-width="2" />
+
+                <path class="bar1" d="M7 17V13H11V17H7Z"
+                  stroke="#5A3DF0" stroke-width="2" />
+
+                <path class="bar2" d="M13 17V7H17V17H13Z"
+                  stroke="#5A3DF0" stroke-width="2" />
               </svg>
+
             </div>
             <h3>{portfolioTitle}</h3>
             <p>I want to organize my properties and track multiple leases</p>
@@ -118,9 +126,16 @@ const Landing = () => {
 
           <div className="landing-card" onClick={() => navigate("/quick-lease-analysis")}>
             <div className="icon-box purple">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 13 2L3 14H11L9 22L21 10H13L13 2Z" stroke="#8A2BE2" strokeWidth="2" fill="none" />
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+
+                <path class="bolt"
+                  d="M13 2L3 14H11L9 22L21 10H13V2Z"
+                  stroke="#8A2BE2"
+                  stroke-width="2"
+                  fill="none" />
               </svg>
+
             </div>
             <h3>Quick Lease Analysis</h3>
             <p>I just need to analyze one lease document right now</p>

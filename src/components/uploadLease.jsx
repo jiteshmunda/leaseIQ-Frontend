@@ -3,6 +3,7 @@ import "../styles/uploadLease.css";
 import { useNavigate } from "react-router-dom";
 import { showError, showSuccess } from "../service/toast";
 import AnimatedBackground from "./AnimatedBackground";
+import DragDropUpload from "./DragDropUpload";
 
 const UploadLeaseStep = ({ onBack, onSubmit, loading }) => {
   const [file, setFile] = useState(null);
@@ -61,43 +62,12 @@ const UploadLeaseStep = ({ onBack, onSubmit, loading }) => {
 
             <h2>Upload Lease (only PDF)</h2>
 
-            <label className="upload-box">
-              <input
-                type="file"
-                accept=".pdf"
-                hidden
-                onChange={(e) => setFile(e.target.files[0])}
-              />
-
-              <div className="upload-icon">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 16V4M12 4L7 9M12 4L17 9"
-                    stroke="#5A3DF0"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M4 20H20"
-                    stroke="#5A3DF0"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-
-              <p className="upload-title">
-                {file ? file.name : "Click to upload or drag and drop"}
-              </p>
-              <p className="upload-sub">PDF up to 50MB</p>
-            </label>
+            <DragDropUpload
+              onFileSelect={(file) => setFile(file)}
+              currentFile={file}
+              label={file ? file.name : "Click to upload or drag and drop"}
+              subLabel="PDF up to 50MB"
+            />
 
             <div className="doc-type">
               <p className="doc-label">Document Type</p>

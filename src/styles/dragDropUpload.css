@@ -1,0 +1,105 @@
+.drag-drop-upload {
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background-color: #f8fafc;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.drag-drop-upload:hover {
+    border-color: #5a3df0;
+    background-color: #f5f3ff;
+}
+
+.drag-drop-upload.is-dragging {
+    border-color: #5a3df0;
+    background-color: #ebe9fe;
+    transform: scale(1.01);
+}
+
+.drag-drop-upload.has-file {
+    border-style: solid;
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+
+.drag-drop-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.drag-drop-upload:hover .drag-drop-icon,
+.drag-drop-upload.is-dragging .drag-drop-icon {
+    color: #5a3df0;
+}
+
+.drag-drop-upload.has-file .drag-drop-icon {
+    color: #10b981;
+}
+
+.drag-drop-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.drag-drop-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.drag-drop-subtitle {
+    color: #64748b;
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.drag-drop-file-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.drag-drop-filename {
+    font-weight: 600;
+    color: #0f172a;
+    word-break: break-all;
+}
+
+.drag-drop-change {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+    text-decoration: underline;
+}
+
+/* Spinner for loading states if needed later */
+.drag-drop-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #5a3df0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

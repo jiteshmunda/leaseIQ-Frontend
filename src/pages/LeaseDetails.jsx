@@ -17,6 +17,7 @@ import { Sparkles } from "lucide-react";
 import "../styles/leaseDetails.css";
 import FloatingSignOut from "../components/FloatingSingout";
 import { showSuccess, showError } from "../service/toast";
+import DragDropUpload from "../components/DragDropUpload";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -557,43 +558,25 @@ const LeaseDetails = () => {
                 </div>
 
                 <div className="modal-body">
-                  <input
-                    ref={uploadInputRef}
-                    type="file"
+                  <DragDropUpload
+                    onFileSelect={(file) => setPendingUploadFile(file)}
+                    currentFile={pendingUploadFile}
+                    label="Drag and drop PDF here"
+                    subLabel="or click to browse"
                     accept=".pdf"
-                    hidden
-                    disabled={isUploadingDocument}
-                    onChange={(e) => setPendingUploadFile(e.target.files?.[0] ?? null)}
+                    className="mb-3"
                   />
 
-                  <div
-                    className="upload-dropzone"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setPendingUploadFile(e.dataTransfer.files?.[0] ?? null);
-                    }}
-                  >
-                    <FiUpload size={22} />
-                    <p>
-                      {isUploadingDocument
-                        ? "Uploading document..."
-                        : pendingUploadFile
-                          ? `Selected: ${pendingUploadFile.name}`
-                          : "Drag and drop PDF here"}
-                    </p>
-
+                  <div className="d-flex justify-content-end gap-2">
                     <button
-                      className="btn btn-primary btn-sm"
+                      className="btn btn-secondary"
+                      onClick={closeUploadModal}
                       disabled={isUploadingDocument}
-                      onClick={() => uploadInputRef.current?.click()}
                     >
-                      Browse File
+                      Cancel
                     </button>
-
                     <button
-                      className="btn btn-outline-primary btn-sm"
-                      style={{ marginLeft: 8 }}
+                      className="btn btn-primary"
                       disabled={isUploadingDocument || !pendingUploadFile}
                       onClick={() => uploadLeaseDocument(pendingUploadFile)}
                     >

@@ -18,6 +18,7 @@ import api from "../service/api";
 import "../styles/addUnit.css";
 import { useLeaseAnalyzer } from "../service/useLeaseAnalyzer";
 import { showError, showSuccess } from "../service/toast";
+import DragDropUpload from "./DragDropUpload";
 
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -498,41 +499,22 @@ const AddUnit = ({ show, onClose, onSuccess, tenantName = " ", tenantId }) => {
           </div>
 
           <Form.Group className="mb-2">
-            <div
-              className={`file-upload-container ${document ? "has-file" : ""} ${submitAttempted && errors.document ? "border-danger" : ""}`}
-              onClick={() => !loading && window.document.getElementById("lease-upload").click()}
-            >
-              <input
-                id="lease-upload"
-                type="file"
-                accept=".pdf,application/pdf"
-                className="d-none"
-                onChange={(e) => {
-                  const nextFile = e.target.files?.[0] ?? null;
-                  setDocument(nextFile);
-                  setErrors((prev) => {
-                    if (!prev.document) return prev;
-                    const next = { ...prev };
-                    delete next.document;
-                    return next;
-                  });
-                }}
-                disabled={loading}
-              />
-              {document ? (
-                <div className="d-flex flex-column align-items-center">
-                  <CheckCircle2 size={40} className="text-success mb-2" />
-                  <p className="mb-0 fw-bold">{document.name}</p>
-                  <small className="text-muted">Click to change file</small>
-                </div>
-              ) : (
-                <div className="d-flex flex-column align-items-center">
-                  <FileUp size={40} className="text-muted mb-2" />
-                  <p className="mb-0 fw-bold">Click to upload lease PDF</p>
-                  <small className="text-muted">Only PDF files are supported</small>
-                </div>
-              )}
-            </div>
+            <DragDropUpload
+              onFileSelect={(file) => {
+                setDocument(file);
+                setErrors((prev) => {
+                  if (!prev.document) return prev;
+                  const next = { ...prev };
+                  delete next.document;
+                  return next;
+                });
+              }}
+              currentFile={document}
+              label="Click to upload lease PDF"
+              subLabel="Only PDF files are supported"
+              accept=".pdf,application/pdf"
+              className={submitAttempted && errors.document ? "border-danger" : ""}
+            />
             {submitAttempted && errors.document && (
               <div className="text-danger small mt-2 d-flex align-items-center gap-1">
                 <AlertCircle size={14} />
