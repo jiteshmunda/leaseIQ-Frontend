@@ -69,7 +69,9 @@ const Landing = () => {
   const portfolioRoute = tenants.length === 0 ? "/build-portfolio" : "/dashboard";
   const portfolionavigation = tenants.length === 0 ? "Set up Portfolio" : "View Portfolio";
 
-  const [hasPurchased, setHasPurchased] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState(
+  sessionStorage.getItem("hasPurchased") === "true"
+);
 
   // ... (existing helper logic)
 

@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { CreditCard, Lock, ShieldCheck, Check, Calendar, ArrowLeft } from 'lucide-react';
 import { showSuccess } from '../service/toast';
 import '../styles/payment.css';
+import { useNavigate } from 'react-router-dom';
 
 const Payment = ({ plan, cycle, onBack, onSuccess }) => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         cardName: '',
@@ -20,16 +22,31 @@ const Payment = ({ plan, cycle, onBack, onSuccess }) => {
     };
 
     const handlePayment = (e) => {
-        e.preventDefault();
-        setLoading(true);
+    e.preventDefault();
+    setLoading(true);
 
         // Simulate payment processing
-        setTimeout(() => {
-            setLoading(false);
-            showSuccess('Payment Successful! Welcome to ' + plan.name);
-            if (onSuccess) onSuccess();
-        }, 2000);
-    };
+    setTimeout(() => {
+        setLoading(false);
+
+        const result = Math.random();
+
+        if (result > 0.6) {
+            // SUCCESS
+            navigate('/payment/success');
+        } else if (result > 0.3) {
+            // FAILED BUT AMOUNT DEDUCTED
+            navigate('/payment/failed', {
+                state: { type: 'deducted' }
+            });
+        } else {
+            // FAILED, NO DEDUCTION
+            navigate('/payment/failed', {
+                state: { type: 'not_deducted' }
+            });
+        }
+    }, 2000);
+};
 
     const currentPrice = plan.pricing?.[cycle]?.price ?? 0;
 

@@ -1,0 +1,163 @@
+
+.payment-status-page.themed {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+.payment-status-card {
+    max-width: 460px;
+    width: 100%;
+    padding: 48px 40px;
+    border-radius: 28px;
+    background: linear-gradient(
+        135deg,
+        rgba(120, 40, 200, 0.35),
+        rgba(70, 20, 120, 0.55)
+    );
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 40px 90px rgba(0,0,0,0.45);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* Success icon */
+.payment-status-card.success svg {
+    color: #10b981;
+    margin: 0 auto;
+}
+
+/* Title */
+.payment-status-card h1 {
+    font-size: 30px;
+    font-weight: 900;
+    background: linear-gradient(to right, #fff, rgba(255,255,255,0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Subtitle */
+.payment-status-card p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.6;
+}
+
+/* Button – reuse existing pricing button style */
+.payment-status-card .pay-button {
+    margin-top: 12px;
+    padding: 16px;
+    border-radius: 16px;
+    font-weight: 800;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* ===== PAGE WRAPPER ===== */
+.payment-status-page.themed {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== CARD ===== */
+.payment-status-card {
+    max-width: 460px;
+    width: 100%;
+    padding: 48px 40px;
+    border-radius: 28px;
+    background: linear-gradient(
+        135deg,
+        rgba(120, 40, 200, 0.35),
+        rgba(70, 20, 120, 0.55)
+    );
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 40px 90px rgba(0,0,0,0.45);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* ===== ICONS ===== */
+.payment-status-card.success svg {
+    color: #10b981;
+    margin: 0 auto;
+}
+
+.payment-status-card.failed svg {
+    color: #ef4444;
+    margin: 0 auto;
+}
+
+/* ===== TITLE ===== */
+.payment-status-card h1 {
+    font-size: 30px;
+    font-weight: 900;
+    background: linear-gradient(to right, #fff, rgba(255,255,255,0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* ===== DESCRIPTION ===== */
+.payment-status-card p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.6;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.status-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 8px;
+}
+
+/* Reuses your existing pricing CTA */
+.payment-status-card .pay-button {
+    padding: 16px;
+    border-radius: 16px;
+    font-weight: 800;
+}
+
+/* Secondary button */
+.secondary-button {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.75);
+    padding: 14px;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.secondary-button:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+}

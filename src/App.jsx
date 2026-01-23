@@ -15,6 +15,8 @@ import PDFViewer from "./pages/PDFViewer";
 import NotFound from "./pages/NotFound";
 import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
+import PaymentSuccess from './components/PaymentSuccess';
+import PaymentFailed from './components/PaymentFailed';
 
 
 
@@ -22,6 +24,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/payment/success" element={<PaymentSuccess />} />
+  <Route path="/payment/failed" element={<PaymentFailed />} />
         <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
         <Route path="/landing" element={<PrivateRoute><Landing /></PrivateRoute>} />
