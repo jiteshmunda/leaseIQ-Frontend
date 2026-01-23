@@ -6,6 +6,8 @@ import api from "../service/api.js";
 import { User, Check, X, Bell, ChevronDown } from "lucide-react";
 import { showError, showSuccess } from "../service/toast";
 import AnimatedBackground from "../components/AnimatedBackground";
+import PricePlanning from "../components/PricePlanning";
+import Payment from "../components/Payment";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -27,15 +29,11 @@ const Landing = () => {
         try {
           await api.post("/api/leases/update-periods");
         } catch (err) {
-          // Don't block landing if this background update fails
           console.error("Failed to update lease periods", err);
         }
-
-        // Fetch pending requests if role is org_admin
         if (role === "org_admin") {
           const pendingRes = await api.get("/api/users/pending");
           if (cancelled) return;
-          // Accessing the data array from the response
           setPendingUsers(pendingRes.data.data || []);
         }
       } catch (err) {
@@ -71,6 +69,18 @@ const Landing = () => {
   const portfolioRoute = tenants.length === 0 ? "/build-portfolio" : "/dashboard";
   const portfolionavigation = tenants.length === 0 ? "Set up Portfolio" : "View Portfolio";
 
+  const [hasPurchased, setHasPurchased] = useState(false);
+
+  // ... (existing helper logic)
+
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedCycle, setSelectedCycle] = useState('monthly');
+
+  const handlePlanSelection = (plan, cycle) => {
+    setSelectedPlan(plan);
+    setSelectedCycle(cycle);
+  };
+
   return (
     <>
       <AnimatedBackground />
@@ -99,51 +109,79 @@ const Landing = () => {
           <p>Choose how you'd like to get started</p>
         </div>
 
-        {/* Cards */}
-        <div className="landing-cards" style={{ cursor: "pointer" }}>
-          <div className="landing-card" onClick={() => navigate(portfolioRoute)}>
-            <div className="icon-box blue">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-
-                <path class="box" d="M3 21V3H21V21H3Z"
-                  stroke="#5A3DF0" stroke-width="2" />
-
-                <path class="bar1" d="M7 17V13H11V17H7Z"
-                  stroke="#5A3DF0" stroke-width="2" />
-
-                <path class="bar2" d="M13 17V7H17V17H13Z"
-                  stroke="#5A3DF0" stroke-width="2" />
-              </svg>
-
-            </div>
-            <h3>{portfolioTitle}</h3>
-            <p>I want to organize my properties and track multiple leases</p>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate(portfolioRoute); }}>
-              {portfolionavigation} →
-            </a>
+        {/* Show pricing until a plan is selected */}
+        {!hasPurchased ? (
+          <div className="pricing-section-wrapper" style={{
+            marginTop: '0.5rem',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1
+          }}>
+            {selectedPlan ? (
+              <Payment
+                plan={selectedPlan}
+                cycle={selectedCycle}
+                onBack={() => setSelectedPlan(null)}
+                onSuccess={() => {
+                  setHasPurchased(true);
+                  setSelectedPlan(null);
+                }}
+              />
+            ) : (
+              <PricePlanning role={role} onPlanSelected={handlePlanSelection} />
+            )}
           </div>
+        ) : (
+          <div className="landing-cards" style={{ cursor: "pointer" }}>
+            <div className="landing-card" onClick={() => navigate(portfolioRoute)}>
+              <div className="icon-box blue">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                  xmlns="http://www.w3.org/2000/svg">
 
-          <div className="landing-card" onClick={() => navigate("/quick-lease-analysis")}>
-            <div className="icon-box purple">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
+                  <path className="box" d="M3 21V3H21V21H3Z"
+                    stroke="#5A3DF0" strokeWidth="2" />
 
-                <path class="bolt"
-                  d="M13 2L3 14H11L9 22L21 10H13V2Z"
-                  stroke="#8A2BE2"
-                  stroke-width="2"
-                  fill="none" />
-              </svg>
+                  <path className="bar1" d="M7 17V13H11V17H7Z"
+                    stroke="#5A3DF0" strokeWidth="2" />
 
+                  <path className="bar2" d="M13 17V7H17V17H13Z"
+                    stroke="#5A3DF0" strokeWidth="2" />
+                </svg>
+
+              </div>
+              <h3>{portfolioTitle}</h3>
+              <p>I want to organize my properties and track multiple leases</p>
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate(portfolioRoute); }}>
+                {portfolionavigation} →
+              </a>
             </div>
-            <h3>Quick Lease Analysis</h3>
-            <p>I just need to analyze one lease document right now</p>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate("/quick-lease-analysis"); }}>
-              Upload Lease →
-            </a>
+
+            <div className="landing-card" onClick={() => navigate("/quick-lease-analysis")}>
+              <div className="icon-box purple">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                  xmlns="http://www.w3.org/2000/svg">
+
+                  <path className="bolt"
+                    pathLength="1"
+                    d="M13 2L3 14H11L9 22L21 10H13V2Z"
+                    stroke="#8A2BE2"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    fill="none" />
+                </svg>
+
+              </div>
+              <h3>Quick Lease Analysis</h3>
+              <p>I just need to analyze one lease document right now</p>
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate("/quick-lease-analysis"); }}>
+                Upload Lease →
+              </a>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Dropdown Admin Approval Section */}
         {role === "org_admin" && showAdminPanel && (
@@ -186,7 +224,7 @@ const Landing = () => {
         )}
 
         <div className="landing-footer">Need help? Contact support@leaseiq.com</div>
-      </div>
+      </div >
     </>
   );
 };
