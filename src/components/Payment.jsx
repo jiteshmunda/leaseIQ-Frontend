@@ -1,54 +1,118 @@
 import React, { useState } from 'react';
-import { CreditCard, Lock, ShieldCheck, Check, Calendar, ArrowLeft } from 'lucide-react';
-import { showSuccess } from '../service/toast';
+import { ShieldCheck, Check, ArrowLeft } from 'lucide-react';
 import '../styles/payment.css';
 import { useNavigate } from 'react-router-dom';
+import { useStripe, useElements, CardElement, Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import api from '../service/api';
+import { showError } from '../service/toast';
 
-const Payment = ({ plan, cycle, onBack, onSuccess }) => {
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        cardName: '',
-        cardNumber: '',
-        expiry: '',
-        cvc: ''
-    });
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-    if (!plan) return null;
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
 
-    const handlePayment = (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-        // Simulate payment processing
-    setTimeout(() => {
-        setLoading(false);
-
-        const result = Math.random();
-
-        if (result > 0.6) {
-            // SUCCESS
-            navigate('/payment/success');
-        } else if (result > 0.3) {
-            // FAILED BUT AMOUNT DEDUCTED
-            navigate('/payment/failed', {
-                state: { type: 'deducted' }
-            });
-        } else {
-            // FAILED, NO DEDUCTION
-            navigate('/payment/failed', {
-                state: { type: 'not_deducted' }
-            });
-        }
-    }, 2000);
+const getPlanAmount = (plan, cycle) => {
+    const amount = plan?.pricing?.[cycle]?.amount;
+    return Number.isFinite(Number(amount)) ? Number(amount) : 0;
 };
 
-    const currentPrice = plan.pricing?.[cycle]?.price ?? 0;
+const CARD_ELEMENT_OPTIONS = {
+    hidePostalCode: true,
+    style: {
+        base: {
+            color: "#fff",
+            fontFamily: "'Inter', sans-serif",
+            fontSmoothing: "antialiased",
+            fontSize: "16px",
+            "::placeholder": {
+                color: "rgba(255, 255, 255, 0.3)"
+            }
+        },
+        invalid: {
+            color: "#fa755a",
+            iconColor: "#fa755a"
+        }
+    }
+};
+
+const PaymentForm = ({ plan, cycle, onBack }) => {
+    const navigate = useNavigate();
+    const stripe = useStripe();
+    const elements = useElements();
+    const [loading, setLoading] = useState(false);
+    const [cardName, setCardName] = useState('');
+
+    const handlePayment = async (e) => {
+        e.preventDefault();
+
+        if (!stripe || !elements) {
+            return;
+        }
+        const nameRegex = /^[a-zA-Z]+( [a-zA-Z]+)*$/;
+        if (!cardName.trim()) {
+            showError("Cardholder name is required.");
+            return;
+        }
+        if (!nameRegex.test(cardName.trim())) {
+            showError("Please enter a valid cardholder name (only letters and single spaces allowed).");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // 1. Create Payment Method via Stripe
+            const cardElement = elements.getElement(CardElement);
+            const { error, paymentMethod } = await stripe.createPaymentMethod({
+                type: 'card',
+                card: cardElement,
+                billing_details: {
+                    name: cardName,
+                },
+            });
+
+            if (error) {
+                showError(error.message);
+                setLoading(false);
+                return;
+            }
+            const userRole = sessionStorage.getItem('role');
+            const role = ['org_admin', 'user'].includes(userRole) ? 'organization/user' : 'individual';
+            // 2. Create Subscription on Backend with exact body format
+            const response = await api.post(`/api/subscriptions/${role}`, {
+                planId: plan._id,
+                billingInterval: cycle === 'monthly' ? 'month' : 'year',
+                paymentMethodId: paymentMethod.id,
+                autoRenew: true
+            });
+
+            // 3. Handle the response
+            // If the backend requires further action (SCA/3DS)
+            if (response.data.client_secret && response.data.requiresAction) {
+                const result = await stripe.confirmCardPayment(response.data.client_secret);
+                if (result.error) {
+                    showError(result.error.message);
+                    navigate('/payment/failed', {
+                        state: { type: 'not_deducted', message: result.error.message }
+                    });
+                } else {
+                    navigate('/payment/success');
+                }
+            } else {
+                // Assume success if no error thrown
+                navigate('/payment/success');
+            }
+        } catch (err) {
+            console.error("Payment error:", err);
+            showError(err.response?.data?.message || err.message || "An error occurred during payment.");
+            navigate('/payment/failed', { state: { type: 'not_deducted' } });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const currentPrice = getPlanAmount(plan, cycle);
+    const currencySymbol = '$';
 
     return (
         <div className="payment-inline-wrapper">
@@ -57,7 +121,6 @@ const Payment = ({ plan, cycle, onBack, onSuccess }) => {
             </button>
 
             <div className="payment-card">
-                {/* Left side: Summary */}
                 <div className="payment-summary">
                     <div className="summary-header">
                         <h2>Complete Payment</h2>
@@ -68,7 +131,7 @@ const Payment = ({ plan, cycle, onBack, onSuccess }) => {
                         <div className="plan-info-top">
                             <span className="plan-label">{plan.name}</span>
                             <div className="plan-price-display">
-                                <span className="currency">$</span>
+                                <span className="currency">{currencySymbol}</span>
                                 <span className="amount">{currentPrice}</span>
                                 <span className="period">/{cycle === 'monthly' ? 'mo' : 'yr'}</span>
                             </div>
@@ -83,89 +146,58 @@ const Payment = ({ plan, cycle, onBack, onSuccess }) => {
                             ))}
                             <div className="summary-feature">
                                 <Check size={14} />
-                                <span>{plan.abstractLimit} Abstract Limit</span>
+                                <span>{plan.abstractLimitPerMonth} Abstract Limit / month</span>
                             </div>
                         </div>
                     </div>
+
+                    {/* <div className="secure-badge-box">
+                        <ShieldCheck size={20} />
+                        <span>Secure SSL Encryption</span>
+                    </div> */}
                 </div>
 
-                {/* Right side: Form */}
                 <form className="payment-form-side" onSubmit={handlePayment}>
                     <div className="form-group">
                         <label className='payment-title'>Cardholder Name</label>
                         <div className="input-wrapper">
-                            <CreditCard size={18} />
                             <input
-                                className="payment-input"
+                                className="payment-input no-icon"
                                 name="cardName"
                                 placeholder="John Doe"
-                                value={formData.cardName}
-                                onChange={handleInputChange}
+                                value={cardName}
+                                onChange={(e) => setCardName(e.target.value)}
                                 required
                             />
                         </div>
                     </div>
 
                     <div className="form-group">
-                        <label className='payment-title'>Card Number</label>
-                        <div className="input-wrapper">
-                            <CreditCard size={18} />
-                            <input
-                                className="payment-input"
-                                name="cardNumber"
-                                placeholder="0000 0000 0000 0000"
-                                maxLength="19"
-                                value={formData.cardNumber}
-                                onChange={handleInputChange}
-                                required
-                            />
+                        <label className='payment-title'>Card Details</label>
+                        <div className="stripe-element-container">
+                            <CardElement options={CARD_ELEMENT_OPTIONS} />
                         </div>
                     </div>
 
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label className='payment-title'>Expiry Date</label>
-                            <div className="input-wrapper">
-                                <Calendar size={18} />
-                                <input
-                                    className="payment-input"
-                                    name="expiry"
-                                    placeholder="MM/YY"
-                                    maxLength="5"
-                                    value={formData.expiry}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label className='payment-title'>CVC</label>
-                            <div className="input-wrapper">
-                                <Lock size={18} />
-                                <input
-                                    className="payment-input"
-                                    name="cvc"
-                                    type="password"
-                                    placeholder="***"
-                                    maxLength="4"
-                                    value={formData.cvc}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    <button className="pay-button" disabled={loading}>
-                        {loading ? 'Processing...' : `Pay $${currentPrice}`}
+                    <button className="pay-button" disabled={loading || !stripe}>
+                        {loading ? 'Processing...' : `Pay ${currencySymbol}${currentPrice}`}
                     </button>
 
                     <p className="payment-footer-note">
-                        Payments are secure and encrypted. By clicking "Pay", you agree to our Terms of Service.
+                        Payments are securely processed by Stripe. By clicking "Pay", you agree to our Terms of Service.
                     </p>
                 </form>
             </div>
         </div>
+    );
+};
+
+const Payment = (props) => {
+    if (!props.plan) return null;
+    return (
+        <Elements stripe={stripePromise}>
+            <PaymentForm {...props} />
+        </Elements>
     );
 };
 

@@ -2,16 +2,21 @@ import { useState, useEffect, useRef } from "react";
 import "../styles/aiLeaseAssistant.css";
 import { Button, Form, Badge } from "react-bootstrap";
 import { FiX, FiSend } from "react-icons/fi";
+import axios from "axios";
 
-const AiLeaseAssistant = ({ open, onClose }) => {
+const API_URL = import.meta.env.VITE_AI_ASSISTANT_API_URL;
+
+const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: "bot",
-      text: "Hello! I'm your AI lease assistant. I can help you answer questions about leases, CAM rules, and important dates.",
+      text: "Hello! I'm your AI lease assistant. I can help you with lease terms, CAM rules, and important dates.",
       isInitial: true,
     },
   ]);
+
+  const userId = sessionStorage.getItem("userId");
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
@@ -21,35 +26,84 @@ const AiLeaseAssistant = ({ open, onClose }) => {
   };
 
   useEffect(() => {
-    if (open) {
-      scrollToBottom();
-    }
+    if (open) scrollToBottom();
   }, [messages, open]);
 
   const handleSendMessage = async (e) => {
-    if (e) e.preventDefault();
-    if (!inputValue.trim()) return;
+    e.preventDefault();
+    if (!inputValue.trim() || isTyping) return;
+
+    const userText = inputValue;
 
     const userMessage = {
       id: Date.now(),
       type: "user",
-      text: inputValue,
+      text: userText,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const botMessageId = Date.now() + 1;
+
+    const botMessage = {
+      id: botMessageId,
+      type: "bot",
+      text: "",
+    };
+
+    setMessages((prev) => [...prev, userMessage, botMessage]);
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate bot thinking
-    setTimeout(() => {
-      const botResponse = {
-        id: Date.now() + 1,
-        type: "bot",
-        text: `I understand you're asking about "${userMessage.text}". I'm currently processing the lease documents to give you an accurate answer. This is a simulated response for demonstration.`,
-      };
-      setMessages((prev) => [...prev, botResponse]);
+    let lastResponseLength = 0;
+
+    try {
+      await axios.post(
+        `${API_URL}/agents/leaseAgent/stream`,
+        new URLSearchParams({
+          messages: JSON.stringify([
+            { role: "user", content: userText },
+          ]),
+        }),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "x-user-id": userId,
+            "x-lease-id": leaseId,
+            "x-organization-id": organizationId,
+          },
+          responseType: "text",
+          onDownloadProgress: (progressEvent) => {
+            const responseText = progressEvent.event.target.responseText;
+
+            const newChunk = responseText.substring(lastResponseLength);
+            lastResponseLength = responseText.length;
+
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === botMessageId
+                  ? { ...msg, text: msg.text + newChunk }
+                  : msg
+              )
+            );
+
+            scrollToBottom();
+          },
+        }
+      );
+    } catch (error) {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === botMessageId
+            ? {
+                ...msg,
+                text: "⚠️ Unable to fetch response. Please try again.",
+                error,
+              }
+            : msg
+        )
+      );
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   if (!open) return null;
@@ -60,20 +114,27 @@ const AiLeaseAssistant = ({ open, onClose }) => {
       <div className="ai-header">
         <div className="header-title-area">
           <h4>AI Lease Assistant</h4>
-          <span className="ai-status-dot"></span>
+          <span className="ai-status-dot" />
         </div>
         <FiX className="close-icon" onClick={onClose} />
       </div>
 
       {/* Credits */}
       <div className="ai-credits">
-        <Badge className="credits-badge text-white">45 AI credits remaining</Badge>
+        <Badge className="credits-badge text-white">
+          45 AI credits remaining
+        </Badge>
       </div>
 
       {/* Chat */}
       <div className="ai-chat">
         {messages.map((msg) => (
-          <div key={msg.id} className={`ai-message ${msg.type === "bot" ? "ai-bot" : "ai-user"}`}>
+          <div
+            key={msg.id}
+            className={`ai-message ${
+              msg.type === "bot" ? "ai-bot" : "ai-user"
+            }`}
+          >
             {msg.text}
             {msg.isInitial && (
               <div className="initial-prompt">
@@ -82,6 +143,7 @@ const AiLeaseAssistant = ({ open, onClose }) => {
             )}
           </div>
         ))}
+
         {isTyping && (
           <div className="ai-message ai-bot typing-indicator">
             <span></span>
@@ -89,6 +151,7 @@ const AiLeaseAssistant = ({ open, onClose }) => {
             <span></span>
           </div>
         )}
+
         <div ref={chatEndRef} />
       </div>
 
@@ -99,6 +162,7 @@ const AiLeaseAssistant = ({ open, onClose }) => {
           placeholder="Ask a question..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
+          disabled={isTyping}
         />
         <Button type="submit" disabled={!inputValue.trim() || isTyping}>
           <FiSend />

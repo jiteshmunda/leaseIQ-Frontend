@@ -7,11 +7,42 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
-api.interceptors.request.use((config) => {
+let lastSubCheck = 0;
+const SUB_CHECK_INTERVAL = 30000; // 30 seconds cache to avoid overloading
+
+api.interceptors.request.use(async (config) => {
   const token = sessionStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  if (
+    config._skipSubCheck ||
+    config.url.includes("/api/subscriptions/status") ||
+    config.url.includes("/auth/") ||
+    !token
+  ) {
+    return config;
+  }
+
+  try {
+    const now = Date.now();
+    if (now - lastSubCheck > SUB_CHECK_INTERVAL) {
+      const res = await api.get("/api/subscriptions/status", { _skipSubCheck: true });
+      lastSubCheck = now;
+
+      const hasSubscription = res.data.hasSubscription;
+      sessionStorage.setItem("hasPurchased", hasSubscription);
+
+      if (!hasSubscription && window.location.pathname !== "/landing") {
+        window.location.href = "/landing";
+        return Promise.reject(new Error("Subscription required"));
+      }
+    }
+  } catch (error) {
+    console.error("Subscription check failed", error);
+  }
+
   return config;
 });
 

@@ -11,6 +11,8 @@
     "start": "vite preview --host 0.0.0.0 --strictPort"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^5.5.0",
+    "@stripe/stripe-js": "^8.6.4",
     "axios": "^1.13.2",
     "bootstrap": "^5.3.8",
     "docx": "^9.5.1",

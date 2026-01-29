@@ -175,6 +175,8 @@ const QuickAnalysisInfo = () => {
       <AiLeaseAssistant
         open={showAiAssistant}
         onClose={() => setShowAiAssistant(false)}
+        leaseId={parsedLeaseData?.leaseId || parsedLeaseData?.lease_id}
+        organizationId={ parsedLeaseData?.organization_id}
       />
     </>
   );

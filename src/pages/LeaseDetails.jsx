@@ -83,6 +83,11 @@ const LeaseDetails = () => {
   const [lease, setLease] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  
+
+  const derivedOrganizationId =
+    lease?.organization_id ;
+
   const [selectedDocId, setSelectedDocId] = useState(null);
   const [currentVersionId, setCurrentVersionId] = useState(null);
 
@@ -536,6 +541,8 @@ const LeaseDetails = () => {
           <AiLeaseAssistant
             open={showAiAssistant}
             onClose={() => setShowAiAssistant(false)}
+            leaseId={leaseId}
+            organizationId={derivedOrganizationId}
           />
         </main>
       </div>

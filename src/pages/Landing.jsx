@@ -1,19 +1,21 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
 import FloatingSignOut from "../components/FloatingSingout";
 import api from "../service/api.js";
-import { User, Check, X, Bell, ChevronDown } from "lucide-react";
+import { User, Check, X, Bell, ChevronDown, Settings, Shield, UserCircle, LogOut, KeyRound } from "lucide-react";
 import { showError, showSuccess } from "../service/toast";
 import AnimatedBackground from "../components/AnimatedBackground";
 import PricePlanning from "../components/PricePlanning";
-import Payment from "../components/Payment";
+
+const Payment = lazy(() => import("../components/Payment"));
 
 const Landing = () => {
   const navigate = useNavigate();
   const [tenants, setTenants] = useState([]);
   const [pendingUsers, setPendingUsers] = useState([]);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Retrieve user data directly from sessionStorage
   const username = sessionStorage.getItem("username");
@@ -26,6 +28,8 @@ const Landing = () => {
         const res = await api.get("/api/tenants");
         if (cancelled) return;
         setTenants(res.data.data || []);
+        setHasPurchased(sessionStorage.getItem("hasPurchased") === "true");
+
         try {
           await api.post("/api/leases/update-periods");
         } catch (err) {
@@ -38,6 +42,7 @@ const Landing = () => {
         }
       } catch (err) {
         console.error("Failed to fetch data", err);
+        setHasPurchased(sessionStorage.getItem("hasPurchased") === "true");
       }
     })();
     return () => {
@@ -70,8 +75,8 @@ const Landing = () => {
   const portfolionavigation = tenants.length === 0 ? "Set up Portfolio" : "View Portfolio";
 
   const [hasPurchased, setHasPurchased] = useState(
-  sessionStorage.getItem("hasPurchased") === "true"
-);
+    sessionStorage.getItem("hasPurchased") === "true"
+  );
 
   // ... (existing helper logic)
 
@@ -83,6 +88,8 @@ const Landing = () => {
     setSelectedCycle(cycle);
   };
 
+
+
   return (
     <>
       <AnimatedBackground />
@@ -90,20 +97,43 @@ const Landing = () => {
         <FloatingSignOut />
 
         {/* Top Right User Profile with Unread Style Logic */}
-        <div
-          className={`user-profile-nav ${role === "org_admin" ? "clickable" : ""} ${hasPending ? "has-unread" : ""}`}
-          onClick={() => role === "org_admin" && setShowAdminPanel(!showAdminPanel)}
-        >
+        <div className="user-profile-nav clickable" onClick={() => setShowProfileMenu(!showProfileMenu)}>
           <div className="user-info-badge">
             <div className="user-icon-wrapper">
-              <User size={18} />
+              <UserCircle size={20} />
               {hasPending && <span className="notification-dot"></span>}
             </div>
             <span className={`display-username ${hasPending ? "unread-text" : ""}`}>
               {username}
             </span>
-            {role === "org_admin" && <ChevronDown size={14} className={showAdminPanel ? "rotate" : ""} />}
+            <ChevronDown size={14} className={showProfileMenu ? "rotate" : ""} />
           </div>
+
+          {showProfileMenu && (
+            <div className="profile-dropdown-menu">
+              <div
+                className="dropdown-item"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProfileMenu(false);
+                }}
+              >
+                <UserCircle size={16} />
+                <span>Landing</span>
+              </div>
+              <div
+                className="dropdown-item"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/settings");
+                  setShowProfileMenu(false);
+                }}
+              >
+                <Settings size={16} />
+                <span>Info</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="landing-header">
@@ -122,15 +152,17 @@ const Landing = () => {
             flex: 1
           }}>
             {selectedPlan ? (
-              <Payment
-                plan={selectedPlan}
-                cycle={selectedCycle}
-                onBack={() => setSelectedPlan(null)}
-                onSuccess={() => {
-                  setHasPurchased(true);
-                  setSelectedPlan(null);
-                }}
-              />
+              <Suspense fallback={<div className="payment-loading">Loading Payment Securely...</div>}>
+                <Payment
+                  plan={selectedPlan}
+                  cycle={selectedCycle}
+                  onBack={() => setSelectedPlan(null)}
+                  onSuccess={() => {
+                    setHasPurchased(true);
+                    setSelectedPlan(null);
+                  }}
+                />
+              </Suspense>
             ) : (
               <PricePlanning role={role} onPlanSelected={handlePlanSelection} />
             )}

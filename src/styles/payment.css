@@ -280,3 +280,21 @@
     color: #fff;
     transform: translateX(-4px);
 }
+
+.stripe-element-container {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 14px 16px;
+    transition: all 0.3s ease;
+}
+
+.stripe-element-container:focus-within {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--pricing-primary, #7b3ff2);
+    box-shadow: 0 0 0 4px rgba(123, 63, 242, 0.15);
+}
+
+.payment-input.no-icon {
+    padding-left: 16px !important;
+}
