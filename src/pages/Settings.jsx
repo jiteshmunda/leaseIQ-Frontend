@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, ArrowLeft, KeyRound, UserCircle, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bell, ArrowLeft, KeyRound, UserCircle, Menu, X, ChevronLeft, ChevronRight, Users } from "lucide-react";
 import api from "../service/api.js";
 import AnimatedBackground from "../components/AnimatedBackground";
 import UsernameSettings from "../components/UsernameSettings";
 import PasswordSettings from "../components/PasswordSettings";
 import ApprovalsSettings from "../components/ApprovalsSettings";
+import OrganizationUsers from "../components/OrganizationUsers";
 import "../styles/settings.css";
 
 const Settings = () => {
@@ -36,6 +37,8 @@ const Settings = () => {
                 return <PasswordSettings userId={userId} />;
             case "approvals":
                 return <ApprovalsSettings />;
+            case "users":
+                return <OrganizationUsers />;
             default:
                 return null;
         }
@@ -99,6 +102,17 @@ const Settings = () => {
                             <Bell size={20} />
                             {!isCollapsed && <span>Pending Approvals</span>}
                             {!isCollapsed && pendingCount > 0 && <span className="mini-badge">{pendingCount}</span>}
+                        </div>
+                    )}
+
+                    {role === "org_admin" && (
+                        <div
+                            className={`sidebar-item ${activeTab === "users" ? "active" : ""}`}
+                            onClick={() => { setActiveTab("users"); setIsMobileOpen(false); }}
+                            title={isCollapsed ? "Organization Users" : ""}
+                        >
+                            <Users size={20} />
+                            {!isCollapsed && <span>Organization Users</span>}
                         </div>
                     )}
 

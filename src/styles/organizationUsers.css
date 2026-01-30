@@ -1,0 +1,399 @@
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.user-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.user-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.user-details {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+.user-item .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.user-item .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.user-item .name {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.you-badge {
+    color: rgba(102, 126, 234, 1);
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.user-item .email {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+}
+
+.user-item .role {
+    color: rgba(102, 126, 234, 0.8);
+    font-size: 12px;
+    text-transform: capitalize;
+}
+
+.pagination-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+.user-count {
+    color: rgba(102, 126, 234, 0.8);
+    font-weight: 500;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-pagination:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-pagination:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .user-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pagination-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pagination-controls {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .user-details {
+        width: 100%;
+    }
+}
+
+/* Table styles for OrganizationUsers */
+.users-table-wrap {
+    margin-bottom: 24px;
+    overflow-x: auto;
+}
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.users-table thead th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: rgba(0,0,0,0.65);
+    background: rgba(0,0,0,0.02);
+}
+.users-table tbody td {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(0,0,0,0.04);
+    color: rgba(0,0,0,0.85);
+    vertical-align: middle;
+}
+.users-table .avatar.small {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+}
+.btn-action {
+    margin-right: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+}
+.btn-update {
+    background: rgba(102,126,234,0.12);
+    color: rgba(102,126,234,1);
+}
+.btn-delete {
+    background: rgba(255,80,80,0.08);
+    color: #ff5050;
+}
+.current-user-row {
+    background: rgba(102,126,234,0.03);
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-dialog {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    min-width: 320px;
+    max-width: 400px;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-body {
+    padding: 20px;
+    color: rgba(0, 0, 0, 0.75);
+}
+
+.modal-body p {
+    margin: 0;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.btn-cancel {
+    padding: 8px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.02);
+    color: rgba(0, 0, 0, 0.65);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.btn-delete-confirm {
+    padding: 8px 16px;
+    background: #ff5050;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-confirm:hover:not(:disabled) {
+    background: #ff3333;
+}
+
+.btn-cancel:disabled,
+.btn-delete-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 6px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.9);
+    font-size: 13px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: rgba(102,126,234,0.5);
+    background: rgba(255,255,255,0.08);
+}
+
+.form-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+}
+
+.checkbox-label input {
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.checkbox-label input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-update-confirm {
+    padding: 8px 16px;
+    background: rgba(102,126,234,0.2);
+    color: rgba(102,126,234,1);
+    border: 1px solid rgba(102,126,234,0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-update-confirm:hover:not(:disabled) {
+    background: rgba(102,126,234,0.3);
+    border-color: rgba(102,126,234,0.5);
+}
+
+.btn-update-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
