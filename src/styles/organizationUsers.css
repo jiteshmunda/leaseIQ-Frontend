@@ -212,14 +212,14 @@
     z-index: 1000;
 }
 
-.modal-dialog {
+/* .modal-dialog {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     min-width: 320px;
     max-width: 400px;
     animation: slideUp 0.3s ease-out;
-}
+} */
 
 @keyframes slideUp {
     from {

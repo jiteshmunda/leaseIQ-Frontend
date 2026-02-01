@@ -80,14 +80,13 @@ const PaymentForm = ({ plan, cycle, onBack }) => {
             const role = ['org_admin', 'user'].includes(userRole) ? 'organization/user' : 'individual';
             // 2. Create Subscription on Backend with exact body format
             const response = await api.post(`/api/subscriptions/${role}`, {
+                
                 planId: plan._id,
                 billingInterval: cycle === 'monthly' ? 'month' : 'year',
                 paymentMethodId: paymentMethod.id,
                 autoRenew: true
             });
 
-            // 3. Handle the response
-            // If the backend requires further action (SCA/3DS)
             if (response.data.client_secret && response.data.requiresAction) {
                 const result = await stripe.confirmCardPayment(response.data.client_secret);
                 if (result.error) {

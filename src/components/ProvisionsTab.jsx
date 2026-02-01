@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { FiEdit, FiFileText, FiChevronRight, FiClock, FiArrowRight, FiX, FiCheck, FiExternalLink } from "react-icons/fi";
-import { openPdfWithCitation, canNavigateToCitation, getCitationDisplayText } from "../service/citationUtils";
+import { openPdfWithCitation, canNavigateToCitation } from "../service/citationUtils";
 import { showError } from "../service/toast";
 
 const getFieldCitation = (field) => {
@@ -19,6 +19,37 @@ const hasAmendments = (field) =>
     Array.isArray(field.amendments) &&
     field.amendments.length > 0
   );
+
+const getPageOnlyCitationText = (citation) => {
+  if (!citation) return "";
+
+  if (typeof citation === "object") {
+    const page = citation.page_number ?? citation.pageNumber ?? citation.page;
+    if (typeof page === "number" && page > 0) {
+      return ` ${page}`;
+    }
+    return "";
+  }
+
+  if (typeof citation === "string") {
+    const trimmed = citation.trim();
+    if (!trimmed) return "";
+
+    const directNumber = trimmed.match(/^\d+$/);
+    if (directNumber) {
+      return `Page ${trimmed}`;
+    }
+
+    const match = trimmed.match(/(?:page|p\.|pg\.)\s*(\d+)/i);
+    if (match && match[1]) {
+      return `${match[1]}`;
+    }
+
+    return "";
+  }
+
+  return "";
+};
 
 const ProvisionsTab = ({
   miscProvisions,
@@ -298,7 +329,9 @@ const ProvisionsTab = ({
                 {am?.amendment_citation && (
                   <div className="provision-citation-tag small">
                     <FiFileText className="provision-citation-icon" />
-                    <span className="provision-citation-text">{am.amendment_citation}</span>
+                    <span className="provision-citation-text">
+                      {getPageOnlyCitationText(am.amendment_citation) || ""}
+                    </span>
                   </div>
                 )}
               </div>
@@ -326,11 +359,12 @@ const ProvisionsTab = ({
 
   // Enhanced citation tag component - now clickable
   const renderCitationTag = (citation, field) => {
-    if (!citation) return null;
-    
-    // Get the full citation object if available (for structured citations)
+    // Prefer structured citation on the field (Provisions tab only)
     const citationObj = field?.citation || citation;
-    const displayText = getCitationDisplayText(citationObj) || citation;
+    if (!citationObj) return null;
+
+    const displayText = getPageOnlyCitationText(citationObj);
+    if (!displayText) return null;
     const isNavigable = documentId && canNavigateToCitation(citationObj);
     
     if (isNavigable) {
@@ -543,7 +577,7 @@ const ProvisionsTab = ({
                                   </button>
                                 )}
                               </div>
-                              {item.citation && renderCitationTag(item.citation, item.field)}
+                              {renderCitationTag(item.citation, item.field)}
                               {renderAmendmentsTimeline(item.field)}
                             </>
                           )}

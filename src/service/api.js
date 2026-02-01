@@ -34,6 +34,18 @@ api.interceptors.request.use(async (config) => {
       const hasSubscription = res.data.hasSubscription;
       sessionStorage.setItem("hasPurchased", hasSubscription);
 
+      const role = sessionStorage.getItem("role");
+      if (role === "org_admin") {
+        const subscription = res.data.subscription;
+        const planId = subscription?.planId;
+        const billingInterval = subscription?.billing?.interval;
+
+        if (planId) sessionStorage.setItem("planId", planId);
+        if (billingInterval) sessionStorage.setItem("billingInterval", billingInterval);
+
+        console.log("Subscription status updated for org_admin:", { planId, billingInterval });
+      }
+
       if (!hasSubscription && window.location.pathname !== "/landing") {
         window.location.href = "/landing";
         return Promise.reject(new Error("Subscription required"));

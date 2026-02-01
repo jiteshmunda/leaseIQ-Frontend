@@ -89,18 +89,23 @@ const FloatingSignOut = ({ shiftLeft }) => {
         <LogOut size={20} />
       </div>
 
-      <Modal show={showConfirm} onHide={handleCancelLogout} centered>
+      <Modal
+        show={showConfirm}
+        onHide={handleCancelLogout}
+        centered
+        className="logout-modal"
+      >
         <Modal.Header closeButton>
           <Modal.Title>Confirm logout</Modal.Title>
         </Modal.Header>
         <Modal.Body>Are you sure you want to <b>logout</b> ?</Modal.Body>
         <Modal.Footer>
-          <Button variant="outline-secondary" onClick={handleCancelLogout}>
+          <button className="btn btn-cancel" onClick={handleCancelLogout}>
             Cancel
-          </Button>
-          <Button variant="outline-danger" onClick={handleConfirmLogout}>
+          </button>
+          <button className="btn btn-logout" onClick={handleConfirmLogout}>
             Logout
-          </Button>
+          </button>
         </Modal.Footer>
       </Modal>
     </>

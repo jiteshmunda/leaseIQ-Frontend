@@ -3,6 +3,9 @@ import "../styles/aiLeaseAssistant.css";
 import { Button, Form, Badge } from "react-bootstrap";
 import { FiX, FiSend } from "react-icons/fi";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { parseSSEStream, getStreamText, getActiveTool } from "../utils/streamParser";
 
 const API_URL = import.meta.env.VITE_AI_ASSISTANT_API_URL;
 
@@ -19,6 +22,7 @@ const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
   const userId = sessionStorage.getItem("userId");
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [activeTool, setActiveTool] = useState(null);
   const chatEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -27,7 +31,7 @@ const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
 
   useEffect(() => {
     if (open) scrollToBottom();
-  }, [messages, open]);
+  }, [messages, open, isTyping, activeTool]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -52,8 +56,7 @@ const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
     setMessages((prev) => [...prev, userMessage, botMessage]);
     setInputValue("");
     setIsTyping(true);
-
-    let lastResponseLength = 0;
+    setActiveTool(null);
 
     try {
       await axios.post(
@@ -73,18 +76,19 @@ const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
           responseType: "text",
           onDownloadProgress: (progressEvent) => {
             const responseText = progressEvent.event.target.responseText;
-
-            const newChunk = responseText.substring(lastResponseLength);
-            lastResponseLength = responseText.length;
+            const events = parseSSEStream(responseText);
+            const combinedText = getStreamText(events);
+            const currentTool = getActiveTool(events);
 
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === botMessageId
-                  ? { ...msg, text: msg.text + newChunk }
+                  ? { ...msg, text: combinedText }
                   : msg
               )
             );
 
+            setActiveTool(currentTool);
             scrollToBottom();
           },
         }
@@ -94,15 +98,16 @@ const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
         prev.map((msg) =>
           msg.id === botMessageId
             ? {
-                ...msg,
-                text: "⚠️ Unable to fetch response. Please try again.",
-                error,
-              }
+              ...msg,
+              text: "⚠️ Unable to fetch response. Please try again.",
+              error,
+            }
             : msg
         )
       );
     } finally {
       setIsTyping(false);
+      setActiveTool(null);
     }
   };
 
@@ -131,11 +136,16 @@ const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
         {messages.map((msg) => (
           <div
             key={msg.id}
-            className={`ai-message ${
-              msg.type === "bot" ? "ai-bot" : "ai-user"
-            }`}
+            className={`ai-message ${msg.type === "bot" ? "ai-bot" : "ai-user"
+              }`}
           >
-            {msg.text}
+            {msg.type === "bot" ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {msg.text}
+              </ReactMarkdown>
+            ) : (
+              msg.text
+            )}
             {msg.isInitial && (
               <div className="initial-prompt">
                 <strong>What would you like to know?</strong>
@@ -144,7 +154,14 @@ const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
           </div>
         ))}
 
-        {isTyping && (
+        {activeTool && (
+          <div className="ai-message ai-bot tool-status">
+            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Using {activeTool}...
+          </div>
+        )}
+
+        {isTyping && !activeTool && (
           <div className="ai-message ai-bot typing-indicator">
             <span></span>
             <span></span>

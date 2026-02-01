@@ -5,6 +5,7 @@ import FloatingSignOut from "../components/FloatingSingout";
 import api from "../service/api.js";
 import { User, Check, X, Bell, ChevronDown, Settings, Shield, UserCircle, LogOut, KeyRound } from "lucide-react";
 import { showError, showSuccess } from "../service/toast";
+import { Modal } from "react-bootstrap";
 import AnimatedBackground from "../components/AnimatedBackground";
 import PricePlanning from "../components/PricePlanning";
 
@@ -16,6 +17,8 @@ const Landing = () => {
   const [pendingUsers, setPendingUsers] = useState([]);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [confirmOrg, setConfirmOrg] = useState({ open: false, userId: null });
+  const [submittingOrg, setSubmittingOrg] = useState(false);
 
   // Retrieve user data directly from sessionStorage
   const username = sessionStorage.getItem("username");
@@ -53,12 +56,62 @@ const Landing = () => {
   const handleReview = async (userId, action) => {
     try {
       // PATCH review action: approve or reject
-      await api.patch(`/api/users/${userId}/review`, { action });
+      const res = await api.patch(`/api/users/${userId}/review`, { action });
+
+      if (action === "approve" && res.data.requiresPayment) {
+        setConfirmOrg({ open: true, userId });
+        return;
+      }
+
       showSuccess(`User ${action}ed successfully`);
       // Update local state using _id from the MongoDB response
       setPendingUsers((prev) => prev.filter((u) => u._id !== userId));
     } catch (err) {
       showError(err.response?.data?.message || "Action failed");
+    }
+  };
+
+  const handleConfirmOrgSubscription = async () => {
+    let planId = sessionStorage.getItem("planId");
+    let billingInterval = sessionStorage.getItem("billingInterval");
+
+    if (!planId || !billingInterval) {
+      try {
+        setSubmittingOrg(true);
+        const res = await api.get("/api/subscriptions/status", { _skipSubCheck: true });
+        const subscription = res.data.subscription;
+        planId = subscription?.planId;
+        billingInterval = subscription?.billing?.interval;
+
+        if (planId) sessionStorage.setItem("planId", planId);
+        if (billingInterval) sessionStorage.setItem("billingInterval", billingInterval);
+      } catch (err) {
+        console.error("Failed to fetch fallback subscription status", err);
+      }
+    }
+
+    if (!planId || !billingInterval) {
+      showError("Organization plan details not found. Please ensure your organization has an active plan.");
+      setSubmittingOrg(false);
+      return;
+    }
+
+    const userId = confirmOrg.userId;
+    try {
+      setSubmittingOrg(true);
+      await api.post("/api/subscriptions/organization/user", {
+        planId,
+        userId,
+        billingInterval
+      });
+
+      showSuccess("User approved and organization plan applied");
+      setPendingUsers((prev) => prev.filter((u) => u._id !== userId));
+      setConfirmOrg({ open: false, userId: null });
+    } catch (err) {
+      showError(err.response?.data?.message || "Failed to apply organization plan");
+    } finally {
+      setSubmittingOrg(false);
     }
   };
 
@@ -258,6 +311,22 @@ const Landing = () => {
         )}
 
         <div className="landing-footer">Need help? Contact support@leaseiq.com</div>
+        <Modal show={confirmOrg.open} onHide={() => setConfirmOrg({ open: false, userId: null })} centered className="logout-modal">
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Subscription</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            Existing organisation plan will be applied for this user.
+          </Modal.Body>
+          <Modal.Footer>
+            <button className="btn btn-cancel" onClick={() => setConfirmOrg({ open: false, userId: null })} disabled={submittingOrg}>
+              Cancel
+            </button>
+            <button className="btn btn-logout" onClick={handleConfirmOrgSubscription} disabled={submittingOrg}>
+              {submittingOrg ? "Processing..." : "OK"}
+            </button>
+          </Modal.Footer>
+        </Modal>
       </div >
     </>
   );

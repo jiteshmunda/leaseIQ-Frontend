@@ -21,3 +21,115 @@
   cursor: grabbing;
   transform: scale(0.95);
 }
+
+/* Custom Logout Modal Styles */
+.logout-modal .modal-content {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  padding: 10px;
+}
+
+.logout-modal .modal-header {
+  border-bottom: none;
+  padding: 32px 24px 8px;
+  justify-content: center;
+  position: relative;
+}
+
+.logout-modal .modal-title {
+  font-weight: 700;
+  color: #1a1a1b;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.logout-modal .modal-body {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #4a4a4b;
+  padding: 8px 24px 24px;
+}
+
+.logout-modal .modal-body b {
+  color: #e100ff;
+  font-weight: 600;
+}
+
+.logout-modal .modal-footer {
+  border-top: none;
+  padding: 8px 24px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.logout-modal .btn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  flex: 1;
+  max-width: 140px;
+}
+
+.logout-modal .btn-cancel {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+}
+
+.logout-modal .btn-cancel:hover {
+  background: #e5e7eb;
+  color: #1f2937;
+  transform: translateY(-2px);
+}
+
+.logout-modal .btn-logout {
+  background: linear-gradient(135deg, #7f00ff, #e100ff);
+  border: none;
+  color: white;
+  box-shadow: 0 4px 15px rgba(127, 0, 255, 0.3);
+}
+
+.logout-modal .btn-logout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(127, 0, 255, 0.4);
+  filter: brightness(1.05);
+}
+
+.logout-modal .btn-logout:active {
+  transform: translateY(0);
+}
+
+.logout-modal .btn-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background-color: #f3f4f6;
+  border-radius: 50%;
+  padding: 10px;
+  margin: 0;
+  transition: all 0.2s;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+}
+
+.logout-modal .btn-close:hover {
+  background-color: #e5e7eb;
+  transform: rotate(90deg);
+  opacity: 1;
+}
+
+.logout-modal .btn-close:focus {
+  box-shadow: none;
+}
