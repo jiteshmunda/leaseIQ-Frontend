@@ -1,4 +1,4 @@
-import React, { useEffect, useState, lazy, Suspense } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/landing.css";
 import FloatingSignOut from "../components/FloatingSingout";
@@ -8,8 +8,7 @@ import { showError, showSuccess } from "../service/toast";
 import { Modal } from "react-bootstrap";
 import AnimatedBackground from "../components/AnimatedBackground";
 import PricePlanning from "../components/PricePlanning";
-
-const Payment = lazy(() => import("../components/Payment"));
+import Payment from "../components/Payment";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -31,7 +30,22 @@ const Landing = () => {
         const res = await api.get("/api/tenants");
         if (cancelled) return;
         setTenants(res.data.data || []);
-        setHasPurchased(sessionStorage.getItem("hasPurchased") === "true");
+
+        try {
+          const subRes = await api.get("/api/subscriptions/status", { _skipSubCheck: true });
+          if (!cancelled) {
+            setHasPurchased(subRes.data.hasSubscription);
+
+            // Sync session storage roles/plans if needed (optional but keep consistency)
+            const subscription = subRes.data.subscription;
+            if (role === "org_admin" && subscription) {
+              if (subscription.planId) sessionStorage.setItem("planId", subscription.planId);
+              if (subscription.billing?.interval) sessionStorage.setItem("billingInterval", subscription.billing.interval);
+            }
+          }
+        } catch (subErr) {
+          console.error("Failed to fetch subscription status", subErr);
+        }
 
         try {
           await api.post("/api/leases/update-periods");
@@ -45,7 +59,6 @@ const Landing = () => {
         }
       } catch (err) {
         console.error("Failed to fetch data", err);
-        setHasPurchased(sessionStorage.getItem("hasPurchased") === "true");
       }
     })();
     return () => {
@@ -127,9 +140,7 @@ const Landing = () => {
   const portfolioRoute = tenants.length === 0 ? "/build-portfolio" : "/dashboard";
   const portfolionavigation = tenants.length === 0 ? "Set up Portfolio" : "View Portfolio";
 
-  const [hasPurchased, setHasPurchased] = useState(
-    sessionStorage.getItem("hasPurchased") === "true"
-  );
+  const [hasPurchased, setHasPurchased] = useState(true); // Default to true to avoid flash, will be updated by useEffect
 
   // ... (existing helper logic)
 
@@ -205,17 +216,15 @@ const Landing = () => {
             flex: 1
           }}>
             {selectedPlan ? (
-              <Suspense fallback={<div className="payment-loading">Loading Payment Securely...</div>}>
-                <Payment
-                  plan={selectedPlan}
-                  cycle={selectedCycle}
-                  onBack={() => setSelectedPlan(null)}
-                  onSuccess={() => {
-                    setHasPurchased(true);
-                    setSelectedPlan(null);
-                  }}
-                />
-              </Suspense>
+              <Payment
+                plan={selectedPlan}
+                cycle={selectedCycle}
+                onBack={() => setSelectedPlan(null)}
+                onSuccess={() => {
+                  setHasPurchased(true);
+                  setSelectedPlan(null);
+                }}
+              />
             ) : (
               <PricePlanning role={role} onPlanSelected={handlePlanSelection} />
             )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, Users } from "lucide-react";
 import api from "../service/api.js";
 import { showError, showSuccess } from "../service/toast";
 import { Modal } from "react-bootstrap";
@@ -84,17 +84,22 @@ const ApprovalsSettings = () => {
 
     return (
         <div className="content-section">
-            <h1>Pending Approvals</h1>
-            <div className="approvals-list">
+            <div className="section-header">
+                <h1>Pending Approvals</h1>
+                <p>Review and manage access requests for your organization</p>
+            </div>
+
+            <div className="approvals-list-premium">
                 {pendingUsers.length === 0 ? (
-                    <div className="settings-card text-center">
-                        <p style={{ color: "rgba(255,255,255,0.5)", margin: 0 }}>No pending user requests at the moment.</p>
+                    <div className="settings-card premium-card empty-state">
+                        <Users size={48} />
+                        <p>No pending user requests at the moment.</p>
                     </div>
                 ) : (
                     pendingUsers.map((user) => (
-                        <div key={user._id} className="approval-item">
+                        <div key={user._id} className="approval-card">
                             <div className="user-details">
-                                <div className="avatar">
+                                <div className="avatar-premium">
                                     {user.name ? user.name.charAt(0).toUpperCase() : "U"}
                                 </div>
                                 <div className="user-info">
@@ -103,11 +108,13 @@ const ApprovalsSettings = () => {
                                 </div>
                             </div>
                             <div className="action-buttons">
-                                <button className="btn-approve-action" onClick={() => handleReviewUser(user._id, "approve")} title="Approve">
+                                <button className="btn-approve-modern" onClick={() => handleReviewUser(user._id, "approve")} title="Approve">
                                     <Check size={18} />
+                                    <span>Approve</span>
                                 </button>
-                                <button className="btn-reject-action" onClick={() => handleReviewUser(user._id, "reject")} title="Reject">
+                                <button className="btn-reject-modern" onClick={() => handleReviewUser(user._id, "reject")} title="Reject">
                                     <X size={18} />
+                                    <span>Reject</span>
                                 </button>
                             </div>
                         </div>

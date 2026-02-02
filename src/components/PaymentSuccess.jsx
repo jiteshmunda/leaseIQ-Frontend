@@ -23,7 +23,6 @@ const PaymentSuccess = () => {
                     <button
                         className="pay-button"
                         onClick={() => {
-                            sessionStorage.setItem("hasPurchased", "true");
                             navigate("/landing");
                         }}
                     >

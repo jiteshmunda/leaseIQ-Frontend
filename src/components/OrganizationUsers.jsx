@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2, Users, AlertTriangle } from "lucide-react";
 import api from "../service/api.js";
 import { showError } from "../service/toast";
-import "../styles/organizationUsers.css";
 import { useNavigate } from "react-router-dom";
 
 const OrganizationUsers = () => {
@@ -38,7 +37,18 @@ const OrganizationUsers = () => {
             setLoading(false);
         }
     };
-
+    const getStatusBadge = (status) => {
+        switch (status) {
+            case "active":
+                return <span className="status-pill active">Active</span>;
+            case "inactive":
+                return <span className="status-pill inactive">Inactive</span>;
+            case "pending_approval":
+                return <span className="status-pill pending_approval">Pending Approval</span>;
+            default:
+                return <span className="status-pill inactive">Unknown</span>;
+        }
+    };
     const handleUpdateClick = (user) => {
         setEditModal({
             open: true,
@@ -54,28 +64,7 @@ const OrganizationUsers = () => {
         }));
     };
 
-    const handleConfirmUpdate = async () => {
-        const { user, formData } = editModal;
-        setUpdating(true);
-        try {
-            // Only allow updating name and is_active fields (field whitelisting)
-            const payload = {
-                name: formData.name,
-                is_active: formData.is_active
-            };
-            await api.patch(`/api/users/${user._id}`, payload);
-            setEditModal({ open: false, user: null, formData: {} });
-            fetchOrgUsers();
-        } catch (err) {
-            showError(err.response?.data?.message || "Failed to update user");
-        } finally {
-            setUpdating(false);
-        }
-    };
 
-    const handleCancelUpdate = () => {
-        setEditModal({ open: false, user: null, formData: {} });
-    };
 
     const handleDeleteClick = (userId, userName) => {
         setConfirmDelete({ open: true, userId, userName });
@@ -112,75 +101,88 @@ const OrganizationUsers = () => {
 
     return (
         <div className="content-section">
-            <h1>Organization Users</h1>
-            
+            <div className="section-header">
+                <h1>Organization Users</h1>
+                <p>Manage and monitor team members in your organization</p>
+            </div>
+
             {loading ? (
-                <div className="settings-card text-center">
-                    <p style={{ color: "rgba(255,255,255,0.5)", margin: 0 }}>Loading users...</p>
+                <div className="settings-card premium-card empty-state">
+                    <div className="loader-premium"></div>
+                    <p>Loading users...</p>
                 </div>
             ) : users.length === 0 ? (
-                <div className="settings-card text-center">
-                    <p style={{ color: "rgba(255,255,255,0.5)", margin: 0 }}>No users found in your organization.</p>
+                <div className="settings-card premium-card empty-state">
+                    <Users size={48} />
+                    <p>No users found in your organization.</p>
                 </div>
             ) : (
                 <>
-                    <div className="users-table-wrap">
-                        <table className="users-table">
-                            <thead>
-                                <tr>
-                                    <th>Avatar</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Organization</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((user) => (
-                                    <tr key={user._id} className={currentUserId === user._id ? "current-user-row" : ""}>
-                                        <td>
-                                            <div className="avatar small">
-                                                {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="user-name">
-                                                {user.name}
-                                                {currentUserId === user._id && <span className="you-badge"> (You)</span>}
-                                            </div>
-                                        </td>
-                                        <td>{user.email}</td>
-                                        <td>{user.role?.replace(/_/g, " ") || "member"}</td>
-                                        <td>{user.organization?.name || user.organizationName || "—"}</td>
-                                        <td>
-                                            <button className="btn-action btn-update" onClick={() => handleUpdateClick(user)}>Update</button>
-                                            <button className="btn-action btn-delete" onClick={() => handleDeleteClick(user._id, user.name)}>Delete</button>
-                                        </td>
+                    <div className="settings-card premium-card table-card">
+                        <div className="table-responsive">
+                            <table className="table table-hover align-middle custom-premium-table m-0">
+                                <thead>
+                                    <tr>
+                                        <th className="avatar-col">Avatar</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>User Name</th>
+                                        <th>Status</th>
+                                        <th className="text-end actions-col">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {users.map((user) => (
+                                        <tr key={user._id} className={currentUserId === user._id ? "current-user-row" : ""}>
+                                            <td>
+                                                <div className="avatar-small-premium">
+                                                    {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="user-name-cell">
+                                                    <span className="fw-semibold">{user.name}</span>
+                                                    {currentUserId === user._id && <span className="badge bg-primary-subtle text-primary ms-2">You</span>}
+                                                </div>
+                                            </td>
+                                            <td className="text-secondary">{user.email}</td>
+                                            <td><code className="username-code">{user.username}</code></td>
+                                            <td>
+                                                {getStatusBadge(user.status)}
+                                            </td>
+                                            <td className="text-end">
+                                                <div className="d-flex justify-content-end gap-2">
+
+                                                    <button className=" btn-delete" onClick={() => handleDeleteClick(user._id, user.name)} title="Remove User">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
                     {totalPages > 1 && (
-                        <div className="pagination-section">
+                        <div className="pagination-section-premium">
                             <div className="pagination-info">
-                                <span>Page {page} of {totalPages}</span>
+                                <span>Page <strong>{page}</strong> of {totalPages}</span>
                                 <span className="user-count">Total: {totalUsers} users</span>
                             </div>
                             <div className="pagination-controls">
-                                <button 
-                                    className="btn-pagination" 
-                                    onClick={handlePrevPage} 
+                                <button
+                                    className="btn-pagination-premium"
+                                    onClick={handlePrevPage}
                                     disabled={page === 1}
                                     title="Previous page"
                                 >
                                     <ChevronLeft size={18} />
                                 </button>
-                                <button 
-                                    className="btn-pagination" 
-                                    onClick={handleNextPage} 
+                                <button
+                                    className="btn-pagination-premium"
+                                    onClick={handleNextPage}
                                     disabled={page >= totalPages}
                                     title="Next page"
                                 >
@@ -192,64 +194,27 @@ const OrganizationUsers = () => {
                 </>
             )}
 
-            {/* Edit Modal */}
-            {editModal.open && editModal.user && (
-                <div className="modal-overlay" onClick={handleCancelUpdate}>
-                    <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Edit User</h2>
-                            <button className="modal-close" onClick={handleCancelUpdate}>×</button>
-                        </div>
-                        <div className="modal-body">
-                            <div className="form-group">
-                                <label>Name</label>
-                                <input 
-                                    type="text" 
-                                    className="form-input" 
-                                    value={editModal.formData.name || ""}
-                                    onChange={(e) => handleEditChange("name", e.target.value)}
-                                    disabled={updating}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="checkbox-label">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={editModal.formData.is_active ?? true}
-                                        onChange={(e) => handleEditChange("is_active", e.target.checked)}
-                                        disabled={updating}
-                                    />
-                                    <span>Active</span>
-                                </label>
-                            </div>
-                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '12px' }}>Note: Role changes are not allowed for org admins</p>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="btn-cancel" onClick={handleCancelUpdate} disabled={updating}>Cancel</button>
-                            <button className="btn-update-confirm" onClick={handleConfirmUpdate} disabled={updating}>
-                                {updating ? 'Updating...' : 'Update User'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             {/* Confirmation Modal */}
             {confirmDelete.open && (
                 <div className="modal-overlay" onClick={handleCancelDelete}>
-                    <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Confirm Delete</h2>
-                            <button className="modal-close" onClick={handleCancelDelete}>×</button>
+                    <div className="modal-dialog-premium modal-sm" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header-premium">
+                            <h2>Confirm Removal</h2>
+                            <button className="modal-close-premium" onClick={handleCancelDelete}>&times;</button>
                         </div>
-                        <div className="modal-body">
-                            <p>Are you sure you want to delete <strong>{confirmDelete.userName}</strong>?</p>
-                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', marginTop: '12px' }}>This action cannot be undone.</p>
+                        <div className="modal-body-premium text-center py-4">
+                            <div className="warning-icon mb-3">
+                                <AlertTriangle size={48} className="text-warning" />
+                            </div>
+                            <p>Are you sure you want to remove <strong>{confirmDelete.userName}</strong> from the organization?</p>
+                            <p className="text-secondary small mt-2">This user will lose access to all organization resources.</p>
                         </div>
-                        <div className="modal-footer">
-                            <button className="btn-cancel" onClick={handleCancelDelete} disabled={deleting}>Cancel</button>
-                            <button className="btn-delete-confirm" onClick={handleConfirmDelete} disabled={deleting}>
-                                {deleting ? 'Deleting...' : 'Delete User'}
+                        <div className="modal-footer-premium">
+                            <button className="btn-cancel-premium" onClick={handleCancelDelete} disabled={deleting}>Cancel</button>
+                            <button className="btn-save-premium bg-danger border-danger" onClick={handleConfirmDelete} disabled={deleting}>
+                                {deleting ? 'Removing...' : 'Remove User'}
                             </button>
                         </div>
                     </div>

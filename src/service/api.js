@@ -32,7 +32,6 @@ api.interceptors.request.use(async (config) => {
       lastSubCheck = now;
 
       const hasSubscription = res.data.hasSubscription;
-      sessionStorage.setItem("hasPurchased", hasSubscription);
 
       const role = sessionStorage.getItem("role");
       if (role === "org_admin") {

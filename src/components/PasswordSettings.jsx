@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import api from "../service/api.js";
 import { showError, showSuccess } from "../service/toast";
 import { encryptPassword } from "../service/encryption";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Lock, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const PasswordSettings = () => {
@@ -50,12 +50,31 @@ const PasswordSettings = () => {
 
     return (
         <div className="content-section">
-            <h1>Security Settings</h1>
-            <div className="settings-card">
-                <form onSubmit={handleUpdatePassword}>
+            <div className="section-header">
+                <h1>Security Settings</h1>
+                <p>Ensure your account remains safe and protected</p>
+            </div>
+
+            <div className="settings-card premium-card">
+                <div className="profile-preview">
+                    <div className="preview-avatar">
+                        <ShieldCheck size={32} />
+                    </div>
+                    <div className="preview-info">
+                        <h3>Security & Privacy</h3>
+                        <span>Update your password regularly</span>
+                    </div>
+                </div>
+
+                <div className="card-divider"></div>
+
+                <form onSubmit={handleUpdatePassword} className="settings-form">
                     <div className="form-group">
                         <label>Current Password</label>
                         <div className="password-input-wrapper">
+                            <div className="input-icon">
+                                <Lock size={18} />
+                            </div>
                             <input
                                 type={showOldPassword ? "text" : "password"}
                                 className="form-control-custom"
@@ -75,9 +94,13 @@ const PasswordSettings = () => {
                             </button>
                         </div>
                     </div>
+
                     <div className="form-group">
                         <label>New Password</label>
                         <div className="password-input-wrapper">
+                            <div className="input-icon">
+                                <Lock size={18} />
+                            </div>
                             <input
                                 type={showNewPassword ? "text" : "password"}
                                 className="form-control-custom"
@@ -97,9 +120,13 @@ const PasswordSettings = () => {
                             </button>
                         </div>
                     </div>
+
                     <div className="form-group">
                         <label>Confirm New Password</label>
                         <div className="password-input-wrapper">
+                            <div className="input-icon">
+                                <Lock size={18} />
+                            </div>
                             <input
                                 type={showConfirmPassword ? "text" : "password"}
                                 className="form-control-custom"
@@ -119,9 +146,12 @@ const PasswordSettings = () => {
                             </button>
                         </div>
                     </div>
-                    <button type="submit" className="btn-save" disabled={loading}>
-                        {loading ? "Changing..." : "Update Password"}
-                    </button>
+
+                    <div className="form-actions">
+                        <button type="submit" className="btn-save-premium" disabled={loading}>
+                            {loading ? "Changing..." : "Update Password"}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

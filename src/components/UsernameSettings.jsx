@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import api from "../service/api.js";
 import { showError, showSuccess } from "../service/toast";
 import { encryptPassword } from "../service/encryption";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, User, Lock, Mail } from "lucide-react";
 
 const UsernameSettings = ({ initialUsername }) => {
     const [username, setUsername] = useState(initialUsername);
@@ -45,27 +45,50 @@ const UsernameSettings = ({ initialUsername }) => {
 
     return (
         <div className="content-section">
-            <h1>Profile Settings</h1>
+            <div className="section-header">
+                <h1>Profile Settings</h1>
+                <p>Manage your account identity and public profile</p>
+            </div>
 
-            <div className="settings-card">
-                <form onSubmit={handleUpdateUsername}>
+            <div className="settings-card premium-card">
+                <div className="profile-preview">
+                    <div className="preview-avatar">
+                        <User size={32} />
+                    </div>
+                    <div className="preview-info">
+                        <h3>{username}</h3>
+                        <span>Current Username</span>
+                    </div>
+                </div>
+
+                <div className="card-divider"></div>
+
+                <form onSubmit={handleUpdateUsername} className="settings-form">
                     {/* Display Name */}
                     <div className="form-group">
-                        <label>User Name</label>
-                        <input
-                            type="text"
-                            className="form-control-custom"
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                            placeholder="Enter new username"
-                            required
-                        />
+                        <label>New User Name</label>
+                        <div className="input-group-custom">
+                            <div className="input-icon">
+                                <User size={18} />
+                            </div>
+                            <input
+                                type="text"
+                                className="form-control-custom"
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                                placeholder="Enter new username"
+                                required
+                            />
+                        </div>
                     </div>
 
                     {/* Password */}
                     <div className="form-group">
                         <label>Confirm Password</label>
                         <div className="password-input-wrapper">
+                            <div className="input-icon">
+                                <Lock size={18} />
+                            </div>
                             <input
                                 type={showPassword ? "text" : "password"}
                                 className="form-control-custom"
@@ -84,16 +107,19 @@ const UsernameSettings = ({ initialUsername }) => {
                                 {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                             </button>
                         </div>
+                        <p className="form-help-text">Please verify your identity to change username</p>
                     </div>
 
                     {/* Submit */}
-                    <button
-                        type="submit"
-                        className="btn-save"
-                        disabled={loading || newName === username}
-                    >
-                        {loading ? "Updating..." : "Save Changes"}
-                    </button>
+                    <div className="form-actions">
+                        <button
+                            type="submit"
+                            className="btn-save-premium"
+                            disabled={loading || newName === username}
+                        >
+                            {loading ? "Updating..." : "Save Changes"}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
