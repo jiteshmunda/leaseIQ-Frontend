@@ -8,17 +8,45 @@ import ApprovalsSettings from "../components/ApprovalsSettings";
 import OrganizationUsers from "../components/OrganizationUsers";
 import "../styles/settings.css";
 import FloatingSignOut from "../components/FloatingSingout.jsx";
+import PaymentMethodSettings from "../components/PaymentMethodSettings";
+import CreditCard from "lucide-react/dist/esm/icons/credit-card";
+
 const Settings = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("profile");
     const [pendingCount, setPendingCount] = useState(0);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const [subscriptionId, setSubscriptionId] = useState(null);
+const [subLoading, setSubLoading] = useState(true);
+
+
 
     // User Data
     const role = sessionStorage.getItem("role");
     const userId = sessionStorage.getItem("userId");
     const username = sessionStorage.getItem("username") || "";
+    const canViewPaymentMethod = role === "individual" || role === "org_admin";
+
+    useEffect(() => {
+  api.get("/api/subscriptions/status")
+    .then((res) => {
+      console.log("SUBSCRIPTION STATUS:", res.data);
+
+      if (res.data?.hasSubscription && res.data.subscription?._id) {
+        setSubscriptionId(res.data.subscription._id);
+      } else {
+        setSubscriptionId(null);
+      }
+    })
+    .catch((err) => {
+      console.error("SUBSCRIPTION FETCH ERROR:", err);
+      setSubscriptionId(null);
+    })
+    .finally(() => setSubLoading(false));
+}, []);
+
+
 
     useEffect(() => {
         if (role === "org_admin") {
@@ -38,6 +66,17 @@ const Settings = () => {
                 return <ApprovalsSettings />;
             case "users":
                 return <OrganizationUsers />;
+                case "payment":
+  if (!canViewPaymentMethod) {
+    return <p>You are not authorized to view payment details.</p>;
+  }
+
+  if (subLoading) return <p>Loading subscription...</p>;
+  if (!subscriptionId) return <p>No active subscription found.</p>;
+
+  return <PaymentMethodSettings subscriptionId={subscriptionId} />;
+
+
             default:
                 return null;
         }
@@ -116,6 +155,22 @@ const Settings = () => {
                                 {!isCollapsed && <span>Organization Users</span>}
                             </div>
                         )}
+
+                        {canViewPaymentMethod && (
+  <div
+    className={`sidebar-item ${activeTab === "payment" ? "active" : ""}`}
+    onClick={() => {
+      setActiveTab("payment");
+      setIsMobileOpen(false);
+    }}
+    title={isCollapsed ? "Payment Method" : ""}
+  >
+    <CreditCard size={20} />
+    {!isCollapsed && <span>Payment Method</span>}
+  </div>
+)}
+
+
 
                         <div style={{ margin: "20px 0", height: "1px", background: "rgba(255,255,255,0.1)" }}></div>
 

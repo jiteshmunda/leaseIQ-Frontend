@@ -1,0 +1,253 @@
+.payment-wrapper {
+  padding: 32px;
+}
+
+.payment-method-title {
+      font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #0f172a !important;
+    letter-spacing: -0.5px;
+}
+
+.payment-subtitle {
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 20px;
+}
+
+
+/* CARD */
+.credit-card {
+    margin-top: 30px;
+  width: 360px;
+  height: 220px;
+  border-radius: 18px;
+  padding: 24px;
+  color: #ffffff;
+  box-shadow:
+    0 20px 40px rgba(15, 23, 42, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease;
+}
+
+
+/* Glow overlay */
+.credit-card::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.12),
+    transparent 60%
+  );
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1;
+}
+
+.card-label {
+  font-size: 13px;
+  opacity: 0.8;
+  letter-spacing: 0.4px;
+}
+
+.card-brand-icon {
+  width: 64px;
+  height: auto;
+}
+
+/* SVG icons */
+.svg-icon {
+  color: #ffffff;
+}
+
+/* PNG icons */
+.png-icon {
+  filter: brightness(1.05);
+}
+
+/* CARD NUMBER */
+.card-number {
+  font-size: 22px;
+  letter-spacing: 3px;
+  z-index: 1;
+}
+
+/* FOOTER */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 1;
+}
+
+.card-expiry .label {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-right: 4px;
+}
+
+.card-expiry span {
+  font-size: 14px;
+}
+
+.card-brand-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.95;
+}
+
+.error-text {
+  color: #ef4444;
+}
+/* PNG icons → force white */
+.png-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* Optional: make it slightly softer */
+.png-icon {
+  filter: brightness(0) invert(1) opacity(0.95);
+}
+
+
+
+/* Default size (fallback) */
+.card-brand-icon {
+  height: auto;
+}
+
+/* Brand-specific sizing */
+.brand-visa {
+  width: 64px;
+}
+
+.brand-mastercard {
+  width: 54px;
+}
+
+.brand-amex {
+  width: 84px;
+}
+
+.brand-discover {
+  width: 84px;
+}
+
+.brand-diners {
+  width: 48px;
+}
+
+.brand-rupay {
+  width: 70px;
+}
+
+/* Keep PNG icons white */
+.png-icon {
+  filter: brightness(0) invert(1) opacity(0.95);
+}
+
+/* SVG icons white */
+.svg-icon {
+  color: #ffffff;
+}
+
+.card-brand-text {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+
+/* ======================
+   RESPONSIVE BREAKPOINTS
+====================== */
+
+/* Tablets */
+@media (max-width: 768px) {
+  .payment-wrapper {
+    padding: 24px;
+  }
+
+  .payment-method-title {
+    font-size: 28px;
+  }
+
+  .credit-card {
+    width: 100%;
+    height: 210px;
+  }
+
+  .card-number {
+    font-size: 20px;
+    letter-spacing: 2.5px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .payment-wrapper {
+    padding: 20px;
+  }
+
+  .payment-method-title {
+    font-size: 24px;
+  }
+
+  .payment-subtitle {
+    font-size: 13px;
+  }
+
+  .credit-card {
+    height: auto;
+    min-height: 200px;
+    padding: 20px;
+  }
+
+  .card-number {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  /* Slightly smaller logos on mobile */
+  .brand-visa {
+    width: 56px;
+  }
+
+  .brand-mastercard {
+    width: 48px;
+  }
+
+  .brand-amex {
+    width: 72px;
+  }
+
+  .brand-discover {
+    width: 72px;
+  }
+
+  .brand-diners {
+    width: 44px;
+  }
+
+  .brand-rupay {
+    width: 62px;
+  }
+}
