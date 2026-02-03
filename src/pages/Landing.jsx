@@ -9,6 +9,7 @@ import { Modal } from "react-bootstrap";
 import AnimatedBackground from "../components/AnimatedBackground";
 import PricePlanning from "../components/PricePlanning";
 import Payment from "../components/Payment";
+import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -160,17 +161,22 @@ const Landing = () => {
       <div className="landing-page">
         <FloatingSignOut />
 
-        {/* Top Right User Profile with Unread Style Logic */}
-        <div className="user-profile-nav clickable" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-          <div className="user-info-badge">
-            <div className="user-icon-wrapper">
-              <UserCircle size={20} />
-              {hasPending && <span className="notification-dot"></span>}
+        {/* Top Right Header - Badges Container */}
+        <div className="landing-top-header">
+          <RemainingAbstractsBadge />
+
+          {/* User Profile with Unread Style Logic */}
+          <div className="user-profile-nav clickable" onClick={() => setShowProfileMenu(!showProfileMenu)}>
+            <div className="user-info-badge">
+              <div className="user-icon-wrapper">
+                <UserCircle size={20} />
+                {hasPending && <span className="notification-dot"></span>}
+              </div>
+              <span className={`display-username ${hasPending ? "unread-text" : ""}`}>
+                {username}
+              </span>
+              <ChevronDown size={14} className={showProfileMenu ? "rotate" : ""} />
             </div>
-            <span className={`display-username ${hasPending ? "unread-text" : ""}`}>
-              {username}
-            </span>
-            <ChevronDown size={14} className={showProfileMenu ? "rotate" : ""} />
           </div>
 
           {showProfileMenu && (
@@ -207,28 +213,40 @@ const Landing = () => {
 
         {/* Show pricing until a plan is selected */}
         {!hasPurchased ? (
-          <div className="pricing-section-wrapper" style={{
-            marginTop: '0.5rem',
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 1
-          }}>
-            {selectedPlan ? (
-              <Payment
-                plan={selectedPlan}
-                cycle={selectedCycle}
-                onBack={() => setSelectedPlan(null)}
-                onSuccess={() => {
-                  setHasPurchased(true);
-                  setSelectedPlan(null);
-                }}
-              />
-            ) : (
-              <PricePlanning role={role} onPlanSelected={handlePlanSelection} />
-            )}
-          </div>
+          role === "user" ? (
+            // User role without subscription: Show contact admin message
+            <div className="pricing-section-wrapper">
+              <div className="contact-admin-card">
+                <div className="contact-admin-card-icon">🔒</div>
+                <h2 className="contact-admin-card-title">Subscription Required</h2>
+                <p className="contact-admin-card-message">
+                  Contact your organization admin to purchase a plan and proceed forward.
+                </p>
+                <div className="contact-admin-card-info-box">
+                  <p className="contact-admin-card-info-text">
+                    Your organization admin can approve your access and assign you to the organization plan.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // org_admin or individual: Show pricing/payment flow
+            <div className="pricing-section-wrapper">
+              {selectedPlan ? (
+                <Payment
+                  plan={selectedPlan}
+                  cycle={selectedCycle}
+                  onBack={() => setSelectedPlan(null)}
+                  onSuccess={() => {
+                    setHasPurchased(true);
+                    setSelectedPlan(null);
+                  }}
+                />
+              ) : (
+                <PricePlanning role={role} onPlanSelected={handlePlanSelection} />
+              )}
+            </div>
+          )
         ) : (
           <div className="landing-cards" style={{ cursor: "pointer" }}>
             <div className="landing-card" onClick={() => navigate(portfolioRoute)}>

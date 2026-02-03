@@ -9,19 +9,24 @@
   position: relative;
 }
 
-/* ================= USER PROFILE & UNREAD STYLE ================= */
-
-.user-profile-nav {
+.landing-top-header {
   position: absolute;
   top: 20px;
   right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 1000;
+}
+
+.user-profile-nav {
+  position: relative;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   padding: 8px 20px;
   border-radius: 30px;
   color: #fff;
   transition: all 0.3s ease;
-  z-index: 1000;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -485,6 +490,30 @@
 
 /* Existing responsive queries kept exactly same as per request */
 @media (max-width: 1024px) {
+  .landing-top-header {
+    gap: 12px;
+  }
+
+  .landing-cards {
+    gap: 28px;
+  }
+
+  .landing-card {
+    width: 340px;
+    padding: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-top-header {
+    top: 15px;
+    right: 20px;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: calc(100% - 40px);
+  }
+
   .landing-cards {
     gap: 28px;
   }
@@ -507,6 +536,24 @@
     width: 100%;
     max-width: 360px;
     padding: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-top-header {
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    top: 12px;
+    right: 15px;
+    gap: 8px;
+  }
+
+  .user-profile-nav {
+    padding: 6px 14px;
+  }
+
+  .user-info-badge {
+    font-size: 12px;
   }
 }
 
@@ -609,4 +656,56 @@
   100% {
     transform: scaleY(1);
   }
+}
+
+.pricing-section-wrapper {
+  margin-top: 0.5rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.contact-admin-card {
+  background: linear-gradient(135deg, rgba(90, 61, 240, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%);
+  border: 2px solid rgba(90, 61, 240, 0.3);
+  border-radius: 16px;
+  padding: 48px 40px;
+  text-align: center;
+  max-width: 600px;
+  backdrop-filter: blur(10px);
+}
+
+.contact-admin-card-icon {
+  font-size: 48px;
+  margin-bottom: 24px;
+}
+
+.contact-admin-card-title {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.contact-admin-card-message {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.contact-admin-card-info-box {
+  background: rgba(90, 61, 240, 0.15);
+  border: 1px solid rgba(90, 61, 240, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+}
+
+.contact-admin-card-info-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin: 0;
 }

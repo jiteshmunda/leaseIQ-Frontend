@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import api from "../service/api.js";
 import { showError, showSuccess } from "../service/toast";
 import { encryptPassword } from "../service/encryption";
+import { validatePassword } from "../service/validation";
 import { Eye, EyeOff, Lock, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -20,6 +21,13 @@ const PasswordSettings = () => {
 
     const handleUpdatePassword = async (e) => {
         e.preventDefault();
+
+        const passwordError = validatePassword(passwordData.newPassword);
+        if (passwordError) {
+            showError(passwordError);
+            return;
+        }
+
         if (passwordData.newPassword !== passwordData.confirmPassword) {
             showError("Passwords do not match");
             return;

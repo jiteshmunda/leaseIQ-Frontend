@@ -18,6 +18,7 @@ import "../styles/leaseDetails.css";
 import FloatingSignOut from "../components/FloatingSingout";
 import { showSuccess, showError } from "../service/toast";
 import DragDropUpload from "../components/DragDropUpload";
+import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -83,10 +84,10 @@ const LeaseDetails = () => {
   const [lease, setLease] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  
+
 
   const derivedOrganizationId =
-    lease?.organization_id ;
+    lease?.organization_id;
 
   const [selectedDocId, setSelectedDocId] = useState(null);
   const [currentVersionId, setCurrentVersionId] = useState(null);
@@ -423,6 +424,9 @@ const LeaseDetails = () => {
         </div>
 
         <div className="header-right">
+          <div className="header-badge-wrapper" style={{ marginRight: '15px', display: 'flex', alignItems: 'center' }}>
+            <RemainingAbstractsBadge />
+          </div>
           <div className="ai-btn-wrapper">
             <button
               className="ai-button premium-ai-btn"

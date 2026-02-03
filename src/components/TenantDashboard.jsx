@@ -9,6 +9,7 @@ import PaginationComponent from "./PaginationComponent";
 import api from "../service/api";
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 import "../styles/tenantDashboard.css";
+import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
 
 const TenantDashboard = () => {
   const navigate = useNavigate();
@@ -88,12 +89,15 @@ const TenantDashboard = () => {
             <span className="tenant-title">{tenantName || tenantId}</span>
           </Navbar.Brand>
 
-          <Button
-            variant="outline-primary"
-            className="add-unit-navbar-btn"
-            onClick={() => setShowAddUnit(true)}>
-            <Plus size={16} /> Add Unit
-          </Button>
+          <div className="ms-auto d-flex align-items-center gap-3">
+            <RemainingAbstractsBadge />
+            <Button
+              variant="outline-primary"
+              className="add-unit-navbar-btn"
+              onClick={() => setShowAddUnit(true)}>
+              <Plus size={16} /> Add Unit
+            </Button>
+          </div>
         </Container>
       </Navbar>
 

@@ -16,6 +16,7 @@ import AddToportfolio from "./AddToportfolio";
 import DownloadLeaseDetailsDocx from "./DownloadLeaseDetailsDocx";
 import { deleteLeaseFile, getLeaseFile } from "../service/leaseFileStore";
 import "../styles/QuickAnalysisInfo.css";
+import RemainingAbstractsBadge from "./RemainingAbstractsBadge";
 
 const QuickAnalysisInfo = () => {
   const navigate = useNavigate();
@@ -94,6 +95,7 @@ const QuickAnalysisInfo = () => {
             </div>
 
             <div className="qai-header-right">
+              <RemainingAbstractsBadge />
               <button
                 className="add-btn btn btn-outline-light btn-sm"
                 onClick={() => setShowAddToPortfolio(true)}
@@ -176,7 +178,7 @@ const QuickAnalysisInfo = () => {
         open={showAiAssistant}
         onClose={() => setShowAiAssistant(false)}
         leaseId={parsedLeaseData?.leaseId || parsedLeaseData?.lease_id}
-        organizationId={ parsedLeaseData?.organization_id}
+        organizationId={parsedLeaseData?.organization_id}
       />
     </>
   );

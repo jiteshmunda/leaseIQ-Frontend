@@ -9,6 +9,8 @@ import { Home, Plus, CalendarDays, Users, DollarSign, AlertCircle, Building, Lay
 import FloatingSignOut from "../components/FloatingSingout";
 import PaginationComponent from "../components/PaginationComponent";
 import api from "../service/api";
+import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const criticalItems = [];
 const Dashboard = () => {
@@ -74,12 +76,15 @@ const Dashboard = () => {
             <LayoutDashboard onClick={() => navigate("/landing")} /> <span>Portfolio</span>
           </Navbar.Brand>
 
-          <Button
-            variant="outline-primary"
-            onClick={() => setShowAddUnit(true)}
-          >
-            <Plus size={16} /> Add Tenent
-          </Button>
+          <div className="ms-auto d-flex align-items-center gap-3">
+            <RemainingAbstractsBadge />
+            <Button
+              variant="outline-primary"
+              onClick={() => setShowAddUnit(true)}
+            >
+              <Plus size={16} /> Add Tenent
+            </Button>
+          </div>
           <AddUnit show={showAddUnit}
             onClose={() => setShowAddUnit(false)}
             onSuccess={fetchTenants}

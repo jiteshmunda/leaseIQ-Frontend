@@ -88,3 +88,158 @@ button:focus-visible {
     min-height: 50px !important;
   }
 }
+
+.abstracts-pill-premium {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.15), rgba(90, 61, 240, 0.15));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 6px 16px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  white-space: nowrap;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: default;
+  overflow: hidden;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.abstracts-pill-premium:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: rgba(138, 43, 226, 0.4);
+  box-shadow:
+    0 8px 25px rgba(138, 43, 226, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.pill-icon {
+  color: #a78bfa;
+  filter: drop-shadow(0 0 5px rgba(167, 139, 250, 0.5));
+  animation: sparkle-float 3s ease-in-out infinite;
+}
+
+.pill-text {
+  letter-spacing: 0.3px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.pill-count {
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(to bottom, #ffffff, #d8b4fe);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pill-shimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent);
+  animation: shimmer 4s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes sparkle-float {
+
+  0%,
+  100% {
+    transform: translateY(0) scale(1.1);
+  }
+
+  50% {
+    transform: translateY(-1px) scale(1.2);
+  }
+}
+
+/* Responsive Fixes for Abstracts Badge */
+@media (max-width: 768px) {
+  .abstracts-pill-premium {
+    padding: 4px 10px;
+    font-size: 0.70rem;
+    gap: 4px;
+  }
+
+  .pill-label-desktop {
+    display: none;
+  }
+
+  .pill-count {
+    font-size: 0.8rem;
+    -webkit-text-fill-color: #fff;
+  }
+}
+
+@media (max-width: 768px) {
+  .landing-badge-container {
+    top: 15px !important;
+    right: 130px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-badge-container {
+    position: static !important;
+    margin: 10px 0 20px 0 !important;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .lease-header {
+    padding: 8px 0 !important;
+  }
+
+  .header-left {
+    padding-left: 15px !important;
+  }
+
+  .lease-title {
+    font-size: 15px !important;
+  }
+
+  .header-right {
+    padding-right: 15px !important;
+  }
+
+  .header-badge-wrapper {
+    margin-right: 5px !important;
+  }
+}
+
+@media (max-width: 576px) {
+
+  .dashboard-navbar .navbar-content .ms-auto,
+  .tenant-navbar .navbar-content .ms-auto {
+    gap: 8px !important;
+  }
+
+  .dashboard-navbar .btn,
+  .tenant-navbar .btn {
+    font-size: 12px !important;
+  }
+}

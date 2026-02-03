@@ -7,6 +7,7 @@ import AnimatedBackground from "../components/AnimatedBackground";
 import axios from "axios";
 import { showError, showSuccess } from "../service/toast";
 import { encryptPassword } from "../service/encryption";
+import { validatePassword } from "../service/validation";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const AUTH_KEY = import.meta.env.VITE_AUTH_KEY;
@@ -78,6 +79,12 @@ const ForgotPassword = ({ onBack }) => {
         e.preventDefault();
         if (!formData.new_password || !formData.confirm_password) {
             showError("Please fill in all password fields");
+            return;
+        }
+
+        const passwordError = validatePassword(formData.new_password);
+        if (passwordError) {
+            showError(passwordError);
             return;
         }
 

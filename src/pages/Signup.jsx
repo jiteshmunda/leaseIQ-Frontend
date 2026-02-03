@@ -5,6 +5,7 @@ import { Eye, EyeOff, User, Building2, ArrowLeft } from "lucide-react";
 import axios from "axios";
 import { encryptPassword } from "../service/encryption";
 import { showError, showSuccess } from "../service/toast";
+import { validatePassword } from "../service/validation";
 import "../styles/signup.css";
 import AnimatedBackground from "../components/AnimatedBackground";
 
@@ -22,14 +23,6 @@ function Signup() {
     const name = value.trim();
     if (!name) return false;
     return /^[\p{L}]+(?: [\p{L}]+)*$/u.test(name);
-  };
-
-  const isStrongPassword = (value) => {
-    const password = value ?? "";
-    const hasLetter = /[A-Za-z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    const hasSymbol = /[^A-Za-z0-9]/.test(password);
-    return hasLetter && hasNumber && hasSymbol;
   };
 
   const [formData, setFormData] = useState({
@@ -77,9 +70,12 @@ function Signup() {
     if (!formData.name.trim()) newErrors.name = "Name is required";
     else if (!isValidFullName(formData.name)) newErrors.name = "Name must contain only letters and spaces";
     if (!formData.email.match(/^\S+@\S+\.\S+$/)) newErrors.email = "Invalid email format";
-    if (formData.password.length < 8) newErrors.password = "Min 8 characters required";
-    else if (!isStrongPassword(formData.password))
-      newErrors.password = "Password must include a letter, a number, and a symbol";
+
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      newErrors.password = passwordError;
+    }
+
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
 
     // org_name is required for both Create and Join organization options
