@@ -125,11 +125,11 @@ const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
       </div>
 
       {/* Credits */}
-      <div className="ai-credits">
+      {/* <div className="ai-credits">
         <Badge className="credits-badge text-white">
           45 AI credits remaining
         </Badge>
-      </div>
+      </div> */}
 
       {/* Chat */}
       <div className="ai-chat">
