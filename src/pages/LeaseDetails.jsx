@@ -8,6 +8,7 @@ import {
   FiEye,
   FiChevronLeft,
   FiChevronRight,
+  FiTrash2,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import AiLeaseAssistant from "../components/AiLeaseAssistant";
@@ -19,8 +20,33 @@ import FloatingSignOut from "../components/FloatingSingout";
 import { showSuccess, showError } from "../service/toast";
 import DragDropUpload from "../components/DragDropUpload";
 import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
+import { deleteLeaseDocument } from "../service/leaseDocuments";
+import { deleteCachedDocumentPdf } from "../service/leaseFileStore";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+const getBackendErrorMessage = (error, fallback = "Something went wrong") => {
+  const status = error?.response?.status;
+  const data = error?.response?.data;
+
+  let message;
+
+  if (typeof data === "string") {
+    message = data;
+  } else if (data && typeof data === "object") {
+    message = data?.message || data?.error || data?.detail || data?.title;
+    if (!message) {
+      try {
+        message = JSON.stringify(data);
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  if (!message) message = error?.message || fallback;
+  return status ? `${message}` : message;
+};
 
 const LeaseDetails = () => {
   const navigate = useNavigate();
@@ -40,6 +66,7 @@ const LeaseDetails = () => {
   });
   const [hoveredDocForTooltip, setHoveredDocForTooltip] = useState(null);
   const [tooltipTop, setTooltipTop] = useState(0);
+  const [isDeletingDocument, setIsDeletingDocument] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
@@ -216,6 +243,63 @@ const LeaseDetails = () => {
     setShowUploadModal(false);
     if (uploadInputRef.current) uploadInputRef.current.value = "";
     setPendingUploadFile(null);
+  };
+
+  const handleDeleteSelectedDocument = async () => {
+    if (!selectedDocId) {
+      showError("Please select a document to delete");
+      return;
+    }
+
+    const docName = selectedDocumentName || "this document";
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${docName}"? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setIsDeletingDocument(true);
+    try {
+      await deleteLeaseDocument(leaseId, selectedDocId);
+
+      try {
+        await deleteCachedDocumentPdf(selectedDocId);
+      } catch {
+        // cache cleanup best-effort
+      }
+
+      const existingDocs = Array.isArray(lease?.documents) ? lease.documents : [];
+      const remainingDocs = existingDocs.filter((d) => d?._id !== selectedDocId);
+      const nextDocId = remainingDocs[0]?._id ?? null;
+
+      setLease((prev) => {
+        if (!prev) return prev;
+        const prevDocs = Array.isArray(prev.documents) ? prev.documents : [];
+        return {
+          ...prev,
+          documents: prevDocs.filter((d) => d?._id !== selectedDocId),
+        };
+      });
+
+      setSelectedDocId(nextDocId);
+      setDocumentDetails(null);
+      setCurrentVersionId(null);
+
+      showSuccess("Document deleted successfully");
+
+      // Sync with backend state (e.g., if server reorders docs)
+      await fetchLease();
+    } catch (error) {
+      console.error("Delete document failed", {
+        status: error?.response?.status,
+        data: error?.response?.data,
+        url: error?.config?.url,
+        method: error?.config?.method,
+      });
+
+      showError(getBackendErrorMessage(error, "Failed to delete document"));
+    } finally {
+      setIsDeletingDocument(false);
+    }
   };
 
 
@@ -436,6 +520,17 @@ const LeaseDetails = () => {
               <span>AI Assistant</span>
             </button>
           </div>
+
+          <button
+            type="button"
+            className="icon-btn delete-doc-btn"
+            title={selectedDocId ? "Delete selected document" : "Select a document to delete"}
+            onClick={handleDeleteSelectedDocument}
+            disabled={!selectedDocId || isDeletingDocument || isUploadingDocument}
+          >
+            <FiTrash2 />
+          </button>
+
           <DownloadLeaseDetailsDocx
             leaseDetails={documentDetails}
             selectedDocumentName={selectedDocumentName}

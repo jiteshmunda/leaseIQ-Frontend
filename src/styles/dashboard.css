@@ -361,3 +361,145 @@
     transform: translateY(-8px) rotate(-5deg);
   }
 }
+
+/* Slide-in Actions Styles */
+.lease-card-wrapper {
+  overflow: visible;
+  /* Fix clipping of shadow/transform */
+  border-radius: 16px;
+}
+
+.lease-card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Trigger Icon Animation - Minimal: Hidden by default, shown on hover */
+.trigger-icon {
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.2s ease-in-out;
+  color: #9ca3af;
+}
+
+.lease-card:hover .trigger-icon,
+.trigger-icon.rotated {
+  opacity: 1;
+  transform: translateX(0) rotate(0);
+}
+
+.trigger-icon.rotated {
+  transform: rotate(180deg);
+  color: #4f46e5;
+}
+
+/* Animations Logic for Content Shift */
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rent-info-wrapper {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+  /* Ensure it moves as a block */
+}
+
+/* When actions are open, shift rent info left */
+.content-shifted .rent-info-wrapper {
+  transform: translateX(-40px);
+  /* Move left to avoid overlap */
+}
+
+/* Actions Container (The Closet) */
+.lease-card-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  min-width: 130px;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.95);
+  /* Slight transparency */
+  backdrop-filter: blur(8px);
+  /* Modern glass effect */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
+  /* Subtle border */
+  box-shadow: -10px 0 20px rgba(0, 0, 0, 0.03);
+  /* Soft shadow */
+}
+
+@media (max-width: 576px) {
+  .lease-card-actions {
+    min-width: 110px;
+    gap: 8px;
+    padding: 0 10px;
+  }
+}
+
+.lease-card-actions.show {
+  transform: translateX(0);
+}
+
+/* Action Buttons Refined */
+.action-btn {
+  height: 38px;
+  border-radius: 10px;
+  /* Modern soft square */
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  background: white;
+  /* Clean background */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.archive-btn {
+  color: #d97706;
+  border-color: #fef3c7;
+}
+
+.archive-btn:hover {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.delete-btn {
+  color: #ef4444;
+  border-color: #fee2e2;
+}
+
+.delete-btn:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.close-actions-btn {
+  color: #9ca3af;
+  height: 28px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.close-actions-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+  transform: none;
+}
