@@ -18,7 +18,7 @@ const Settings = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [subscriptionId, setSubscriptionId] = useState(null);
-const [subLoading, setSubLoading] = useState(true);
+    const [subLoading, setSubLoading] = useState(true);
 
 
 
@@ -29,22 +29,22 @@ const [subLoading, setSubLoading] = useState(true);
     const canViewPaymentMethod = role === "individual" || role === "org_admin";
 
     useEffect(() => {
-  api.get("/api/subscriptions/status")
-    .then((res) => {
-      console.log("SUBSCRIPTION STATUS:", res.data);
+        api.get("/api/subscriptions/status")
+            .then((res) => {
+                console.log("SUBSCRIPTION STATUS:", res.data);
 
-      if (res.data?.hasSubscription && res.data.subscription?._id) {
-        setSubscriptionId(res.data.subscription._id);
-      } else {
-        setSubscriptionId(null);
-      }
-    })
-    .catch((err) => {
-      console.error("SUBSCRIPTION FETCH ERROR:", err);
-      setSubscriptionId(null);
-    })
-    .finally(() => setSubLoading(false));
-}, []);
+                if (res.data?.hasSubscription && res.data.subscription?._id) {
+                    setSubscriptionId(res.data.subscription._id);
+                } else {
+                    setSubscriptionId(null);
+                }
+            })
+            .catch((err) => {
+                console.error("SUBSCRIPTION FETCH ERROR:", err);
+                setSubscriptionId(null);
+            })
+            .finally(() => setSubLoading(false));
+    }, []);
 
 
 
@@ -66,15 +66,15 @@ const [subLoading, setSubLoading] = useState(true);
                 return <ApprovalsSettings />;
             case "users":
                 return <OrganizationUsers />;
-                case "payment":
-  if (!canViewPaymentMethod) {
-    return <p>You are not authorized to view payment details.</p>;
-  }
+            case "payment":
+                if (!canViewPaymentMethod) {
+                    return <p>You are not authorized to view payment details.</p>;
+                }
 
-  if (subLoading) return <p>Loading subscription...</p>;
-  if (!subscriptionId) return <p>No active subscription found.</p>;
+                if (subLoading) return <p>Loading subscription...</p>;
+                if (!subscriptionId) return <p>No active subscription found.</p>;
 
-  return <PaymentMethodSettings subscriptionId={subscriptionId} />;
+                return <PaymentMethodSettings subscriptionId={subscriptionId} />;
 
 
             default:
@@ -111,7 +111,7 @@ const [subLoading, setSubLoading] = useState(true);
                     </div>
 
                     <div className="sidebar-header">
-                        <h2>{isCollapsed ? "LQ" : "LeaseIQ"}</h2>
+                        <h2>{isCollapsed ? " " : "LeaseIQ"}</h2>
                     </div>
 
                     <div className="sidebar-nav">
@@ -121,7 +121,7 @@ const [subLoading, setSubLoading] = useState(true);
                             title={isCollapsed ? "Profile Settings" : ""}
                         >
                             <UserCircle size={20} />
-                            {!isCollapsed && <span>Profile Settings</span>}
+                            {!isCollapsed && <span>Change Username</span>}
                         </div>
 
                         <div
@@ -130,7 +130,7 @@ const [subLoading, setSubLoading] = useState(true);
                             title={isCollapsed ? "Security & Privacy" : ""}
                         >
                             <KeyRound size={20} />
-                            {!isCollapsed && <span>Security & Privacy</span>}
+                            {!isCollapsed && <span>Change Password</span>}
                         </div>
 
                         {role === "org_admin" && (
@@ -157,18 +157,18 @@ const [subLoading, setSubLoading] = useState(true);
                         )}
 
                         {canViewPaymentMethod && (
-  <div
-    className={`sidebar-item ${activeTab === "payment" ? "active" : ""}`}
-    onClick={() => {
-      setActiveTab("payment");
-      setIsMobileOpen(false);
-    }}
-    title={isCollapsed ? "Payment Method" : ""}
-  >
-    <CreditCard size={20} />
-    {!isCollapsed && <span>Payment Method</span>}
-  </div>
-)}
+                            <div
+                                className={`sidebar-item ${activeTab === "payment" ? "active" : ""}`}
+                                onClick={() => {
+                                    setActiveTab("payment");
+                                    setIsMobileOpen(false);
+                                }}
+                                title={isCollapsed ? "Payment Method" : ""}
+                            >
+                                <CreditCard size={20} />
+                                {!isCollapsed && <span>Payment Method</span>}
+                            </div>
+                        )}
 
 
 

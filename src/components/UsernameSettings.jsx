@@ -37,16 +37,24 @@ const UsernameSettings = ({ initialUsername }) => {
             showSuccess("Username updated successfully");
             window.dispatchEvent(new Event("storage"));
         } catch (err) {
+            // Global interceptor handles 401/403
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                return;
+            }
             showError(err.response?.data?.message || "Failed to update username");
         } finally {
             setLoading(false);
         }
     };
 
+    const isUnchanged = newName === username;
+    const hasPassword = password && password.length > 0;
+    const showHighlight = hasPassword && isUnchanged;
+
     return (
         <div className="content-section">
             <div className="section-header">
-                <h1>Profile Settings</h1>
+                <h1>Change Username</h1>
                 <p>Manage your account identity and public profile</p>
             </div>
 
@@ -67,7 +75,7 @@ const UsernameSettings = ({ initialUsername }) => {
                     {/* Display Name */}
                     <div className="form-group">
                         <label>New User Name</label>
-                        <div className="input-group-custom">
+                        <div className={`input-group-custom ${showHighlight ? "input-blink-warning" : ""}`} style={{ borderRadius: "12px" }}>
                             <div className="input-icon">
                                 <User size={18} />
                             </div>
@@ -78,6 +86,8 @@ const UsernameSettings = ({ initialUsername }) => {
                                 onChange={(e) => setNewName(e.target.value)}
                                 placeholder="Enter new username"
                                 required
+                                disabled={loading}
+                                style={showHighlight ? { borderColor: "transparent" } : {}}
                             />
                         </div>
                     </div>

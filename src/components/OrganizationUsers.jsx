@@ -128,7 +128,7 @@ const OrganizationUsers = () => {
                                         <th>Email</th>
                                         <th>User Name</th>
                                         <th>Status</th>
-                                        <th className="text-end actions-col">Actions</th>
+                                        {/* <th className="text-end actions-col">Actions</th> */}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -150,14 +150,14 @@ const OrganizationUsers = () => {
                                             <td>
                                                 {getStatusBadge(user.status)}
                                             </td>
-                                            <td className="text-end">
+                                            {/* <td className="text-end">
                                                 <div className="d-flex justify-content-end gap-2">
 
                                                     <button className=" btn-delete" onClick={() => handleDeleteClick(user._id, user.name)} title="Remove User">
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>
-                                            </td>
+                                            </td> */}
                                         </tr>
                                     ))}
                                 </tbody>

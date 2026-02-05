@@ -308,6 +308,16 @@
   height: 100vh;
 }
 
+/* No Documents State - Hide Sidebar, Center Animation */
+.lease-body.no-documents-state {
+  justify-content: center;
+  align-items: center;
+}
+
+.lease-body.no-documents-state .lease-sidebar {
+  display: none;
+}
+
 /* Sidebar */
 .lease-sidebar {
   width: 280px;

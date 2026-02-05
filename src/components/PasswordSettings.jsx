@@ -50,6 +50,10 @@ const PasswordSettings = () => {
                 navigate("/");
             }, 1200);
         } catch (err) {
+            // Global interceptor handles 401/403
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                return;
+            }
             showError(err.response?.data?.message || "Failed to update password");
         } finally {
             setLoading(false);
@@ -59,7 +63,7 @@ const PasswordSettings = () => {
     return (
         <div className="content-section">
             <div className="section-header">
-                <h1>Security Settings</h1>
+                <h1>Change Password</h1>
                 <p>Ensure your account remains safe and protected</p>
             </div>
 
@@ -69,7 +73,7 @@ const PasswordSettings = () => {
                         <ShieldCheck size={32} />
                     </div>
                     <div className="preview-info">
-                        <h3>Security & Privacy</h3>
+                        <h3>Change Password</h3>
                         <span>Update your password regularly</span>
                     </div>
                 </div>
@@ -88,7 +92,7 @@ const PasswordSettings = () => {
                                 className="form-control-custom"
                                 value={passwordData.oldPassword}
                                 onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
-                                placeholder="••••••••"
+                                placeholder="Enter Current Password"
                                 required
                             />
                             <button
@@ -114,7 +118,7 @@ const PasswordSettings = () => {
                                 className="form-control-custom"
                                 value={passwordData.newPassword}
                                 onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                placeholder="••••••••"
+                                placeholder="Enter New Password"
                                 required
                             />
                             <button
@@ -140,7 +144,7 @@ const PasswordSettings = () => {
                                 className="form-control-custom"
                                 value={passwordData.confirmPassword}
                                 onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                placeholder="••••••••"
+                                placeholder="Confirm New Password"
                                 required
                             />
                             <button

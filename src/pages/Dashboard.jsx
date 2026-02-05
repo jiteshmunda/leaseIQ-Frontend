@@ -11,6 +11,7 @@ import PaginationComponent from "../components/PaginationComponent";
 import api from "../service/api";
 import { showSuccess, showError } from "../service/toast";
 import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
+import NoTenantAnimation from "../components/NoTenantAnimation";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const criticalItems = [];
@@ -257,22 +258,7 @@ const Dashboard = () => {
           </Col>
         </Row>
         {filteredTenants.length === 0 ? (
-          <div className="no-results-container">
-            <div className="no-results-icon-wrapper">
-              <Search size={48} className="no-results-icon" />
-            </div>
-            <h5>No tenants found</h5>
-            <p className="text-muted">
-              We couldn't find any tenants matching "<strong>{search}</strong>"
-            </p>
-            <Button
-              variant="outline-primary"
-              className="mt-2"
-              onClick={() => setSearch("")}
-            >
-              Clear Search
-            </Button>
-          </div>
+          <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
         ) : (
           filteredTenants
             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)

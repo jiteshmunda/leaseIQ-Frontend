@@ -510,10 +510,11 @@ const AddUnit = ({ show, onClose, onSuccess, tenantName = " ", tenantId }) => {
                 });
               }}
               currentFile={document}
-              label="Click to upload lease PDF"
+              label="Click to upload or lease PDF"
               subLabel="Only PDF files are supported"
               accept=".pdf,application/pdf"
               className={submitAttempted && errors.document ? "border-danger" : ""}
+              disabled={loading}
             />
             {submitAttempted && errors.document && (
               <div className="text-danger small mt-2 d-flex align-items-center gap-1">

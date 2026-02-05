@@ -405,101 +405,164 @@
 }
 
 /* When actions are open, shift rent info left */
+/* When actions are open, shift rent info left */
 .content-shifted .rent-info-wrapper {
-  transform: translateX(-40px);
-  /* Move left to avoid overlap */
+  transform: translateX(-150px);
+  /* Move more to clear premium drawer width */
 }
 
-/* Actions Container (The Closet) */
+/* MOBILE FIX: Make trigger visible without hover */
+@media (max-width: 991px) {
+  .trigger-icon {
+    opacity: 1 !important;
+    /* Force visible on touch devices */
+    transform: translateX(0) !important;
+  }
+}
+
+/* Actions Container (The Closet/Drawer) - Premium Glassmorphism */
 .lease-card-actions {
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
   width: auto;
-  min-width: 130px;
+  min-width: 140px;
   padding: 0 16px;
-  background: rgba(255, 255, 255, 0.95);
-  /* Slight transparency */
-  backdrop-filter: blur(8px);
-  /* Modern glass effect */
+  /* Ultra-premium glass effect */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  transform: translateX(100%);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 10;
-  border-left: 1px solid rgba(0, 0, 0, 0.05);
-  /* Subtle border */
-  box-shadow: -10px 0 20px rgba(0, 0, 0, 0.03);
-  /* Soft shadow */
-}
 
-@media (max-width: 576px) {
-  .lease-card-actions {
-    min-width: 110px;
-    gap: 8px;
-    padding: 0 10px;
-  }
+  transform: translateX(100%);
+  /* Smoother, more luxurious ease */
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 10;
+
+  border-left: 1px solid rgba(255, 255, 255, 0.6);
+  /* Multi-layered shadow for depth */
+  box-shadow:
+    -4px 0 24px rgba(0, 0, 0, 0.06),
+    inset 2px 0 4px rgba(255, 255, 255, 0.8);
 }
 
 .lease-card-actions.show {
   transform: translateX(0);
 }
 
-/* Action Buttons Refined */
+@media (max-width: 576px) {
+  .lease-card-actions {
+    min-width: 120px;
+    gap: 8px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
+
 .action-btn {
-  height: 38px;
-  border-radius: 10px;
-  /* Modern soft square */
-  border: 1px solid transparent;
+  height: 40px;
+  width: 40px;
+  min-width: 40px;
+  border-radius: 12px;
+  /* Softer, modern radius */
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Bouncy pop effect */
   background: white;
-  /* Clean background */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+  position: relative;
+  flex-shrink: 0;
+  padding: 0px;
+}
+
+.action-btn svg {
+  z-index: 2;
+  transition: transform 0.25s ease;
+  stroke: currentColor;
+  /* Ensure color is inherited */
+  width: 18px;
+  /* Force minimum size */
+  height: 18px;
 }
 
 .action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-3px) scale(1.05);
 }
 
+.action-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Archive Button - Premium Amber */
 .archive-btn {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
   color: #d97706;
-  border-color: #fef3c7;
+  box-shadow:
+    0 4px 12px -2px rgba(217, 119, 6, 0.2),
+    0 2px 4px -1px rgba(217, 119, 6, 0.1);
 }
 
 .archive-btn:hover {
-  background: #fffbeb;
-  border-color: #fde68a;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
   color: #b45309;
+  box-shadow:
+    0 8px 16px -4px rgba(217, 119, 6, 0.3),
+    0 4px 6px -2px rgba(217, 119, 6, 0.15);
 }
 
+/* Delete Button - Premium Red */
 .delete-btn {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
   color: #ef4444;
-  border-color: #fee2e2;
+  box-shadow:
+    0 4px 12px -2px rgba(239, 68, 68, 0.2),
+    0 2px 4px -1px rgba(239, 68, 68, 0.1);
 }
 
 .delete-btn:hover {
-  background: #fef2f2;
-  border-color: #fecaca;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
   color: #b91c1c;
+  box-shadow:
+    0 8px 16px -4px rgba(239, 68, 68, 0.3),
+    0 4px 6px -2px rgba(239, 68, 68, 0.15);
 }
 
+/* Close Button - Subtle/Clean */
 .close-actions-btn {
-  color: #9ca3af;
-  height: 28px;
+  height: 32px;
+  width: 32px;
+  min-width: 32px;
   background: transparent;
+  color: #9ca3af;
   box-shadow: none;
+  border-radius: 50%;
 }
 
 .close-actions-btn:hover {
-  background: #f3f4f6;
-  color: #111827;
-  transform: none;
+  background: rgba(0, 0, 0, 0.04);
+  color: #4b5563;
+  transform: rotate(90deg);
+  /* Playful rotation on hover */
+}
+
+/* Mobile adjustments for buttons */
+@media (max-width: 576px) {
+  .action-btn {
+    height: 36px;
+    width: 36px;
+    min-width: 36px;
+  }
+
+  .action-btn svg {
+    width: 16px;
+    height: 16px;
+  }
 }

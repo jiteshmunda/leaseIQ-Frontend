@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ShieldCheck, Check, ArrowLeft } from 'lucide-react';
 import '../styles/payment.css';
 import { useNavigate } from 'react-router-dom';
@@ -6,8 +6,6 @@ import { useStripe, useElements, CardElement, Elements } from '@stripe/react-str
 import { loadStripe } from '@stripe/stripe-js';
 import api from '../service/api';
 import { showError } from '../service/toast';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 
 
@@ -80,7 +78,7 @@ const PaymentForm = ({ plan, cycle, onBack }) => {
             const role = ['org_admin', 'user'].includes(userRole) ? 'organization/user' : 'individual';
             // 2. Create Subscription on Backend with exact body format
             const response = await api.post(`/api/subscriptions/${role}`, {
-                
+
                 planId: plan._id,
                 billingInterval: cycle === 'monthly' ? 'month' : 'year',
                 paymentMethodId: paymentMethod.id,
@@ -167,6 +165,7 @@ const PaymentForm = ({ plan, cycle, onBack }) => {
                                 value={cardName}
                                 onChange={(e) => setCardName(e.target.value)}
                                 required
+                                disabled={loading}
                             />
                         </div>
                     </div>
@@ -174,7 +173,7 @@ const PaymentForm = ({ plan, cycle, onBack }) => {
                     <div className="form-group">
                         <label className='payment-title'>Card Details</label>
                         <div className="stripe-element-container">
-                            <CardElement options={CARD_ELEMENT_OPTIONS} />
+                            <CardElement options={{ ...CARD_ELEMENT_OPTIONS, disabled: loading }} />
                         </div>
                     </div>
 
@@ -192,6 +191,11 @@ const PaymentForm = ({ plan, cycle, onBack }) => {
 };
 
 const Payment = (props) => {
+    // Lazy load Stripe only when Payment component is rendered
+    const stripePromise = useMemo(() => {
+        return loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+    }, []);
+
     if (!props.plan) return null;
     return (
         <Elements stripe={stripePromise}>

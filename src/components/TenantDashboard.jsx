@@ -12,6 +12,8 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 import "../styles/tenantDashboard.css";
 import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
 
+import NoLeaseAnimation from "./NoLeaseAnimation";
+
 const TenantDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,16 +31,20 @@ const TenantDashboard = () => {
   const fetchLeases = useCallback(async () => {
     if (!tenantId) return;
 
-    const res = await api.get(
-      `${BASE_URL}/api/tenants/${tenantId}/leases`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    try {
+      const res = await api.get(
+        `${BASE_URL}/api/tenants/${tenantId}/leases`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    setLeases(Array.isArray(res.data?.leases) ? res.data.leases : []);
+      setLeases(Array.isArray(res.data?.leases) ? res.data.leases : []);
+    } catch (err) {
+      console.error("Failed to fetch leases", err);
+    }
   }, [tenantId, token]);
 
   useEffect(() => {
@@ -195,100 +201,105 @@ const TenantDashboard = () => {
         <div className="units-header d-flex justify-content-between align-items-center mb-3">
           <h4>Units</h4>
         </div>
-        <div className="leases-list">
-          {leases
-            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-            .map((lease, index) => (
-              <div className="unit-card-wrapper mb-3" key={index}>
-                <Card
-                  className={`unit-card ${activeActionCardId === lease._id ? "actions-open" : ""}`}
-                  onClick={(e) => {
-                    if (!e.target.closest('.unit-card-actions') && !e.target.closest('.action-trigger')) {
-                      navigate(`/lease-details/${lease._id}`)
-                    }
-                  }}
-                >
-                  <Card.Body className="unit-card-body position-relative overflow-hidden">
 
-                    {/* TRIGGER Button */}
-                    <button
-                      className="action-trigger btn btn-link p-0 text-muted"
-                      style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveActionCardId(activeActionCardId === lease._id ? null : lease._id);
-                      }}
-                    >
-                      <ChevronLeft size={20} className={`trigger-icon ${activeActionCardId === lease._id ? "rotated" : ""}`} />
-                    </button>
+        {leases.length === 0 ? (
+          <NoLeaseAnimation onAddUnit={() => setShowAddUnit(true)} />
+        ) : (
+          <div className="leases-list">
+            {leases
+              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+              .map((lease, index) => (
+                <div className="unit-card-wrapper mb-3" key={index}>
+                  <Card
+                    className={`unit-card ${activeActionCardId === lease._id ? "actions-open" : ""}`}
+                    onClick={(e) => {
+                      if (!e.target.closest('.unit-card-actions') && !e.target.closest('.action-trigger')) {
+                        navigate(`/lease-details/${lease._id}`)
+                      }
+                    }}
+                  >
+                    <Card.Body className="unit-card-body position-relative overflow-hidden">
 
-                    <div className={`transition-all ${activeActionCardId === lease._id ? "content-shifted" : ""}`}>
-                      {/* TOP ROW */}
-                      <div className="unit-header">
-                        {/* LEFT COLUMN */}
-                        <div className="unit-left">
-                          <div className="unit-title">
-                            <h6>{lease.unit_number || "Unit 01"}</h6>
-                            <span
-                              className={`status-badge ${lease.status === "Active" ? "active" : "expiring"
-                                }`}
-                            >
-                              {lease.status || "Active"}
-                            </span>
-                          </div>
-
-                          <p className="building">{lease.property_name || "Building A"}</p>
-                          <p className="address">{lease.address || "123 Main St"}</p>
-                        </div>
-
-                        {/* RIGHT COLUMN */}
-                        <div className="unit-rent text-end rent-info-wrapper">
-                          <small>Monthly Rent</small>
-                          <h6> ${lease.monthly_rent || "0"}</h6>
-                          <span className="sqft">{lease.square_ft || "0"} sq ft</span>
-                        </div>
-                      </div>
-
-                      {/* DATES */}
-                      <div className="unit-dates">
-                        <span>📅 Start: {formatDateOnly(lease.start_date)}</span>
-                        <span>•</span>
-                        <span>📅 End: {formatDateOnly(lease.end_date)}</span>
-                      </div>
-                    </div>
-
-                    {/* SLIDE IN ACTIONS */}
-                    <div className={`unit-card-actions ${activeActionCardId === lease._id ? "show" : ""}`}>
+                      {/* TRIGGER Button */}
                       <button
-                        className="action-btn archive-btn"
-                        onClick={(e) => handleArchive(e, lease._id)}
-                        title="Archive Unit"
-                      >
-                        <Archive size={18} />
-                      </button>
-                      <button
-                        className="action-btn delete-btn"
-                        onClick={(e) => handleDelete(e, lease._id)}
-                        title="Delete Unit"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                      <button
-                        className="action-btn close-actions-btn"
+                        className="action-trigger btn btn-link p-0 text-muted"
+                        style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setActiveActionCardId(null);
+                          setActiveActionCardId(activeActionCardId === lease._id ? null : lease._id);
                         }}
                       >
-                        <ChevronRight size={18} />
+                        <ChevronLeft size={20} className={`trigger-icon ${activeActionCardId === lease._id ? "rotated" : ""}`} />
                       </button>
-                    </div>
 
-                  </Card.Body>
-                </Card>
-              </div>
-            ))}
-        </div>
+                      <div className={`transition-all ${activeActionCardId === lease._id ? "content-shifted" : ""}`}>
+                        {/* TOP ROW */}
+                        <div className="unit-header">
+                          {/* LEFT COLUMN */}
+                          <div className="unit-left">
+                            <div className="unit-title">
+                              <h6>{lease.unit_number || "Unit 01"}</h6>
+                              <span
+                                className={`status-badge ${lease.status === "Active" ? "active" : "expiring"
+                                  }`}
+                              >
+                                {lease.status || "Active"}
+                              </span>
+                            </div>
+
+                            <p className="building">{lease.property_name || "Building A"}</p>
+                            <p className="address">{lease.address || "123 Main St"}</p>
+                          </div>
+
+                          {/* RIGHT COLUMN */}
+                          <div className="unit-rent text-end rent-info-wrapper">
+                            <small>Monthly Rent</small>
+                            <h6> ${lease.monthly_rent || "0"}</h6>
+                            <span className="sqft">{lease.square_ft || "0"} sq ft</span>
+                          </div>
+                        </div>
+
+                        {/* DATES */}
+                        <div className="unit-dates">
+                          <span>📅 Start: {formatDateOnly(lease.start_date)}</span>
+                          <span>•</span>
+                          <span>📅 End: {formatDateOnly(lease.end_date)}</span>
+                        </div>
+                      </div>
+
+                      {/* SLIDE IN ACTIONS */}
+                      <div className={`unit-card-actions ${activeActionCardId === lease._id ? "show" : ""}`}>
+                        <button
+                          className="action-btn archive-btn"
+                          onClick={(e) => handleArchive(e, lease._id)}
+                          title="Archive Unit"
+                        >
+                          <Archive size={18} />
+                        </button>
+                        <button
+                          className="action-btn delete-btn"
+                          onClick={(e) => handleDelete(e, lease._id)}
+                          title="Delete Unit"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                        <button
+                          className="action-btn close-actions-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveActionCardId(null);
+                          }}
+                        >
+                          <ChevronRight size={18} />
+                        </button>
+                      </div>
+
+                    </Card.Body>
+                  </Card>
+                </div>
+              ))}
+          </div>
+        )}
         <PaginationComponent
           currentPage={currentPage}
           totalPages={Math.ceil(leases.length / itemsPerPage)}
