@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Modal } from "react-bootstrap";
 import InfoTab from "./InfoTab";
 import SpaceTab from "./SpaceTab";
 import RentSchedulesTab from "./RentSchedulesTab";
@@ -32,6 +33,7 @@ const LeaseMainContent = ({
   });
   const [isUpdatingCamRule, setIsUpdatingCamRule] = useState(false);
   const [isLoadingCam, setIsLoadingCam] = useState(false);
+  const [showCamConfirm, setShowCamConfirm] = useState(false);
 
   const { runCamAnalysis } = useLeaseAnalyzer();
 
@@ -248,10 +250,21 @@ const LeaseMainContent = ({
 
   const handleTabClick = (tab) => {
     if (tab === "CAM") {
-      handleCamTabClick();
+      // If CAM data already exists, just switch
+      if (leaseDetails?.["cam-single"]) {
+        setActiveTab("CAM");
+        return;
+      }
+      // Show confirmation for premium extraction
+      setShowCamConfirm(true);
     } else {
       setActiveTab(tab);
     }
+  };
+
+  const handleConfirmCam = () => {
+    setShowCamConfirm(false);
+    handleCamTabClick();
   };
 
   const handleEditCategory = (categoryName) => {
@@ -392,7 +405,7 @@ const LeaseMainContent = ({
         {TABS.map((tab) => (
           <button
             key={tab}
-            className={activeTab === tab ? "active" : ""}
+            className={`${activeTab === tab ? "active" : ""} ${tab === "CAM" ? "cam-tab-premium" : ""}`}
             onClick={() => handleTabClick(tab)}
             disabled={tab === "CAM" && isLoadingCam && !leaseDetails?.["cam-single"]}
           >
@@ -633,6 +646,30 @@ const LeaseMainContent = ({
 
 
 
+
+      {showCamConfirm && (
+        <Modal
+          show={showCamConfirm}
+          onHide={() => setShowCamConfirm(false)}
+          centered
+          className="logout-modal cam-confirm-modal"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Premium CAM Analysis</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            CAM extractions takes some time and <b>cost you a abstract</b>. Do you wish to proceed?
+          </Modal.Body>
+          <Modal.Footer>
+            <button className="btn btn-cancel" onClick={() => setShowCamConfirm(false)}>
+              Cancel
+            </button>
+            <button className="btn btn-logout" onClick={handleConfirmCam}>
+              Proceed
+            </button>
+          </Modal.Footer>
+        </Modal>
+      )}
 
     </>
 
