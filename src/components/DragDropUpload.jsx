@@ -11,27 +11,31 @@ const DragDropUpload = ({
     subLabel = "PDF up to 50MB",
     icon,
     className = "",
-    currentFile = null
+    currentFile = null,
+    disabled = false
 }) => {
     const [isDragging, setIsDragging] = useState(false);
     const inputRef = useRef(null);
 
     const handleDragEnter = useCallback((e) => {
+        if (disabled) return;
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(true);
-    }, []);
+    }, [disabled]);
 
     const handleDragLeave = useCallback((e) => {
+        if (disabled) return;
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(false);
-    }, []);
+    }, [disabled]);
 
     const handleDragOver = useCallback((e) => {
+        if (disabled) return;
         e.preventDefault();
         e.stopPropagation();
-    }, []);
+    }, [disabled]);
 
     const validateFile = (file) => {
         // Check type
@@ -63,6 +67,7 @@ const DragDropUpload = ({
     };
 
     const handleDrop = useCallback((e) => {
+        if (disabled) return;
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(false);
@@ -74,7 +79,7 @@ const DragDropUpload = ({
                 onFileSelect(file);
             }
         }
-    }, [onFileSelect, accept, maxSize]);
+    }, [onFileSelect, accept, maxSize, disabled]);
 
     const handleFileInput = useCallback((e) => {
         const files = e.target.files;
@@ -87,6 +92,7 @@ const DragDropUpload = ({
     }, [onFileSelect, accept, maxSize]);
 
     const handleClick = () => {
+        if (disabled) return;
         inputRef.current?.click();
     };
 
@@ -95,7 +101,7 @@ const DragDropUpload = ({
 
     return (
         <div
-            className={`drag-drop-upload ${isDragging ? "is-dragging" : ""} ${currentFile ? "has-file" : ""} ${className}`}
+            className={`drag-drop-upload ${isDragging ? "is-dragging" : ""} ${currentFile ? "has-file" : ""} ${disabled ? "disabled" : ""} ${className}`}
             onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -108,6 +114,7 @@ const DragDropUpload = ({
                 accept={accept}
                 onChange={handleFileInput}
                 hidden
+                disabled={disabled}
             />
 
             {currentFile ? (
@@ -117,7 +124,7 @@ const DragDropUpload = ({
                     <span className="drag-drop-subtitle">
                         {(currentFile.size / 1024 / 1024).toFixed(2)} MB
                     </span>
-                    <span className="drag-drop-change">Click or drop to change file</span>
+                    <span className="drag-drop-change">{disabled ? "Processing..." : "Click or drop to change file"}</span>
                 </div>
             ) : (
                 <div className="drag-drop-content">

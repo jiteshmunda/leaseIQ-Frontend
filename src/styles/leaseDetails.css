@@ -270,13 +270,35 @@
 }
 
 .icon-btn {
-  width: 32px;
   height: 32px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.15);
   border: none;
   color: #fff;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.icon-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.delete-doc-btn {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.delete-doc-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.28);
 }
 
 /* ===== BODY LAYOUT ===== */
@@ -284,6 +306,16 @@
   display: flex;
   padding-top: 64px;
   height: 100vh;
+}
+
+/* No Documents State - Hide Sidebar, Center Animation */
+.lease-body.no-documents-state {
+  justify-content: center;
+  align-items: center;
+}
+
+.lease-body.no-documents-state .lease-sidebar {
+  display: none;
 }
 
 /* Sidebar */

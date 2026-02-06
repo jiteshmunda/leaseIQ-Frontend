@@ -103,3 +103,11 @@
         transform: rotate(360deg);
     }
 }
+
+.drag-drop-upload.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: not-allowed;
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+}

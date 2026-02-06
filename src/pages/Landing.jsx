@@ -10,6 +10,7 @@ import AnimatedBackground from "../components/AnimatedBackground";
 import PricePlanning from "../components/PricePlanning";
 import Payment from "../components/Payment";
 import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
+import { CentralLoader } from "../components/Loader";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const Landing = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [confirmOrg, setConfirmOrg] = useState({ open: false, userId: null });
   const [submittingOrg, setSubmittingOrg] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Retrieve user data directly from sessionStorage
   const username = sessionStorage.getItem("username");
@@ -60,6 +62,10 @@ const Landing = () => {
         }
       } catch (err) {
         console.error("Failed to fetch data", err);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -185,16 +191,6 @@ const Landing = () => {
                 className="dropdown-item"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowProfileMenu(false);
-                }}
-              >
-                <UserCircle size={16} />
-                <span>Landing</span>
-              </div>
-              <div
-                className="dropdown-item"
-                onClick={(e) => {
-                  e.stopPropagation();
                   navigate("/settings");
                   setShowProfileMenu(false);
                 }}
@@ -247,6 +243,8 @@ const Landing = () => {
               )}
             </div>
           )
+        ) : loading ? (
+          <CentralLoader />
         ) : (
           <div className="landing-cards" style={{ cursor: "pointer" }}>
             <div className="landing-card" onClick={() => navigate(portfolioRoute)}>

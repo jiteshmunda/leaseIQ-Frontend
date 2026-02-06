@@ -5,11 +5,13 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/dashboard.css";
 import AddUnit from "../components/AddUnit";
 import AddTenant from "../components/AddTenant";
-import { Home, Plus, CalendarDays, Users, DollarSign, AlertCircle, Building, LayoutDashboard, Search } from "lucide-react";
+import { Plus, Users, DollarSign, AlertCircle, Building, LayoutDashboard, Search, ChevronLeft, ChevronRight, Archive, Trash2, MoreVertical } from "lucide-react";
 import FloatingSignOut from "../components/FloatingSingout";
 import PaginationComponent from "../components/PaginationComponent";
 import api from "../service/api";
+import { showSuccess, showError } from "../service/toast";
 import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
+import NoTenantAnimation from "../components/NoTenantAnimation";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const criticalItems = [];
@@ -18,6 +20,7 @@ const Dashboard = () => {
   const [tenants, setTenants] = useState([]);
   const token = sessionStorage.getItem("token");
   const [search, setSearch] = useState("");
+  const [activeActionCardId, setActiveActionCardId] = useState(null);
 
   const [showAddUnit, setShowAddUnit] = useState(false);
   const [showAddTenant, setShowAddTenant] = useState(false);
@@ -39,6 +42,36 @@ const Dashboard = () => {
       console.error("Failed to fetch tenants", err);
     }
   }, [token]);
+
+  const handleArchive = async (e, tenantId) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to archive this tenant?")) return;
+
+    try {
+      await api.patch(`${BASE_URL}/api/tenants/${tenantId}/archive`, {
+        is_archive: true
+      });
+      showSuccess("Tenant archived successfully");
+      fetchTenants(); // Refresh list
+    } catch (err) {
+      console.error("Failed to archive tenant", err);
+      showError("Failed to archive tenant");
+    }
+  };
+
+  const handleDelete = async (e, tenantId) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this tenant? This action cannot be undone.")) return;
+
+    try {
+      await api.delete(`${BASE_URL}/api/tenants/${tenantId}`);
+      showSuccess("Tenant deleted successfully");
+      fetchTenants(); // Refresh list
+    } catch (err) {
+      console.error("Failed to delete tenant", err);
+      showError("Failed to delete tenant");
+    }
+  };
 
   useEffect(() => {
     if (!showAddUnit) {
@@ -225,59 +258,91 @@ const Dashboard = () => {
           </Col>
         </Row>
         {filteredTenants.length === 0 ? (
-          <div className="no-results-container">
-            <div className="no-results-icon-wrapper">
-              <Search size={48} className="no-results-icon" />
-            </div>
-            <h5>No tenants found</h5>
-            <p className="text-muted">
-              We couldn't find any tenants matching "<strong>{search}</strong>"
-            </p>
-            <Button
-              variant="outline-primary"
-              className="mt-2"
-              onClick={() => setSearch("")}
-            >
-              Clear Search
-            </Button>
-          </div>
+          <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
         ) : (
           filteredTenants
             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
             .map((tenant) => (
-              <Card key={tenant._id}
-                className="mb-3 shadow-sm lease-card"
-                onClick={() =>
-                  navigate(`/tenant/${tenant._id}`, {
-                    state: { tenantName: tenant.tenant_name },
-                  })
-                }
-              >
-                <Card.Body>
-                  <Row className="align-items-center">
+              <div className="lease-card-wrapper mb-3" key={tenant._id}>
+                <Card
+                  className={`shadow-sm lease-card ${activeActionCardId === tenant._id ? "actions-open" : ""}`}
+                  onClick={(e) => {
+                    if (!e.target.closest('.lease-card-actions') && !e.target.closest('.action-trigger')) {
+                      navigate(`/tenant/${tenant._id}`, {
+                        state: { tenantName: tenant.tenant_name },
+                      });
+                    }
+                  }}
+                >
+                  <Card.Body className="p-0 position-relative overflow-hidden">
+                    <div className="p-3">
+                      <Row className={`align-items-center transition-all ${activeActionCardId === tenant._id ? "content-shifted" : ""}`}>
 
-                    <Col md={8} className="d-flex gap-3 align-items-start">
-                      <div className="tenant-icon">
-                        <Building size={24} />
-                      </div>
+                        <Col md={8} className="d-flex gap-3 align-items-start">
+                          <div className="tenant-icon">
+                            <Building size={24} />
+                          </div>
 
-                      <div>
-                        <h6 className="mb-1">{tenant.tenant_name}</h6>
-                        <small className="text-muted">
-                          {tenant.total_units} Units • {/*{tenant.total_sqft} sq ft • */}
-                          {/* Expires {tenant.lease_expiry} */}
-                        </small>
-                      </div>
-                    </Col>
+                          <div>
+                            <h6 className="mb-1">{tenant.tenant_name}</h6>
+                            <small className="text-muted">
+                              {tenant.total_units} Units • {/*{tenant.total_sqft} sq ft • */}
+                              {/* Expires {tenant.lease_expiry} */}
+                            </small>
+                          </div>
+                        </Col>
 
-                    <Col md={4} className="text-end">
-                      <small className="text-muted">Monthly Rent</small>
-                      <h6 className="mb-0">$ {tenant.monthly_rent}</h6>
-                    </Col>
+                        <Col md={3} className="text-end rent-col">
+                          <div className="rent-info-wrapper">
+                            <small className="text-muted">Monthly Rent</small>
+                            <h6 className="mb-0">$ {tenant.monthly_rent}</h6>
+                          </div>
+                        </Col>
 
-                  </Row>
-                </Card.Body>
-              </Card>
+                        <Col md={1} className="d-flex justify-content-end align-items-center">
+                          <button
+                            className="action-trigger btn btn-link p-0 text-muted"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveActionCardId(activeActionCardId === tenant._id ? null : tenant._id);
+                            }}
+                          >
+                            <MoreVertical size={20} className={`trigger-icon ${activeActionCardId === tenant._id ? "rotated" : ""}`} />
+                          </button>
+                        </Col>
+
+                      </Row>
+                    </div>
+
+                    {/* SLIDE IN ACTIONS */}
+                    <div className={`lease-card-actions ${activeActionCardId === tenant._id ? "show" : ""}`}>
+                      <button
+                        className="action-btn archive-btn"
+                        onClick={(e) => handleArchive(e, tenant._id)}
+                        title="Archive Tenant"
+                      >
+                        <Archive size={18} />
+                      </button>
+                      <button
+                        className="action-btn delete-btn"
+                        onClick={(e) => handleDelete(e, tenant._id)}
+                        title="Delete Tenant"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                      <button
+                        className="action-btn close-actions-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveActionCardId(null);
+                        }}
+                      >
+                        <ChevronRight size={18} />
+                      </button>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </div>
             ))
         )}
 

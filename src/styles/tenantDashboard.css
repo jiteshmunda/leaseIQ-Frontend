@@ -251,6 +251,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  padding-right: 45px;
+  /* Make space for the trigger button */
 }
 
 .unit-left {
@@ -421,5 +423,237 @@
 @media (max-width: 468px) {
   .address {
     display: none;
+  }
+}
+
+.unit-card-wrapper {
+  overflow: visible;
+  border-radius: 12px;
+}
+
+.unit-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.unit-card .trigger-icon {
+  opacity: 0;
+  transform: translateX(10px);
+  transition: all 0.2s ease-in-out;
+  color: #9ca3af;
+}
+
+.unit-card:hover .trigger-icon,
+.unit-card .trigger-icon.rotated {
+  opacity: 1;
+  transform: translateX(0) rotate(0);
+}
+
+.unit-card .trigger-icon.rotated {
+  transform: rotate(90deg);
+  color: #4f46e5;
+}
+
+.action-trigger {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+}
+
+.action-trigger:hover {
+  background: #f3f4f6;
+  color: #4f46e5 !important;
+}
+
+/* Animation Utilities */
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rent-info-wrapper {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
+
+/* Shift Content Logic */
+.content-shifted .rent-info-wrapper {
+  transform: translateX(-150px);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+@media (max-width: 576px) {
+  .content-shifted .rent-info-wrapper {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-20px);
+  }
+}
+
+/* MOBILE FIX: Make trigger visible without hover */
+@media (max-width: 991px) {
+  .unit-card .trigger-icon {
+    opacity: 1 !important;
+    /* Force visible on touch devices */
+    transform: translateX(0) !important;
+  }
+}
+
+/* Actions Container (The Closet/Drawer) - Premium Glassmorphism */
+.unit-card-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  min-width: 140px;
+  padding: 0 16px;
+  /* Ultra-premium glass effect */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  transform: translateX(100%);
+  /* Smoother, more luxurious ease */
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 10;
+
+  border-left: 1px solid rgba(255, 255, 255, 0.6);
+  /* Multi-layered shadow for depth */
+  box-shadow:
+    -4px 0 24px rgba(0, 0, 0, 0.06),
+    inset 2px 0 4px rgba(255, 255, 255, 0.8);
+}
+
+.unit-card-actions.show {
+  transform: translateX(0);
+}
+
+/* Mobile Responsiveness for Drawer */
+@media (max-width: 576px) {
+  .unit-card-actions {
+    min-width: 120px;
+    gap: 8px;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.92);
+    /* Slightly more opaque on mobile for legibility */
+  }
+}
+
+/* Premium Action Buttons - Scoped to unit-card-actions */
+.unit-card-actions .action-btn {
+  height: 40px;
+  width: 40px;
+  min-width: 40px;
+  border-radius: 12px;
+  /* Softer, modern radius */
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Bouncy pop effect */
+  background: white;
+  position: relative;
+  /* overflow: hidden; Removed to prevent clipping */
+  padding: 0;
+  flex: 0 0 40px;
+  box-shadow: none;
+  /* Reset default */
+}
+
+.unit-card-actions .action-btn svg {
+  z-index: 2;
+  transition: transform 0.25s ease;
+  stroke: currentColor;
+  width: 18px;
+  height: 18px;
+}
+
+.unit-card-actions .action-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.unit-card-actions .action-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Archive Button - Premium Amber */
+.unit-card-actions .archive-btn {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  color: #d97706;
+  box-shadow:
+    0 4px 12px -2px rgba(217, 119, 6, 0.2),
+    0 2px 4px -1px rgba(217, 119, 6, 0.1);
+  border: none;
+}
+
+.unit-card-actions .archive-btn:hover {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #b45309;
+  box-shadow:
+    0 8px 16px -4px rgba(217, 119, 6, 0.3),
+    0 4px 6px -2px rgba(217, 119, 6, 0.15);
+}
+
+/* Delete Button - Premium Red */
+.unit-card-actions .delete-btn {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  color: #ef4444;
+  box-shadow:
+    0 4px 12px -2px rgba(239, 68, 68, 0.2),
+    0 2px 4px -1px rgba(239, 68, 68, 0.1);
+  border: none;
+}
+
+.unit-card-actions .delete-btn:hover {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #b91c1c;
+  box-shadow:
+    0 8px 16px -4px rgba(239, 68, 68, 0.3),
+    0 4px 6px -2px rgba(239, 68, 68, 0.15);
+}
+
+/* Close Button - Subtle/Clean */
+.unit-card-actions .close-actions-btn {
+  height: 32px;
+  width: 32px;
+  min-width: 32px;
+  flex: 0 0 32px;
+  background: transparent;
+  color: #9ca3af;
+  box-shadow: none;
+  border-radius: 50%;
+}
+
+.unit-card-actions .close-actions-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #4b5563;
+  transform: rotate(90deg);
+  /* Playful rotation on hover */
+}
+
+/* Mobile adjustments for buttons */
+@media (max-width: 576px) {
+  .unit-card-actions .action-btn {
+    height: 36px;
+    width: 36px;
+    min-width: 36px;
+    flex: 0 0 36px;
+  }
+
+  .unit-card-actions .action-btn svg {
+    width: 16px;
+    height: 16px;
   }
 }

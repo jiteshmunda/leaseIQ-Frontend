@@ -23,7 +23,7 @@ const PDFViewer = () => {
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
   const [renderedPages, setRenderedPages] = useState(new Set());
   const [initialScrollDone, setInitialScrollDone] = useState(false);
-  
+
   const pageRefs = useRef({});
   const containerRef = useRef(null);
   const documentRef = useRef(null);
@@ -124,7 +124,7 @@ const PDFViewer = () => {
   useEffect(() => {
     // Skip if this is initial load - that's handled by the effect above
     if (!initialScrollDone) return;
-    
+
     if (pageRefs.current[currentPage]) {
       pageRefs.current[currentPage].scrollIntoView({
         behavior: "smooth",
@@ -148,7 +148,7 @@ const PDFViewer = () => {
     textLayers.forEach((layer, pageIndex) => {
       const textSpans = layer.querySelectorAll("span");
       const searchLower = highlightText.toLowerCase();
-      
+
       textSpans.forEach((span) => {
         const text = span.textContent || "";
         if (text.toLowerCase().includes(searchLower)) {
@@ -280,7 +280,7 @@ const PDFViewer = () => {
           >
             <FiChevronLeft />
           </button>
-          
+
           <span className="pdf-viewer-page-info">
             <input
               type="number"
@@ -297,7 +297,7 @@ const PDFViewer = () => {
             />
             <span> / {numPages || "?"}</span>
           </span>
-          
+
           <button
             className="pdf-viewer-btn"
             onClick={goToNextPage}
@@ -317,11 +317,11 @@ const PDFViewer = () => {
           >
             <FiZoomOut />
           </button>
-          
+
           <span className="pdf-viewer-zoom-level">
             {Math.round(scale * 100)}%
           </span>
-          
+
           <button
             className="pdf-viewer-btn"
             onClick={zoomIn}
@@ -374,7 +374,7 @@ const PDFViewer = () => {
       <div className="pdf-viewer-content" ref={containerRef}>
         {pdfUrl && (
           <Document
-            file={pdfUrl}
+            file={{ url: pdfUrl }}
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
             loading={
