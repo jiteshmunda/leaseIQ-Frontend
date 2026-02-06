@@ -374,7 +374,7 @@ const PDFViewer = () => {
       <div className="pdf-viewer-content" ref={containerRef}>
         {pdfUrl && (
           <Document
-            file={{ url: pdfUrl }}
+            file={ pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={onDocumentLoadError}
             loading={
