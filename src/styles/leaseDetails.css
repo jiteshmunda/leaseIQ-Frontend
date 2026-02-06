@@ -1633,6 +1633,10 @@ details:not([open]) .accordion-summary::after {
   .provisions {
     padding: 0px;
   }
+
+  .sidebar-header {
+    display: none;
+  }
 }
 
 
