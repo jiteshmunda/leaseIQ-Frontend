@@ -184,6 +184,58 @@
   padding-right: 28px;
 }
 
+@media (max-width: 768px) {
+  .lease-header {
+    padding: 8px 0;
+  }
+
+  .header-left {
+    padding-left: 15px;
+    gap: 10px;
+  }
+
+  .header-right {
+    padding-right: 15px;
+    gap: 8px;
+  }
+
+  .lease-title {
+    font-size: 18px;
+  }
+
+  .lease-subtitle {
+    font-size: 12px;
+  }
+
+  .header-badge-wrapper {
+    margin-right: 8px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .lease-title {
+    font-size: 16px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .premium-ai-btn span {
+    display: none;
+  }
+
+  .premium-ai-btn {
+    padding: 0 10px;
+    width: 38px;
+    justify-content: center;
+  }
+
+  .sparkle-icon {
+    margin-right: 0;
+  }
+}
+
 .download-btn {
   display: flex;
   align-items: center;
@@ -689,6 +741,13 @@
   border-bottom: 1px solid #e5e7eb;
   margin-bottom: 24px;
   padding-left: 10px;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tabs button {
@@ -1849,6 +1908,8 @@ details:not([open]) .accordion-summary::after {
   .lease-body {
     flex-direction: column;
     height: auto;
+    padding-top: 56px;
+    /* Match reduced header height */
   }
 
   .sidebar-toggle {
@@ -1859,24 +1920,41 @@ details:not([open]) .accordion-summary::after {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid #e5e7eb;
-    max-height: 45vh;
-    /* ⬅️ key fix */
+    max-height: 40vh;
+    padding: 15px;
     overflow-y: auto;
   }
 
+  .lease-sidebar h4 {
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .sidebar-label {
+    margin-bottom: 10px;
+  }
+
   .upload-box {
-    padding: 12px;
-    font-size: 13px;
+    padding: 10px;
+    font-size: 12px;
+    margin-bottom: 15px;
   }
 
   .doc-list {
-    max-height: 30vh;
+    max-height: 25vh;
     overflow-y: auto;
   }
 
   .lease-content {
-    min-height: 55vh;
+    min-height: 60vh;
+    padding: 15px;
     overflow-y: visible;
+  }
+
+  .tabs {
+    gap: 15px;
+    margin-bottom: 15px;
+    padding: 8px 5px;
   }
 }
 
@@ -1887,39 +1965,7 @@ details:not([open]) .accordion-summary::after {
 /* 1/2/2026 */
 
 
-.tabs {
-  display: flex;
-  overflow-x: auto;
-  white-space: nowrap;
-  padding: 8px 12px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.tab-btn {
-  flex: 0 0 auto;
-  padding: 8px 14px;
-  border-radius: 999px;
-  font-size: 14px;
-  border: none;
-  background: #f5f5f5;
-}
-
-.tab-btn.active {
-  background: #5a3df0;
-  color: #fff;
-}
-
 /* ================= NEW CAM TAB STYLES ================= */
-
-.cam-tab {
-  /* padding: 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto; */
-}
 
 /* Loading State */
 .cam-loading-state {

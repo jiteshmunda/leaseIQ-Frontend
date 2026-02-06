@@ -590,3 +590,104 @@
     height: 16px;
   }
 }
+
+.cam-tab-premium {
+  position: relative !important;
+  background: rgba(99, 102, 241, 0.03) !important;
+  color: #6366f1 !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.4) !important;
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+  padding: 6px 18px !important;
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: none !important;
+}
+
+.cam-tab-premium::after {
+  display: none !important;
+}
+
+.cam-tab-premium:hover {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border-color: #6366f1 !important;
+  transform: translateY(-1px) !important;
+  color: #4f46e5 !important;
+}
+
+.cam-tab-premium.active {
+  background: #6366f1 !important;
+  color: white !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Mirror Logout Modal for CAM Confirm (Premium Glassmorphism) */
+.cam-confirm-modal .modal-content {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.cam-confirm-modal .modal-header {
+  border-bottom: none !important;
+  padding: 32px 24px 8px !important;
+}
+
+.cam-confirm-modal .modal-title {
+  color: #1e1b4b !important;
+  font-weight: 800 !important;
+  font-size: 1.5rem !important;
+  letter-spacing: -0.02em !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+.cam-confirm-modal .modal-body {
+  text-align: center !important;
+  font-size: 1.15rem !important;
+  color: #374151 !important;
+  padding: 16px 32px 32px !important;
+  line-height: 1.6 !important;
+}
+
+.cam-confirm-modal .modal-body b {
+  color: #6366f1 !important;
+  background: linear-gradient(120deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.cam-confirm-modal .modal-footer {
+  border-top: none !important;
+  padding: 0 32px 40px !important;
+  display: flex !important;
+  gap: 16px !important;
+  justify-content: center !important;
+}
+
+.cam-confirm-modal .btn {
+  padding: 12px 28px !important;
+  border-radius: 14px !important;
+  font-weight: 600 !important;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  flex: 1 !important;
+  max-width: 140px !important;
+}
+
+/* Tab responsive fix */
+@media (max-width: 768px) {
+  .tabs button.cam-tab-premium {
+    padding: 8px 10px !important;
+    font-size: 0.8rem !important;
+    gap: 4px !important;
+    border-width: 1.5px !important;
+  }
+}
