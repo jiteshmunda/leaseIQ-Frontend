@@ -308,6 +308,22 @@
   animation: fadeScale 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
+.action-trigger {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+}
+
+.action-trigger:hover {
+  background: #f3f4f6;
+  color: #4f46e5 !important;
+}
+
 .no-results-icon-wrapper {
   width: 100px;
   height: 100px;
@@ -389,7 +405,7 @@
 }
 
 .trigger-icon.rotated {
-  transform: rotate(180deg);
+  transform: rotate(90deg);
   color: #4f46e5;
 }
 
@@ -405,10 +421,18 @@
 }
 
 /* When actions are open, shift rent info left */
-/* When actions are open, shift rent info left */
 .content-shifted .rent-info-wrapper {
   transform: translateX(-150px);
   /* Move more to clear premium drawer width */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+@media (max-width: 576px) {
+  .content-shifted .rent-info-wrapper {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-20px);
+  }
 }
 
 /* MOBILE FIX: Make trigger visible without hover */

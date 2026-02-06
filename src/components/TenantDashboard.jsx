@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Building2, LandPlot, DollarSign, TrendingUp } from "lucide-react";
 import { Container, Row, Col, Card, Button, Badge, Navbar } from "react-bootstrap";
-import { ArrowLeft, Plus, ChevronLeft, ChevronRight, Archive, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, ChevronLeft, ChevronRight, Archive, Trash2, MoreVertical } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom"
 import AddUnit from "../components/AddUnit";
 import FloatingSignOut from "./FloatingSingout";
@@ -223,13 +223,13 @@ const TenantDashboard = () => {
                       {/* TRIGGER Button */}
                       <button
                         className="action-trigger btn btn-link p-0 text-muted"
-                        style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}
+                        style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', zIndex: 5 }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveActionCardId(activeActionCardId === lease._id ? null : lease._id);
                         }}
                       >
-                        <ChevronLeft size={20} className={`trigger-icon ${activeActionCardId === lease._id ? "rotated" : ""}`} />
+                        <MoreVertical size={20} className={`trigger-icon ${activeActionCardId === lease._id ? "rotated" : ""}`} />
                       </button>
 
                       <div className={`transition-all ${activeActionCardId === lease._id ? "content-shifted" : ""}`}>

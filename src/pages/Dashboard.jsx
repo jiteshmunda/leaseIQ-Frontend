@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/dashboard.css";
 import AddUnit from "../components/AddUnit";
 import AddTenant from "../components/AddTenant";
-import { Plus, Users, DollarSign, AlertCircle, Building, LayoutDashboard, Search, ChevronLeft, ChevronRight, Archive, Trash2 } from "lucide-react";
+import { Plus, Users, DollarSign, AlertCircle, Building, LayoutDashboard, Search, ChevronLeft, ChevronRight, Archive, Trash2, MoreVertical } from "lucide-react";
 import FloatingSignOut from "../components/FloatingSingout";
 import PaginationComponent from "../components/PaginationComponent";
 import api from "../service/api";
@@ -307,7 +307,7 @@ const Dashboard = () => {
                               setActiveActionCardId(activeActionCardId === tenant._id ? null : tenant._id);
                             }}
                           >
-                            <ChevronLeft size={20} className={`trigger-icon ${activeActionCardId === tenant._id ? "rotated" : ""}`} />
+                            <MoreVertical size={20} className={`trigger-icon ${activeActionCardId === tenant._id ? "rotated" : ""}`} />
                           </button>
                         </Col>
 
