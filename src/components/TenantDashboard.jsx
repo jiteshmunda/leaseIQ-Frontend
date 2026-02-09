@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Building2, LandPlot, DollarSign, TrendingUp } from "lucide-react";
-import { Container, Row, Col, Card, Button, Badge, Navbar } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Badge, Navbar, Form, InputGroup } from "react-bootstrap";
 import { ArrowLeft, Plus, ChevronLeft, ChevronRight, Archive, Trash2, MoreVertical } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom"
 import AddUnit from "../components/AddUnit";
@@ -23,6 +23,7 @@ const TenantDashboard = () => {
   const [leases, setLeases] = useState([]);
   const token = sessionStorage.getItem("token");
   const [activeActionCardId, setActiveActionCardId] = useState(null);
+  const [searchUnit, setSearchUnit] = useState("");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -101,6 +102,17 @@ const TenantDashboard = () => {
     return d.toISOString().slice(0, 10);
   };
 
+  const filteredLeases = leases.filter((lease) =>
+  (lease.unit_number || "")
+    .toLowerCase()
+    .includes(searchUnit.toLowerCase()) ||
+  (lease.property_name || "")
+    .toLowerCase()
+    .includes(searchUnit.toLowerCase()) ||
+  (lease.address || "")
+    .toLowerCase()
+    .includes(searchUnit.toLowerCase())
+);
 
 
 
@@ -199,16 +211,26 @@ const TenantDashboard = () => {
         </Row>
 
         <div className="units-header d-flex justify-content-between align-items-center mb-3">
-          <h4>Units</h4>
-        </div>
+  <h4>Units</h4>
+  <InputGroup style={{ maxWidth: "260px" }}>
+    <Form.Control
+      placeholder="Search units..."
+      value={searchUnit}
+      onChange={(e) => {
+        setSearchUnit(e.target.value);
+        setCurrentPage(1); // reset pagination on search
+      }}
+    />
+  </InputGroup>
+</div>
 
         {leases.length === 0 ? (
           <NoLeaseAnimation onAddUnit={() => setShowAddUnit(true)} />
         ) : (
           <div className="leases-list">
-            {leases
-              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-              .map((lease, index) => (
+            {filteredLeases
+  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  .map((lease, index) => (
                 <div className="unit-card-wrapper mb-3" key={index}>
                   <Card
                     className={`unit-card ${activeActionCardId === lease._id ? "actions-open" : ""}`}
