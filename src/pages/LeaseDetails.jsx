@@ -511,6 +511,7 @@ const LeaseDetails = () => {
             <button
               className="ai-button premium-ai-btn"
               onClick={() => setShowAiAssistant(true)}
+              disabled={!selectedDocId}
             >
               <Sparkles className="sparkle-icon" size={18} />
               <span>AI Assistant</span>
@@ -530,7 +531,8 @@ const LeaseDetails = () => {
           <DownloadLeaseDetailsDocx
             leaseDetails={documentDetails}
             selectedDocumentName={selectedDocumentName}
-            disabled={detailsLoading || !documentDetails}
+            disabled={!selectedDocId || detailsLoading || !documentDetails}
+            buttonClassName="icon-btn download-doc-btn"
           />
         </div>
 
