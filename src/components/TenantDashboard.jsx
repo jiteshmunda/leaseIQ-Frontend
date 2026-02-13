@@ -24,29 +24,35 @@ const TenantDashboard = () => {
   const token = sessionStorage.getItem("token");
   const [activeActionCardId, setActiveActionCardId] = useState(null);
   const [searchUnit, setSearchUnit] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   const fetchLeases = useCallback(async () => {
-    if (!tenantId) return;
+  if (!tenantId) return;
 
-    try {
-      const res = await api.get(
-        `${BASE_URL}/api/tenants/${tenantId}/leases`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  try {
+    setIsLoading(true);   // 👈 start loader
+    const res = await api.get(
+      `${BASE_URL}/api/tenants/${tenantId}/leases`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-      setLeases(Array.isArray(res.data?.leases) ? res.data.leases : []);
-    } catch (err) {
-      console.error("Failed to fetch leases", err);
-    }
-  }, [tenantId, token]);
+    setLeases(Array.isArray(res.data?.leases) ? res.data.leases : []);
+  } catch (err) {
+    console.error("Failed to fetch leases", err);
+  } finally {
+    setIsLoading(false);  // 👈 stop loader
+  }
+}, [tenantId, token]);
+
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -224,22 +230,36 @@ const TenantDashboard = () => {
   </InputGroup>
 </div>
 
-        {leases.length === 0 ? (
-          <NoLeaseAnimation onAddUnit={() => setShowAddUnit(true)} />
-        ) : (
-          <div className="leases-list">
-            {filteredLeases
-  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-  .map((lease, index) => (
-                <div className="unit-card-wrapper mb-3" key={index}>
-                  <Card
-                    className={`unit-card ${activeActionCardId === lease._id ? "actions-open" : ""}`}
-                    onClick={(e) => {
-                      if (!e.target.closest('.unit-card-actions') && !e.target.closest('.action-trigger')) {
-                        navigate(`/lease-details/${lease._id}`)
-                      }
-                    }}
-                  >
+        {isLoading ? (
+  // 🔄 Loading state
+  <div className="text-center py-5">
+    <div className="spinner-border text-primary" role="status" />
+    <p className="mt-3 text-muted">Loading units...</p>
+  </div>
+) : leases.length === 0 ? (
+  // 📭 No units at all
+  <NoLeaseAnimation onAddUnit={() => setShowAddUnit(true)} />
+) : filteredLeases.length === 0 ? (
+  // 🔍 Units exist, but search returned nothing
+  <NoLeaseAnimation onAddUnit={() => setShowAddUnit(true)} />
+) : (
+  // 📦 Normal list
+  <div className="leases-list">
+    {filteredLeases
+      .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+      .map((lease) => (
+        <div className="unit-card-wrapper mb-3" key={lease._id}>
+          <Card
+            className={`unit-card ${activeActionCardId === lease._id ? "actions-open" : ""}`}
+            onClick={(e) => {
+              if (
+                !e.target.closest(".unit-card-actions") &&
+                !e.target.closest(".action-trigger")
+              ) {
+                navigate(`/lease-details/${lease._id}`);
+              }
+            }}
+          >
                     <Card.Body className="unit-card-body position-relative overflow-hidden">
 
                       {/* TRIGGER Button */}

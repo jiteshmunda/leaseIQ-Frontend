@@ -71,6 +71,15 @@ const LeaseDetails = () => {
   const [isDeletingDocument, setIsDeletingDocument] = useState(false);
 
   useEffect(() => {
+  // On desktop, always reset sidebar to OPEN when switching leases
+  if (window.innerWidth > 768) {
+    setIsSidebarCollapsed(false);
+    localStorage.setItem("leaseSidebarCollapsed", "false");
+  }
+}, [leaseId]);
+
+
+  useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
 
     const onChange = () => setIsMobile(mq.matches);
