@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { showError } from "../service/toast";
+import { showError, showSuccess } from "../service/toast";
 import { useLeaseAnalyzer } from "../service/useLeaseAnalyzer";
 import { saveLeaseFile } from "../service/leaseFileStore";
 import AnalyzingLease from "./AnalyzingLease";
@@ -62,7 +62,14 @@ const QuickLeaseAnalysisCard = () => {
         })
       );
 
-      navigate("/quick-analysis-info", { state: { source: "quick" } });
+      // Ensure UI shows 100% complete
+      setAnalyzingStep(6);
+
+      showSuccess("Analysis complete!");
+
+      setTimeout(() => {
+        navigate("/quick-analysis-info", { state: { source: "quick" } });
+      }, 2000);
     } catch (err) {
       console.error(err);
       showError("Lease analysis failed");

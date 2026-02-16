@@ -75,14 +75,22 @@ const BuildPortfolio = () => {
         }
       );
       const leaseId = res.data?.data?.lease_id;
+
+      // Ensure UI shows 100% complete
+      setAnalyzingStep(6);
+
       showSuccess("Portfolio created successfully!");
-      navigate("/analysis-success", {
-        state: {
-          leaseId,
-          tenantName: unitData.tenantName,
-          unitNumber: unitData.unitNumber
-        }
-      });
+
+      // Delay navigation to let user see "Success" state
+      setTimeout(() => {
+        navigate("/analysis-success", {
+          state: {
+            leaseId,
+            tenantName: unitData.tenantName,
+            unitNumber: unitData.unitNumber
+          }
+        });
+      }, 2000);
     } catch (err) {
       console.error(err);
       showError("Lease analysis failed");

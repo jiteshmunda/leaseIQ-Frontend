@@ -31,7 +31,7 @@ const Settings = () => {
     useEffect(() => {
         api.get("/api/subscriptions/status")
             .then((res) => {
-                console.log("SUBSCRIPTION STATUS:", res.data);
+
 
                 if (res.data?.hasSubscription && res.data.subscription?._id) {
                     setSubscriptionId(res.data.subscription._id);
