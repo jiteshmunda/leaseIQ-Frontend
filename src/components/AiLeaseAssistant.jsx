@@ -5,6 +5,7 @@ import { FiX, FiSend } from "react-icons/fi";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeSanitize from "rehype-sanitize";
 import { parseSSEStream, getStreamText, getActiveTool } from "../utils/streamParser";
 
 const API_URL = import.meta.env.VITE_AI_ASSISTANT_API_URL;
@@ -140,7 +141,7 @@ const AiLeaseAssistant = ({ open, onClose, leaseId, organizationId }) => {
               }`}
           >
             {msg.type === "bot" ? (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>
                 {msg.text}
               </ReactMarkdown>
             ) : (

@@ -71,12 +71,12 @@ const LeaseDetails = () => {
   const [isDeletingDocument, setIsDeletingDocument] = useState(false);
 
   useEffect(() => {
-  // On desktop, always reset sidebar to OPEN when switching leases
-  if (window.innerWidth > 768) {
-    setIsSidebarCollapsed(false);
-    localStorage.setItem("leaseSidebarCollapsed", "false");
-  }
-}, [leaseId]);
+    // On desktop, always reset sidebar to OPEN when switching leases
+    if (window.innerWidth > 768) {
+      setIsSidebarCollapsed(false);
+      localStorage.setItem("leaseSidebarCollapsed", "false");
+    }
+  }, [leaseId]);
 
 
   useEffect(() => {
@@ -194,9 +194,9 @@ const LeaseDetails = () => {
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (res.data?.data?.lease_details) {
-      console.log('Fetched lease_details:', res.data.data.lease_details);
+
     } else {
-      console.log('Fetched lease_details: not found in response', res.data?.data);
+
     }
     setLease(res.data.data);
   }, [leaseId, token]);
