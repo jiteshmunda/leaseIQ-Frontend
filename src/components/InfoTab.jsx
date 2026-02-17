@@ -192,40 +192,18 @@ const InfoTab = ({
   const [isEditingSummary, setIsEditingSummary] = useState(false);
   const [executiveSummaryForm, setExecutiveSummaryForm] = useState("");
   const [infoForm, setInfoForm] = useState({
-  lease: getFieldValue(leaseInfo?.lease) || "",
-  propertyAddress: getFieldValue(leaseInfo?.property) || "",
-  leaseFrom: getFieldValue(leaseInfo?.leaseFrom) || "",
-  leaseTo: getFieldValue(leaseInfo?.leaseTo) || "",
-  renewalOptions: getFieldValue(premisesAndTerm?.synopsis) || "",
-  squareFeet:
-    leaseDetails?.info?.leaseInformation?.squareFeet?.value
-      ? String(leaseDetails.info.leaseInformation.squareFeet.value)
-      : "",
-  baseRent:
-    chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value
-      ? String(chargeSchedules.baseRent[0].monthlyAmount.value)
-      : "",
-  securityDeposit:
-    leaseDetails?.info?.leaseInformation?.securityDeposit?.value
-      ? String(leaseDetails.info.leaseInformation.securityDeposit.value)
-      : "",
-});
-
-
-  const startEditInfo = () => {
-  setInfoForm({
     lease: getFieldValue(leaseInfo?.lease) || "",
     propertyAddress: getFieldValue(leaseInfo?.property) || "",
     leaseFrom: getFieldValue(leaseInfo?.leaseFrom) || "",
     leaseTo: getFieldValue(leaseInfo?.leaseTo) || "",
-    renewalOptions: getFieldValue(leaseInfo?.renewalOptions) || "",
+    renewalOptions: getFieldValue(premisesAndTerm?.synopsis) || "",
     squareFeet:
       leaseDetails?.info?.leaseInformation?.squareFeet?.value
         ? String(leaseDetails.info.leaseInformation.squareFeet.value)
         : "",
     baseRent:
-      leaseDetails?.info?.leaseInformation?.baseRent?.value
-        ? String(leaseDetails.info.leaseInformation.baseRent.value)
+      chargeSchedules?.baseRent?.[0]?.monthlyAmount?.value
+        ? String(chargeSchedules.baseRent[0].monthlyAmount.value)
         : "",
     securityDeposit:
       leaseDetails?.info?.leaseInformation?.securityDeposit?.value
@@ -233,8 +211,30 @@ const InfoTab = ({
         : "",
   });
 
-  setIsEditingInfo(true);
-};
+
+  const startEditInfo = () => {
+    setInfoForm({
+      lease: getFieldValue(leaseInfo?.lease) || "",
+      propertyAddress: getFieldValue(leaseInfo?.property) || "",
+      leaseFrom: getFieldValue(leaseInfo?.leaseFrom) || "",
+      leaseTo: getFieldValue(leaseInfo?.leaseTo) || "",
+      renewalOptions: getFieldValue(leaseInfo?.renewalOptions) || "",
+      squareFeet:
+        leaseDetails?.info?.leaseInformation?.squareFeet?.value
+          ? String(leaseDetails.info.leaseInformation.squareFeet.value)
+          : "",
+      baseRent:
+        leaseDetails?.info?.leaseInformation?.baseRent?.value
+          ? String(leaseDetails.info.leaseInformation.baseRent.value)
+          : "",
+      securityDeposit:
+        leaseDetails?.info?.leaseInformation?.securityDeposit?.value
+          ? String(leaseDetails.info.leaseInformation.securityDeposit.value)
+          : "",
+    });
+
+    setIsEditingInfo(true);
+  };
 
 
   const handleChange = (field, value) => {
@@ -244,6 +244,39 @@ const InfoTab = ({
   const handleSaveInfo = () => {
     if (!onUpdateLeaseDetails || !leaseDetails) {
       setIsEditingInfo(false);
+      return;
+    }
+
+    const currentLease = getFieldValue(leaseInfo?.lease) || "";
+    const currentProperty = getFieldValue(leaseInfo?.property) || "";
+    const currentLeaseFrom = getFieldValue(leaseInfo?.leaseFrom) || "";
+    const currentLeaseTo = getFieldValue(leaseInfo?.leaseTo) || "";
+    const currentRenewalOptions = getFieldValue(leaseInfo?.renewalOptions) || "";
+
+    const currentSquareFeet = leaseDetails?.info?.leaseInformation?.squareFeet?.value
+      ? String(leaseDetails.info.leaseInformation.squareFeet.value)
+      : "";
+
+    const currentBaseRent = leaseDetails?.info?.leaseInformation?.baseRent?.value
+      ? String(leaseDetails.info.leaseInformation.baseRent.value)
+      : "";
+
+    const currentSecurityDeposit = leaseDetails?.info?.leaseInformation?.securityDeposit?.value
+      ? String(leaseDetails.info.leaseInformation.securityDeposit.value)
+      : "";
+
+    const hasChanges =
+      infoForm.lease.trim() !== currentLease.trim() ||
+      infoForm.propertyAddress.trim() !== currentProperty.trim() ||
+      infoForm.leaseFrom.trim() !== currentLeaseFrom.trim() ||
+      infoForm.leaseTo.trim() !== currentLeaseTo.trim() ||
+      infoForm.renewalOptions.trim() !== currentRenewalOptions.trim() ||
+      infoForm.squareFeet.trim() !== currentSquareFeet.trim() ||
+      infoForm.baseRent.trim() !== currentBaseRent.trim() ||
+      infoForm.securityDeposit.trim() !== currentSecurityDeposit.trim();
+
+    if (!hasChanges) {
+      showError("No changes to save");
       return;
     }
 
@@ -318,14 +351,18 @@ const InfoTab = ({
     setIsEditingInfo(false);
   };
 
-  // const startEditExecutiveSummary = () => {
-  //   setExecutiveSummaryForm(executiveSummaryRaw || "");
-  //   setIsEditingSummary(true);
-  // };
 
   const handleSaveExecutiveSummary = () => {
     if (!onUpdateLeaseDetails || !leaseDetails) {
       setIsEditingSummary(false);
+      return;
+    }
+
+    const currentSummary = String(executiveSummaryRaw || "").trim();
+    const newSummary = executiveSummaryForm.trim();
+
+    if (currentSummary === newSummary) {
+      showError("No changes to save");
       return;
     }
 
@@ -370,14 +407,14 @@ const InfoTab = ({
   // Enhanced citation tag component - now clickable
   const renderCitationTag = (citation, field, size) => {
     if (!citation) return null;
-    
+
     // Get the full citation object if available (for structured citations)
     const citationObj = field?.citation || citation;
     const displayText = getCitationDisplayText(citationObj) || citation;
     const isNavigable = documentId && canNavigateToCitation(citationObj);
-    
+
     const sizeClass = size === "small" ? " small" : "";
-    
+
     if (isNavigable) {
       return (
         <button
@@ -392,7 +429,7 @@ const InfoTab = ({
         </button>
       );
     }
-    
+
     return (
       <div className={`provision-citation-tag${sizeClass}`}>
         <FiFileText className="provision-citation-icon" />
@@ -440,34 +477,23 @@ const InfoTab = ({
 
   return (
     <>
-      {/* Overview */}
-      {/* <section className="overview">
-        {overviewCards.map((card) => (
-          <div key={card.key} className={`overview-card ${card.color}`}>
-            <span>{card.label}</span>
-            <strong>{card.value}</strong>
-          </div>
-        ))}
-      </section> */}
 
-      {/* Lease Info */}
       <section className="card">
         <div className="card-header">
           <h3>Lease Information</h3>
-           <button
+          <button
             type="button"
             className="edit-btn"
             onClick={startEditInfo}
           >
             <FiEdit /> {isEditingInfo ? "Editing" : "Edit"}
-          </button> 
+          </button>
         </div>
 
         <div className="info-grid">
           <div
-            className={`info-item ${
-              hasAmendments(leaseInfoSource?.lease) ? "has-amendments" : ""
-            }`}
+            className={`info-item ${hasAmendments(leaseInfoSource?.lease) ? "has-amendments" : ""
+              }`}
           >
             <label>
               <FieldWithTooltip
@@ -490,9 +516,8 @@ const InfoTab = ({
             {renderAmendments(leaseInfoSource?.lease, filename)}
           </div>
           <div
-            className={`info-item ${
-              hasAmendments(leaseInfoSource?.property) ? "has-amendments" : ""
-            }`}
+            className={`info-item ${hasAmendments(leaseInfoSource?.property) ? "has-amendments" : ""
+              }`}
           >
             <label>
               <FieldWithTooltip
@@ -516,11 +541,10 @@ const InfoTab = ({
             {renderAmendments(leaseInfoSource?.property, filename)}
 
           </div>
-          
+
           <div
-            className={`info-item ${
-              hasAmendments(leaseInfoSource?.leaseFrom) ? "has-amendments" : ""
-            }`}
+            className={`info-item ${hasAmendments(leaseInfoSource?.leaseFrom) ? "has-amendments" : ""
+              }`}
           >
             <label>
               <FieldWithTooltip
@@ -543,9 +567,8 @@ const InfoTab = ({
             {renderAmendments(leaseInfoSource?.leaseFrom, filename)}
           </div>
           <div
-            className={`info-item ${
-              hasAmendments(leaseInfoSource?.leaseTo) ? "has-amendments" : ""
-            }`}
+            className={`info-item ${hasAmendments(leaseInfoSource?.leaseTo) ? "has-amendments" : ""
+              }`}
           >
             <label>
               <FieldWithTooltip
@@ -568,9 +591,8 @@ const InfoTab = ({
             {renderAmendments(leaseInfoSource?.leaseTo, filename)}
           </div>
           <div
-            className={`info-item ${
-              hasAmendments(leaseInfoSource?.squareFeet) ? "has-amendments" : ""
-            }`}
+            className={`info-item ${hasAmendments(leaseInfoSource?.squareFeet) ? "has-amendments" : ""
+              }`}
           >
             <label>
               <FieldWithTooltip
@@ -597,9 +619,8 @@ const InfoTab = ({
             {renderAmendments(leaseInfoSource?.squareFeet, filename)}
           </div>
           <div
-            className={`info-item ${
-              hasAmendments(leaseInfoSource?.baseRent) ? "has-amendments" : ""
-            }`}
+            className={`info-item ${hasAmendments(leaseInfoSource?.baseRent) ? "has-amendments" : ""
+              }`}
           >
             <label>
               <FieldWithTooltip
@@ -622,9 +643,8 @@ const InfoTab = ({
             {renderAmendments(leaseInfoSource?.baseRent, filename)}
           </div>
           <div
-            className={`info-item ${
-              hasAmendments(leaseInfoSource?.securityDeposit) ? "has-amendments" : ""
-            }`}
+            className={`info-item ${hasAmendments(leaseInfoSource?.securityDeposit) ? "has-amendments" : ""
+              }`}
           >
             <label>
               <FieldWithTooltip
@@ -652,9 +672,8 @@ const InfoTab = ({
             {renderAmendments(leaseInfoSource?.securityDeposit, filename)}
           </div>
           <div
-            className={`info-item ${
-              hasAmendments(leaseInfoSource?.renewalOptions) ? "has-amendments" : ""
-            }`}
+            className={`info-item ${hasAmendments(leaseInfoSource?.renewalOptions) ? "has-amendments" : ""
+              }`}
           >
             <label>
               <FieldWithTooltip
@@ -710,7 +729,7 @@ const InfoTab = ({
               className="edit-btn"
               onClick={startEditExecutiveSummary}
             > */}
-              {/* <FiEdit /> {isEditingSummary ? "Editing" : "Edit"} */}
+            {/* <FiEdit /> {isEditingSummary ? "Editing" : "Edit"} */}
             {/* </button> */}
           </div>
 
@@ -751,7 +770,7 @@ const InfoTab = ({
         </section>
       ) : null}
 
-      
+
       {/* <section className="card">
         <div className="card-header">
           <h3>Executive Summary</h3>

@@ -18,35 +18,36 @@ const criticalItems = [];
 const Dashboard = () => {
   const navigate = useNavigate();
   const [tenants, setTenants] = useState([]);
-const [isTenantsLoading, setIsTenantsLoading] = useState(true);
+  const [isTenantsLoading, setIsTenantsLoading] = useState(true);
   const token = sessionStorage.getItem("token");
   const [search, setSearch] = useState("");
   const [activeActionCardId, setActiveActionCardId] = useState(null);
 
   const [showAddUnit, setShowAddUnit] = useState(false);
   const [showAddTenant, setShowAddTenant] = useState(false);
-  
+
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [prevPage, setPrevPage] = useState(1);
   const itemsPerPage = 5;
 
   const fetchTenants = useCallback(async () => {
-  try {
-    setIsTenantsLoading(true);   // 👈 start loader
-    const res = await api.get(`${BASE_URL}/api/tenants`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    setTenants(res.data.data || []);
-  } catch (err) {
-    console.error("Failed to fetch tenants", err);
-  } finally {
-    setIsTenantsLoading(false); // 👈 stop loader
-  }
-}, [token]);
+    try {
+      setIsTenantsLoading(true);   // 👈 start loader
+      const res = await api.get(`${BASE_URL}/api/tenants`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setTenants(res.data.data || []);
+    } catch (err) {
+      console.error("Failed to fetch tenants", err);
+    } finally {
+      setIsTenantsLoading(false); // 👈 stop loader
+    }
+  }, [token]);
 
   const handleArchive = async (e, tenantId) => {
     e.stopPropagation();
@@ -248,8 +249,20 @@ const [isTenantsLoading, setIsTenantsLoading] = useState(true);
                 placeholder="Search tenants..."
                 value={search}
                 onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCurrentPage(1); // Reset to first page on search
+                  const val = e.target.value;
+                  setSearch(val);
+
+                  if (val === "") {
+                    // Search cleared -> restore previous page
+                    setCurrentPage(prevPage);
+                  } else if (search === "") {
+                    // Search started -> save current page and go to page 1 for results
+                    setPrevPage(currentPage);
+                    setCurrentPage(1);
+                  } else {
+                    // Already searching -> stay on page 1 of results
+                    setCurrentPage(1);
+                  }
                 }}
               />
 
@@ -263,34 +276,34 @@ const [isTenantsLoading, setIsTenantsLoading] = useState(true);
           </Col>
         </Row>
         {isTenantsLoading ? (
-  // 🔄 Loading tenants
-  <div className="text-center py-5">
-    <div className="spinner-border text-primary" role="status" />
-    <p className="mt-3 text-muted">Loading tenants...</p>
-  </div>
-) : tenants.length === 0 ? (
-  // 📭 No tenants at all
-  <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
-) : filteredTenants.length === 0 ? (
-  // 🔍 Tenants exist, but search returned nothing
-  <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
-) : (
-  // 📦 Normal list
-  filteredTenants
-    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-    .map((tenant) => (
-      <div className="lease-card-wrapper mb-3" key={tenant._id}>
-        {/* 🔽 KEEP YOUR EXISTING TENANT CARD UI AS IS */}
-        <Card
-          className={`shadow-sm lease-card ${activeActionCardId === tenant._id ? "actions-open" : ""}`}
-          onClick={(e) => {
-            if (!e.target.closest('.lease-card-actions') && !e.target.closest('.action-trigger')) {
-              navigate(`/tenant/${tenant._id}`, {
-                state: { tenantName: tenant.tenant_name },
-              });
-            }
-          }}
-        >
+          // 🔄 Loading tenants
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status" />
+            <p className="mt-3 text-muted">Loading tenants...</p>
+          </div>
+        ) : tenants.length === 0 ? (
+          // 📭 No tenants at all
+          <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
+        ) : filteredTenants.length === 0 ? (
+          // 🔍 Tenants exist, but search returned nothing
+          <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
+        ) : (
+          // 📦 Normal list
+          filteredTenants
+            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+            .map((tenant) => (
+              <div className="lease-card-wrapper mb-3" key={tenant._id}>
+                {/* 🔽 KEEP YOUR EXISTING TENANT CARD UI AS IS */}
+                <Card
+                  className={`shadow-sm lease-card ${activeActionCardId === tenant._id ? "actions-open" : ""}`}
+                  onClick={(e) => {
+                    if (!e.target.closest('.lease-card-actions') && !e.target.closest('.action-trigger')) {
+                      navigate(`/tenant/${tenant._id}`, {
+                        state: { tenantName: tenant.tenant_name },
+                      });
+                    }
+                  }}
+                >
                   <Card.Body className="p-0 position-relative overflow-hidden">
                     <div className="p-3">
                       <Row className={`align-items-center transition-all ${activeActionCardId === tenant._id ? "content-shifted" : ""}`}>

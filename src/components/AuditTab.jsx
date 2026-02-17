@@ -60,9 +60,9 @@ const AuditTab = ({ audit, risks = [], auditSourceKey, documentId, onUpdateLease
         // risk_register_sections is flattened in LeaseMainContent; preserve nested coordinates.
         const sourceMeta =
           sourceKey === "risk_register_sections" &&
-          risk &&
-          risk._audit_section_index != null &&
-          risk._audit_issue_index != null
+            risk &&
+            risk._audit_section_index != null &&
+            risk._audit_issue_index != null
             ? {
               sectionIndex: risk._audit_section_index,
               issueIndex: risk._audit_issue_index,
@@ -162,6 +162,12 @@ const AuditTab = ({ audit, risks = [], auditSourceKey, documentId, onUpdateLease
   const handleSaveComment = () => {
     if (activeCommentItem) {
       const newComment = commentText.trim();
+      const oldComment = (getItemComment(activeCommentItem) || "").trim();
+
+      if (newComment === oldComment) {
+        showError("No changes to save");
+        return;
+      }
 
       setComments(prev => ({
         ...prev,

@@ -29,29 +29,30 @@ const TenantDashboard = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [prevPage, setPrevPage] = useState(1);
   const itemsPerPage = 5;
 
   const fetchLeases = useCallback(async () => {
-  if (!tenantId) return;
+    if (!tenantId) return;
 
-  try {
-    setIsLoading(true);   // 👈 start loader
-    const res = await api.get(
-      `${BASE_URL}/api/tenants/${tenantId}/leases`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    try {
+      setIsLoading(true);   // 👈 start loader
+      const res = await api.get(
+        `${BASE_URL}/api/tenants/${tenantId}/leases`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    setLeases(Array.isArray(res.data?.leases) ? res.data.leases : []);
-  } catch (err) {
-    console.error("Failed to fetch leases", err);
-  } finally {
-    setIsLoading(false);  // 👈 stop loader
-  }
-}, [tenantId, token]);
+      setLeases(Array.isArray(res.data?.leases) ? res.data.leases : []);
+    } catch (err) {
+      console.error("Failed to fetch leases", err);
+    } finally {
+      setIsLoading(false);  // 👈 stop loader
+    }
+  }, [tenantId, token]);
 
 
   useEffect(() => {
@@ -109,16 +110,16 @@ const TenantDashboard = () => {
   };
 
   const filteredLeases = leases.filter((lease) =>
-  (lease.unit_number || "")
-    .toLowerCase()
-    .includes(searchUnit.toLowerCase()) ||
-  (lease.property_name || "")
-    .toLowerCase()
-    .includes(searchUnit.toLowerCase()) ||
-  (lease.address || "")
-    .toLowerCase()
-    .includes(searchUnit.toLowerCase())
-);
+    (lease.unit_number || "")
+      .toLowerCase()
+      .includes(searchUnit.toLowerCase()) ||
+    (lease.property_name || "")
+      .toLowerCase()
+      .includes(searchUnit.toLowerCase()) ||
+    (lease.address || "")
+      .toLowerCase()
+      .includes(searchUnit.toLowerCase())
+  );
 
 
 
@@ -217,49 +218,58 @@ const TenantDashboard = () => {
         </Row>
 
         <div className="units-header d-flex justify-content-between align-items-center mb-3">
-  <h4>Units</h4>
-  <InputGroup style={{ maxWidth: "260px" }}>
-    <Form.Control
-      placeholder="Search units..."
-      value={searchUnit}
-      onChange={(e) => {
-        setSearchUnit(e.target.value);
-        setCurrentPage(1); // reset pagination on search
-      }}
-    />
-  </InputGroup>
-</div>
+          <h4>Units</h4>
+          <InputGroup style={{ maxWidth: "260px" }}>
+            <Form.Control
+              placeholder="Search units..."
+              value={searchUnit}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSearchUnit(val);
+
+                if (val === "") {
+                  setCurrentPage(prevPage);
+                } else if (searchUnit === "") {
+                  setPrevPage(currentPage);
+                  setCurrentPage(1);
+                } else {
+                  setCurrentPage(1);
+                }
+              }}
+            />
+          </InputGroup>
+        </div>
 
         {isLoading ? (
-  // 🔄 Loading state
-  <div className="text-center py-5">
-    <div className="spinner-border text-primary" role="status" />
-    <p className="mt-3 text-muted">Loading units...</p>
-  </div>
-) : leases.length === 0 ? (
-  // 📭 No units at all
-  <NoLeaseAnimation onAddUnit={() => setShowAddUnit(true)} />
-) : filteredLeases.length === 0 ? (
-  // 🔍 Units exist, but search returned nothing
-  <NoLeaseAnimation onAddUnit={() => setShowAddUnit(true)} />
-) : (
-  // 📦 Normal list
-  <div className="leases-list">
-    {filteredLeases
-      .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-      .map((lease) => (
-        <div className="unit-card-wrapper mb-3" key={lease._id}>
-          <Card
-            className={`unit-card ${activeActionCardId === lease._id ? "actions-open" : ""}`}
-            onClick={(e) => {
-              if (
-                !e.target.closest(".unit-card-actions") &&
-                !e.target.closest(".action-trigger")
-              ) {
-                navigate(`/lease-details/${lease._id}`);
-              }
-            }}
-          >
+          // 🔄 Loading state
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status" />
+            <p className="mt-3 text-muted">Loading units...</p>
+          </div>
+        ) : leases.length === 0 ? (
+          // 📭 No units at all
+          <NoLeaseAnimation onAddUnit={() => setShowAddUnit(true)} />
+        ) : filteredLeases.length === 0 ? (
+          // 🔍 Units exist, but search returned nothing
+          <NoLeaseAnimation onAddUnit={() => setShowAddUnit(true)} />
+        ) : (
+          // 📦 Normal list
+          <div className="leases-list">
+            {filteredLeases
+              .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+              .map((lease) => (
+                <div className="unit-card-wrapper mb-3" key={lease._id}>
+                  <Card
+                    className={`unit-card ${activeActionCardId === lease._id ? "actions-open" : ""}`}
+                    onClick={(e) => {
+                      if (
+                        !e.target.closest(".unit-card-actions") &&
+                        !e.target.closest(".action-trigger")
+                      ) {
+                        navigate(`/lease-details/${lease._id}`);
+                      }
+                    }}
+                  >
                     <Card.Body className="unit-card-body position-relative overflow-hidden">
 
                       {/* TRIGGER Button */}
@@ -344,7 +354,7 @@ const TenantDashboard = () => {
         )}
         <PaginationComponent
           currentPage={currentPage}
-          totalPages={Math.ceil(leases.length / itemsPerPage)}
+          totalPages={Math.ceil(filteredLeases.length / itemsPerPage)}
           onPageChange={setCurrentPage}
         />
         {showAddUnit && (
