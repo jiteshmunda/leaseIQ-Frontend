@@ -363,8 +363,14 @@ const TenantDashboard = () => {
             tenantId={tenantId}
             tenantName={tenantName}
             onClose={() => setShowAddUnit(false)}
-            onSuccess={() => {
+            onSuccess={async () => {
               setShowAddUnit(false);
+              try {
+                await api.post("/api/leases/update-periods");
+              } catch (err) {
+                console.error("Failed to update periods", err);
+              }
+              // Fetch leases AFTER periods update so data is fresh
               fetchLeases();
             }}
           />

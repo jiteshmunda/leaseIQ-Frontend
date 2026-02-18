@@ -160,6 +160,49 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
     );
   };
 
+  const parseNumericValue = (val) => {
+    if (typeof val === "number") return val;
+    if (typeof val !== "string") return 0;
+    // Remove currency symbols, commas, and whitespace
+    const clean = val.replace(/[^0-9.-]+/g, "");
+    return parseFloat(clean) || 0;
+  };
+
+  const formatCurrency = (val) => {
+    if (isNaN(val)) return "-";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+    }).format(val);
+  };
+
+  const renderAmountPerArea = (item) => {
+    const existingVal = getFieldValue(item.amountPerArea);
+
+    // If we have an explicit value, use it
+    if (existingVal && existingVal !== "-" && existingVal !== "N/A") {
+      return renderField(item.amountPerArea, "-", false);
+    }
+
+    // Otherwise calculate
+    const annual = parseNumericValue(getFieldValue(item.annualAmount));
+    const area = parseNumericValue(getFieldValue(item.areaRentable));
+
+    if (annual > 0 && area > 0) {
+      const calculated = annual / area;
+      return (
+        <div className="field-cell-container">
+          <div>{formatCurrency(calculated)}</div>
+          {/* Note: No citation for calculated values unless we want to link raw inputs? */}
+        </div>
+      );
+    }
+
+    // Fallback to existing renderField if calculation not possible
+    return renderField(item.amountPerArea, "-", false);
+  };
+
   return (
     <div className="rent-schedules">
       <h3 className="section-title">Charge Schedules</h3>
@@ -437,7 +480,7 @@ const RentSchedulesTab = ({ chargeSchedules, getFieldValue, filename, documentId
                       <td>{renderField(item.monthlyAmount, "-", false)}</td>
                       <td>{renderField(item.annualAmount, "-", false)}</td>
                       <td>{renderField(item.areaRentable, "-", false)}</td>
-                      <td>{renderField(item.amountPerArea, "-", false)}</td>
+                      <td>{renderAmountPerArea(item)}</td>
                     </tr>
                     {rowHasAmendments && (
                       <tr className="amendments-row">

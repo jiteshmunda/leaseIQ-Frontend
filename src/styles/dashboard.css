@@ -691,3 +691,111 @@
     border-width: 1.5px !important;
   }
 }
+
+/* Critical Items Table - Premium Style */
+.critical-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 0;
+}
+
+.critical-table thead th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 16px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.critical-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.critical-table tbody tr:hover {
+  background-color: #f0f5ff !important;
+  /* transform: scale(1.002); - Removed to indicate non-clickable */
+  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); */
+  position: relative;
+  z-index: 1;
+}
+
+.critical-table td {
+  vertical-align: middle;
+  padding: 16px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.95rem;
+}
+
+.critical-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.critical-table .badge {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Modern Minimalist Pagination for Critical Items */
+.critical-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.cp-nav-btn {
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #9b9b9b;
+  background: white;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.cp-nav-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.cp-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: transparent;
+}
+
+.cp-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.cp-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cp-dot.active {
+  width: 24px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.25);
+}
+
+.cp-dot:hover:not(.active) {
+  background: #cbd5e1;
+}
