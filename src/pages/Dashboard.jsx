@@ -14,39 +14,76 @@ import RemainingAbstractsBadge from "../components/RemainingAbstractsBadge";
 import NoTenantAnimation from "../components/NoTenantAnimation";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
-const criticalItems = [];
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [tenants, setTenants] = useState([]);
-const [isTenantsLoading, setIsTenantsLoading] = useState(true);
+  const [isTenantsLoading, setIsTenantsLoading] = useState(true);
   const token = sessionStorage.getItem("token");
   const [search, setSearch] = useState("");
   const [activeActionCardId, setActiveActionCardId] = useState(null);
 
   const [showAddUnit, setShowAddUnit] = useState(false);
   const [showAddTenant, setShowAddTenant] = useState(false);
-  
+
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [prevPage, setPrevPage] = useState(1);
   const itemsPerPage = 5;
 
-  const fetchTenants = useCallback(async () => {
-  try {
-    setIsTenantsLoading(true);   // 👈 start loader
-    const res = await api.get(`${BASE_URL}/api/tenants`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
+  // Critical items pagination
+  const [criticalPage, setCriticalPage] = useState(1);
+  const criticalItemsPerPage = 3;
+
+  const [filterDays, setFilterDays] = useState(null);
+
+  // Helper to calculate days remaining from lease_details array
+  const calculateDaysRemaining = (leaseDetails) => {
+    if (!leaseDetails || !Array.isArray(leaseDetails) || leaseDetails.length === 0) return { days: Infinity, date: null };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize today
+
+    let minDays = Infinity;
+    let nearestDate = null;
+
+    leaseDetails.forEach(detail => {
+      // Check for valid end_date in the object
+      if (!detail?.end_date) return;
+
+      const expiry = new Date(detail.end_date);
+      expiry.setHours(0, 0, 0, 0); // Normalize expiry
+
+      const diffTime = expiry - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      // We only care about future or today (>= 0) and finding the smallest positive diff
+      if (diffDays >= 0 && diffDays < minDays) {
+        minDays = diffDays;
+        nearestDate = detail.end_date;
+      }
     });
-    setTenants(res.data.data || []);
-  } catch (err) {
-    console.error("Failed to fetch tenants", err);
-  } finally {
-    setIsTenantsLoading(false); // 👈 stop loader
-  }
-}, [token]);
+
+    return { days: minDays, date: nearestDate };
+  };
+
+  const fetchTenants = useCallback(async () => {
+    try {
+      setIsTenantsLoading(true);   // 👈 start loader
+      const res = await api.get(`${BASE_URL}/api/tenants`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setTenants(res.data.data || []);
+    } catch (err) {
+      console.error("Failed to fetch tenants", err);
+    } finally {
+      setIsTenantsLoading(false); // 👈 stop loader
+    }
+  }, [token]);
 
   const handleArchive = async (e, tenantId) => {
     e.stopPropagation();
@@ -89,11 +126,55 @@ const [isTenantsLoading, setIsTenantsLoading] = useState(true);
     (sum, tenant) => sum + Number(tenant.monthly_rent || 0),
     0
   );
-  const filteredTenants = tenants.filter((tenant) =>
-    tenant.tenant_name
+  // Calculate critical items (<= 30 days)
+  // Calculate critical items (<= 30 days) - flattened list of specific units
+  const criticalItems = tenants.flatMap(tenant => {
+    const details = tenant.lease_details || [];
+    if (!Array.isArray(details)) return [];
+
+    return details
+      .filter(detail => {
+        if (!detail?.end_date) return false;
+
+        const expiry = new Date(detail.end_date);
+        expiry.setHours(0, 0, 0, 0);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const diffTime = expiry - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        return diffDays <= 30 && diffDays >= 0;
+      })
+      .map(detail => {
+        const expiry = new Date(detail.end_date);
+        expiry.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return {
+          ...detail,
+          tenant_name: tenant.tenant_name,
+          tenant_id: tenant._id,
+          days_remaining: Math.ceil((expiry - today) / (1000 * 60 * 60 * 24))
+        };
+      });
+  });
+
+  const filteredTenants = tenants.filter((tenant) => {
+    const matchesSearch = tenant.tenant_name
       .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+      .includes(search.toLowerCase());
+
+    let matchesDate = true;
+    if (filterDays !== null) {
+      // Use helper to check lease_details
+      const { days } = calculateDaysRemaining(tenant.lease_details);
+      matchesDate = days <= filterDays && days !== Infinity;
+    }
+
+    return matchesSearch && matchesDate;
+  });
 
   return (
     <>
@@ -125,28 +206,61 @@ const [isTenantsLoading, setIsTenantsLoading] = useState(true);
           </div>
           <AddUnit show={showAddUnit}
             onClose={() => setShowAddUnit(false)}
-            onSuccess={fetchTenants}
+            onSuccess={async () => {
+              try {
+                await api.post("/api/leases/update-periods");
+              } catch (err) {
+                console.error("Failed to update periods", err);
+              }
+              // Fetch tenants AFTER periods update so data is fresh
+              fetchTenants();
+            }}
           />
         </Container>
       </Navbar>
       <Container fluid className="p-4 dashboard-container">
 
         {/* TITLE + FILTER */}
-        {/* <Row className="align-items-center mb-4">
-         <Col xs={12} md={6}>
+        <Row className="align-items-center mb-4">
+          {/* <Col xs={12} md={6}>
           <h5 className="mb-3 mb-md-0">Upcoming Critical Items</h5>
-        </Col> 
+        </Col>  */}
 
-        <Col
-          xs={12}
-          md={6}
-          className="d-flex justify-content-start justify-content-md-end gap-2 flex-wrap"
-        >
-          <Button variant="outline-primary">30 Days</Button>
-          <Button variant="outline-secondary">60 Days</Button>
-          <Button variant="outline-secondary">90 Days</Button>
-        </Col>
-      </Row> */}
+          <Col
+            xs={12}
+            md={12}
+            className="d-flex justify-content-start justify-content-md-end gap-2 flex-wrap"
+          >
+            <Button
+              variant={filterDays === 30 ? "primary" : "outline-primary"}
+              onClick={() => setFilterDays(filterDays === 30 ? null : 30)}
+            >
+              30 Days
+            </Button>
+            <Button
+              variant={filterDays === 60 ? "primary" : "outline-primary"}
+              onClick={() => setFilterDays(filterDays === 60 ? null : 60)}
+            >
+              60 Days
+            </Button>
+            <Button
+              variant={filterDays === 90 ? "primary" : "outline-primary"}
+              onClick={() => setFilterDays(filterDays === 90 ? null : 90)}
+            >
+              90 Days
+            </Button>
+
+            {filterDays !== null && (
+              <Button
+                variant="outline-danger"
+                onClick={() => setFilterDays(null)}
+                className="d-flex align-items-center gap-1"
+              >
+                <Trash2 size={16} /> Clear Filter
+              </Button>
+            )}
+          </Col>
+        </Row>
 
         {/* KPI CARDS */}
         <Row className="mb-4">
@@ -196,44 +310,84 @@ const [isTenantsLoading, setIsTenantsLoading] = useState(true);
           </Col>
         </Row>
 
-        {/* <Card className="mb-4 shadow-sm">
-  <Card.Body>
-    <h6 className="mb-3">Critical Dates</h6>
-
-    {criticalItems.length === 0 ? (
-      <div className="text-muted text-center py-4">
-        🎉 No critical items in the next 30 days
-      </div>
-    ) : (
-      criticalItems.map((item, index) => (
-        <Card key={index} className="critical-item mb-3">
+        <Card className="mb-4 shadow-sm">
           <Card.Body>
-            <Row className="align-items-center">
-              <Col xs="auto" className="text-center me-3">
-                <CalendarDays size={20} className="calendar-icon" />
-                <div className="days-left">{item.daysLeft}d</div>
-              </Col>
+            <h6 className="mb-3">Critical Dates</h6>
 
-              <Col>
-                <div className="fw-medium">
-                  {item.tenant} <span className="text-muted">• {item.unit}</span>
+            {criticalItems.length === 0 ? (
+              <div className="text-muted text-center py-4">
+                🎉 No critical items in the next 30 days
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-hover critical-table align-middle">
+                  <thead className="table-light">
+                    <tr>
+                      <th className="ps-3 border-0 rounded-start">Tenant</th>
+                      <th className="border-0">Unit</th>
+                      <th className="border-0">Days Left</th>
+                      <th className="text-end pe-3 border-0 rounded-end">Expiry Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {criticalItems
+                      .slice((criticalPage - 1) * criticalItemsPerPage, criticalPage * criticalItemsPerPage)
+                      .map((item, index) => (
+                        <tr key={`${item.tenant_id}-${index}`}>
+                          <td className="ps-3">
+                            <div className="fw-medium text-dark">{item.tenant_name}</div>
+                          </td>
+                          <td>
+                            <Badge bg="light" text="dark" className="border px-3 py-2 rounded-pill">
+                              {item.unit_number || 'N/A'}
+                            </Badge>
+                          </td>
+                          <td>
+                            <div className="d-flex align-items-center gap-2">
+                              <span className="text-danger fw-bold">{item.days_remaining}</span>
+                              <span className="text-muted small">days</span>
+                            </div>
+                          </td>
+                          <td className="text-end pe-3">
+                            <span className="text-muted fw-medium font-monospace">
+                              {new Date(item.end_date).toLocaleDateString()}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                <div className="critical-pagination">
+                  <button
+                    className="cp-nav-btn"
+                    onClick={() => setCriticalPage(prev => Math.max(prev - 1, 1))}
+                    disabled={criticalPage === 1}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+
+                  <div className="cp-dots">
+                    {Array.from({ length: Math.ceil(criticalItems.length / criticalItemsPerPage) }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`cp-dot ${criticalPage === i + 1 ? 'active' : ''}`}
+                        onClick={() => setCriticalPage(i + 1)}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    className="cp-nav-btn"
+                    onClick={() => setCriticalPage(prev => Math.min(prev + 1, Math.ceil(criticalItems.length / criticalItemsPerPage)))}
+                    disabled={criticalPage === Math.ceil(criticalItems.length / criticalItemsPerPage)}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
-                <div className="text-muted small">{item.type}</div>
-              </Col>
-
-              <Col className="text-end">
-                <span className="text-muted me-3">{item.date}</span>
-                <Badge pill bg={item.badgeColor}>
-                  {item.label}
-                </Badge>
-              </Col>
-            </Row>
+              </div>
+            )}
           </Card.Body>
         </Card>
-      ))
-    )}
-  </Card.Body>
-</Card> */}
 
 
         {/* HEADER */}
@@ -248,8 +402,20 @@ const [isTenantsLoading, setIsTenantsLoading] = useState(true);
                 placeholder="Search tenants..."
                 value={search}
                 onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCurrentPage(1); // Reset to first page on search
+                  const val = e.target.value;
+                  setSearch(val);
+
+                  if (val === "") {
+                    // Search cleared -> restore previous page
+                    setCurrentPage(prevPage);
+                  } else if (search === "") {
+                    // Search started -> save current page and go to page 1 for results
+                    setPrevPage(currentPage);
+                    setCurrentPage(1);
+                  } else {
+                    // Already searching -> stay on page 1 of results
+                    setCurrentPage(1);
+                  }
                 }}
               />
 
@@ -263,34 +429,34 @@ const [isTenantsLoading, setIsTenantsLoading] = useState(true);
           </Col>
         </Row>
         {isTenantsLoading ? (
-  // 🔄 Loading tenants
-  <div className="text-center py-5">
-    <div className="spinner-border text-primary" role="status" />
-    <p className="mt-3 text-muted">Loading tenants...</p>
-  </div>
-) : tenants.length === 0 ? (
-  // 📭 No tenants at all
-  <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
-) : filteredTenants.length === 0 ? (
-  // 🔍 Tenants exist, but search returned nothing
-  <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
-) : (
-  // 📦 Normal list
-  filteredTenants
-    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-    .map((tenant) => (
-      <div className="lease-card-wrapper mb-3" key={tenant._id}>
-        {/* 🔽 KEEP YOUR EXISTING TENANT CARD UI AS IS */}
-        <Card
-          className={`shadow-sm lease-card ${activeActionCardId === tenant._id ? "actions-open" : ""}`}
-          onClick={(e) => {
-            if (!e.target.closest('.lease-card-actions') && !e.target.closest('.action-trigger')) {
-              navigate(`/tenant/${tenant._id}`, {
-                state: { tenantName: tenant.tenant_name },
-              });
-            }
-          }}
-        >
+          // 🔄 Loading tenants
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status" />
+            <p className="mt-3 text-muted">Loading tenants...</p>
+          </div>
+        ) : tenants.length === 0 ? (
+          // 📭 No tenants at all
+          <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
+        ) : filteredTenants.length === 0 ? (
+          // 🔍 Tenants exist, but search returned nothing
+          <NoTenantAnimation onAddTenant={() => setShowAddUnit(true)} />
+        ) : (
+          // 📦 Normal list
+          filteredTenants
+            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+            .map((tenant) => (
+              <div className="lease-card-wrapper mb-3" key={tenant._id}>
+                {/* 🔽 KEEP YOUR EXISTING TENANT CARD UI AS IS */}
+                <Card
+                  className={`shadow-sm lease-card ${activeActionCardId === tenant._id ? "actions-open" : ""}`}
+                  onClick={(e) => {
+                    if (!e.target.closest('.lease-card-actions') && !e.target.closest('.action-trigger')) {
+                      navigate(`/tenant/${tenant._id}`, {
+                        state: { tenantName: tenant.tenant_name },
+                      });
+                    }
+                  }}
+                >
                   <Card.Body className="p-0 position-relative overflow-hidden">
                     <div className="p-3">
                       <Row className={`align-items-center transition-all ${activeActionCardId === tenant._id ? "content-shifted" : ""}`}>

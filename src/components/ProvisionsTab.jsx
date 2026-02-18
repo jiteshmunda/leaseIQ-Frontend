@@ -135,13 +135,13 @@ const ProvisionsTab = ({
   // Keyboard handler for edit mode
   const handleKeyDown = useCallback((e) => {
     if (!editing) return;
-    
+
     // Escape to cancel
     if (e.key === "Escape") {
       e.preventDefault();
       cancelEdit();
     }
-    
+
     // Ctrl/Cmd + Enter to save
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
@@ -182,6 +182,13 @@ const ProvisionsTab = ({
           .map((s) => s.trim())
           .filter(Boolean);
 
+        const currentSegment = segments[editing.segmentIndex] || "";
+        if (currentSegment === editText.trim()) {
+          showError("No changes to save");
+          setIsSaving(false);
+          return;
+        }
+
         if (editing.segmentIndex >= 0 && editing.segmentIndex < segments.length) {
           segments[editing.segmentIndex] = editText.trim();
           updated.misc.otherLeaseProvisions[editing.categoryKey][editing.fieldKey].value =
@@ -190,6 +197,12 @@ const ProvisionsTab = ({
           updated.misc.otherLeaseProvisions[editing.categoryKey][editing.fieldKey].value = editText;
         }
       } else {
+        const currentValString = typeof existingValue === "string" ? existingValue : String(existingValue ?? "");
+        if (currentValString === editText) {
+          showError("No changes to save");
+          setIsSaving(false);
+          return;
+        }
         updated.misc.otherLeaseProvisions[editing.categoryKey][editing.fieldKey].value = editText;
       }
 
@@ -295,7 +308,7 @@ const ProvisionsTab = ({
                     </span>
                   )}
                 </div>
-                
+
                 {(am?.previous_value || am?.new_value) && (
                   <div className="provision-amendment-comparison">
                     {am?.previous_value && (
@@ -366,7 +379,7 @@ const ProvisionsTab = ({
     const displayText = getPageOnlyCitationText(citationObj);
     if (!displayText) return null;
     const isNavigable = documentId && canNavigateToCitation(citationObj);
-    
+
     if (isNavigable) {
       return (
         <button
@@ -381,7 +394,7 @@ const ProvisionsTab = ({
         </button>
       );
     }
-    
+
     return (
       <div className="provision-citation-tag">
         <FiFileText className="provision-citation-icon" />
@@ -397,203 +410,203 @@ const ProvisionsTab = ({
 
         {miscProvisions &&
           Object.entries(miscProvisions).map(([key, value]) => {
-          const items = provisionFields
-            .map((fieldKey) => {
-              const field = value?.[fieldKey];
-              const raw = field?.value;
-              if (raw === undefined || raw === null || raw === "") return null;
+            const items = provisionFields
+              .map((fieldKey) => {
+                const field = value?.[fieldKey];
+                const raw = field?.value;
+                if (raw === undefined || raw === null || raw === "") return null;
 
-              const citation = getFieldCitation(field);
+                const citation = getFieldCitation(field);
 
-              if (typeof raw === "string") {
-                const segments = splitProvisionText(raw);
-                if (segments.length <= 1) {
-                  return {
-                    id: `${key}:${fieldKey}`,
+                if (typeof raw === "string") {
+                  const segments = splitProvisionText(raw);
+                  if (segments.length <= 1) {
+                    return {
+                      id: `${key}:${fieldKey}`,
+                      categoryKey: key,
+                      fieldKey,
+                      raw,
+                      display: normalizeValue(raw),
+                      citation,
+                      canEdit: true,
+                      segmentIndex: null,
+                      field,
+                    };
+                  }
+
+                  return segments.map((segment, idx) => ({
+                    id: `${key}:${fieldKey}:${idx}`,
                     categoryKey: key,
                     fieldKey,
-                    raw,
-                    display: normalizeValue(raw),
+                    raw: segment,
+                    display: segment,
                     citation,
                     canEdit: true,
-                    segmentIndex: null,
+                    segmentIndex: idx,
                     field,
-                  };
+                  }));
                 }
 
-                return segments.map((segment, idx) => ({
-                  id: `${key}:${fieldKey}:${idx}`,
+                return {
+                  id: `${key}:${fieldKey}`,
                   categoryKey: key,
                   fieldKey,
-                  raw: segment,
-                  display: segment,
+                  raw,
+                  display: normalizeValue(raw),
                   citation,
-                  canEdit: true,
-                  segmentIndex: idx,
+                  canEdit: false,
+                  segmentIndex: null,
                   field,
-                }));
-              }
+                };
+              })
+              .flat()
+              .filter(Boolean);
 
-              return {
-                id: `${key}:${fieldKey}`,
-                categoryKey: key,
-                fieldKey,
-                raw,
-                display: normalizeValue(raw),
-                citation,
-                canEdit: false,
-                segmentIndex: null,
-                field,
-              };
-            })
-            .flat()
-            .filter(Boolean);
+            const title = formatProvisionTitle(key);
+            const isOpen = isAccordionOpen(key);
 
-          const title = formatProvisionTitle(key);
-          const isOpen = isAccordionOpen(key);
+            return (
+              <section className={`card provision-card provision-accordion ${isOpen ? 'open' : ''}`} key={key}>
+                <div
+                  className="provision-header provision-accordion-header"
+                  onClick={() => toggleAccordion(key)}
+                >
+                  <div className="provision-accordion-title">
+                    <FiChevronRight className="accordion-icon" />
+                    <h4>{title}</h4>
+                  </div>
 
-          return (
-            <section className={`card provision-card provision-accordion ${isOpen ? 'open' : ''}`} key={key}>
-              <div 
-                className="provision-header provision-accordion-header"
-                onClick={() => toggleAccordion(key)}
-              >
-                <div className="provision-accordion-title">
-                  <FiChevronRight className="accordion-icon" />
-                  <h4>{title}</h4>
+                  <div className="provision-actions" onClick={(e) => e.stopPropagation()}>
+                    <FiEdit
+                      className="icon edit"
+                      onClick={() => onEditCategory(key)}
+                    />
+                  </div>
                 </div>
 
-                <div className="provision-actions" onClick={(e) => e.stopPropagation()}>
-                  <FiEdit
-                    className="icon edit"
-                    onClick={() => onEditCategory(key)}
-                  />
-                </div>
-              </div>
+                <div
+                  className={`provision-accordion-content ${isOpen ? 'open' : ''}`}
+                >
+                  <div className="provision-items-container">
+                    {items.length ? (
+                      items.map((item) => {
+                        const isEditingThis =
+                          editing?.categoryKey === item.categoryKey &&
+                          editing?.fieldKey === item.fieldKey &&
+                          (editing?.segmentIndex ?? null) === (item.segmentIndex ?? null);
 
-              <div 
-                className={`provision-accordion-content ${isOpen ? 'open' : ''}`}
-              >
-                <div className="provision-items-container">
-                  {items.length ? (
-                    items.map((item) => {
-                      const isEditingThis =
-                        editing?.categoryKey === item.categoryKey &&
-                        editing?.fieldKey === item.fieldKey &&
-                        (editing?.segmentIndex ?? null) === (item.segmentIndex ?? null);
-
-                      return (
-                        <div className="provision-content-block" key={item.id}>
-                          {isEditingThis ? (
-                            <div className="provision-edit-container">
-                              <div className="provision-edit-header">
-                                <div className="provision-edit-header-left">
-                                  <FiEdit className="provision-edit-header-icon" />
-                                  <span className="provision-edit-header-title">
-                                    Editing: {editing?.categoryTitle || title}
-                                  </span>
-                                </div>
-                                <button
-                                  type="button"
-                                  className="provision-edit-close"
-                                  onClick={cancelEdit}
-                                  disabled={isSaving}
-                                  title="Cancel (Esc)"
-                                >
-                                  <FiX size={16} />
-                                </button>
-                              </div>
-                              <textarea
-                                ref={textareaRef}
-                                id="provision-edit-field"
-                                name="provision-edit-field"
-                                className="provision-edit-textarea"
-                                rows={8}
-                                value={editText}
-                                onChange={(e) => setEditText(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                disabled={isSaving}
-                                placeholder="Enter provision details..."
-                              />
-                              <div className="provision-edit-footer">
-                                <div className="provision-edit-hints">
-                                  <span className="provision-edit-hint">
-                                    <kbd>Esc</kbd> to cancel
-                                  </span>
-                                  <span className="provision-edit-hint">
-                                    <kbd>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}</kbd>+<kbd>Enter</kbd> to save
-                                  </span>
-                                </div>
-                                <div className="provision-edit-meta">
-                                  <span className="provision-edit-char-count">
-                                    {editText.length} characters
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="provision-edit-actions">
-                                <button
-                                  type="button"
-                                  className="btn btn-outline-secondary btn-sm"
-                                  onClick={cancelEdit}
-                                  disabled={isSaving}
-                                >
-                                  <FiX size={14} />
-                                  Cancel
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-primary btn-sm"
-                                  onClick={saveEdit}
-                                  disabled={isSaving}
-                                >
-                                  <FiCheck size={14} />
-                                  {isSaving ? "Saving..." : "Save"}
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="provision-text-content">
-                                <div className="provision-description">{item.display}</div>
-                                {item.canEdit && (
+                        return (
+                          <div className="provision-content-block" key={item.id}>
+                            {isEditingThis ? (
+                              <div className="provision-edit-container">
+                                <div className="provision-edit-header">
+                                  <div className="provision-edit-header-left">
+                                    <FiEdit className="provision-edit-header-icon" />
+                                    <span className="provision-edit-header-title">
+                                      Editing: {editing?.categoryTitle || title}
+                                    </span>
+                                  </div>
                                   <button
                                     type="button"
-                                    className="provision-edit-btn"
-                                    onClick={() => {
-                                      if (typeof item.segmentIndex === "number") {
-                                        beginEditSegment(
-                                          item.categoryKey,
-                                          item.fieldKey,
-                                          item.segmentIndex,
-                                          item.raw,
-                                          title
-                                        );
-                                      } else {
-                                        beginEdit(item.categoryKey, item.fieldKey, item.raw, title);
-                                      }
-                                    }}
+                                    className="provision-edit-close"
+                                    onClick={cancelEdit}
+                                    disabled={isSaving}
+                                    title="Cancel (Esc)"
                                   >
-                                    <FiEdit size={14} />
+                                    <FiX size={16} />
                                   </button>
-                                )}
+                                </div>
+                                <textarea
+                                  ref={textareaRef}
+                                  id="provision-edit-field"
+                                  name="provision-edit-field"
+                                  className="provision-edit-textarea"
+                                  rows={8}
+                                  value={editText}
+                                  onChange={(e) => setEditText(e.target.value)}
+                                  onKeyDown={handleKeyDown}
+                                  disabled={isSaving}
+                                  placeholder="Enter provision details..."
+                                />
+                                <div className="provision-edit-footer">
+                                  <div className="provision-edit-hints">
+                                    <span className="provision-edit-hint">
+                                      <kbd>Esc</kbd> to cancel
+                                    </span>
+                                    <span className="provision-edit-hint">
+                                      <kbd>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}</kbd>+<kbd>Enter</kbd> to save
+                                    </span>
+                                  </div>
+                                  <div className="provision-edit-meta">
+                                    <span className="provision-edit-char-count">
+                                      {editText.length} characters
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="provision-edit-actions">
+                                  <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={cancelEdit}
+                                    disabled={isSaving}
+                                  >
+                                    <FiX size={14} />
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-primary btn-sm"
+                                    onClick={saveEdit}
+                                    disabled={isSaving}
+                                  >
+                                    <FiCheck size={14} />
+                                    {isSaving ? "Saving..." : "Save"}
+                                  </button>
+                                </div>
                               </div>
-                              {renderCitationTag(item.citation, item.field)}
-                              {renderAmendmentsTimeline(item.field)}
-                            </>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="provision-empty-state">
-                      <p>No provisions documented for this category.</p>
-                    </div>
-                  )}
+                            ) : (
+                              <>
+                                <div className="provision-text-content">
+                                  <div className="provision-description">{item.display}</div>
+                                  {item.canEdit && (
+                                    <button
+                                      type="button"
+                                      className="provision-edit-btn"
+                                      onClick={() => {
+                                        if (typeof item.segmentIndex === "number") {
+                                          beginEditSegment(
+                                            item.categoryKey,
+                                            item.fieldKey,
+                                            item.segmentIndex,
+                                            item.raw,
+                                            title
+                                          );
+                                        } else {
+                                          beginEdit(item.categoryKey, item.fieldKey, item.raw, title);
+                                        }
+                                      }}
+                                    >
+                                      <FiEdit size={14} />
+                                    </button>
+                                  )}
+                                </div>
+                                {renderCitationTag(item.citation, item.field)}
+                                {renderAmendmentsTimeline(item.field)}
+                              </>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="provision-empty-state">
+                        <p>No provisions documented for this category.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </section>
-          );
-        })}
+              </section>
+            );
+          })}
       </div>
     </div>
   );
