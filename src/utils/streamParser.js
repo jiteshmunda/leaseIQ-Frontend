@@ -6,12 +6,18 @@
  */
 export const parseSSEStream = (fullText) => {
     const lines = fullText.split("\n");
+
+    // The last element of split is either an empty string (if input ends with \n) 
+    // or an incomplete line (if input does not end with \n). In either case, ignore it.
+    lines.pop();
+
     const events = [];
 
     for (const line of lines) {
         if (line.startsWith("data: ")) {
             try {
                 const jsonStr = line.slice(6).trim();
+                if (jsonStr === "[DONE]") continue;
                 if (jsonStr) {
                     const data = JSON.parse(jsonStr);
                     events.push(data);

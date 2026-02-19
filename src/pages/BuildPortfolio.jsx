@@ -76,12 +76,14 @@ const BuildPortfolio = () => {
       );
       const leaseId = res.data?.data?.lease_id;
 
-      // Ensure UI shows 100% complete
       setAnalyzingStep(6);
+      try {
+        await api.post("/api/leases/update-periods");
+      } catch (err) {
+        console.error("Failed to update periods:", err);
+      }
 
       showSuccess("Portfolio created successfully!");
-
-      // Delay navigation to let user see "Success" state
       setTimeout(() => {
         navigate("/analysis-success", {
           state: {
