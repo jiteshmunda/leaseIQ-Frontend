@@ -231,33 +231,32 @@ const Dashboard = () => {
             md={12}
             className="d-flex justify-content-start justify-content-md-end gap-2 flex-wrap"
           >
-            <Button
-              variant={filterDays === 30 ? "primary" : "outline-primary"}
+            <button
+              className={`filter-btn ${filterDays === 30 ? "active" : ""}`}
               onClick={() => setFilterDays(filterDays === 30 ? null : 30)}
             >
               30 Days
-            </Button>
-            <Button
-              variant={filterDays === 60 ? "primary" : "outline-primary"}
+            </button>
+            <button
+              className={`filter-btn ${filterDays === 60 ? "active" : ""}`}
               onClick={() => setFilterDays(filterDays === 60 ? null : 60)}
             >
               60 Days
-            </Button>
-            <Button
-              variant={filterDays === 90 ? "primary" : "outline-primary"}
+            </button>
+            <button
+              className={`filter-btn ${filterDays === 90 ? "active" : ""}`}
               onClick={() => setFilterDays(filterDays === 90 ? null : 90)}
             >
               90 Days
-            </Button>
+            </button>
 
             {filterDays !== null && (
-              <Button
-                variant="outline-danger"
+              <button
+                className="filter-btn clear-filter"
                 onClick={() => setFilterDays(null)}
-                className="d-flex align-items-center gap-1"
               >
                 <Trash2 size={16} /> Clear Filter
-              </Button>
+              </button>
             )}
           </Col>
         </Row>
