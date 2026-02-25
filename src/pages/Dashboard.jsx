@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/dashboard.css";
 import AddUnit from "../components/AddUnit";
 import AddTenant from "../components/AddTenant";
-import { Plus, Users, DollarSign, AlertCircle, Building, LayoutDashboard, Search, ChevronLeft, ChevronRight, Archive, Trash2, MoreVertical } from "lucide-react";
+import { Plus, Users, DollarSign, AlertCircle, Building, LayoutDashboard, Search, ChevronLeft, ChevronRight, Archive, Trash2, MoreVertical, Building2, ScrollText } from "lucide-react";
 import FloatingSignOut from "../components/FloatingSingout";
 import PaginationComponent from "../components/PaginationComponent";
 import api from "../service/api";
@@ -18,10 +18,12 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL
 const Dashboard = () => {
   const navigate = useNavigate();
   const [tenants, setTenants] = useState([]);
+  const [totalUnits, setTotalUnits] = useState(0);
   const [isTenantsLoading, setIsTenantsLoading] = useState(true);
   const token = sessionStorage.getItem("token");
   const [search, setSearch] = useState("");
   const [activeActionCardId, setActiveActionCardId] = useState(null);
+  const [isUnitsFlipped, setIsUnitsFlipped] = useState(false);
 
   const [showAddUnit, setShowAddUnit] = useState(false);
   const [showAddTenant, setShowAddTenant] = useState(false);
@@ -78,6 +80,7 @@ const Dashboard = () => {
         },
       });
       setTenants(res.data.data || []);
+      setTotalUnits(res.data.total_units || 0);
     } catch (err) {
       console.error("Failed to fetch tenants", err);
     } finally {
@@ -126,6 +129,18 @@ const Dashboard = () => {
     (sum, tenant) => sum + Number(tenant.monthly_rent || 0),
     0
   );
+
+  const totalMainLeaseDocs = tenants.reduce(
+    (sum, tenant) => sum + Number(tenant.total_main_lease_docs || 0),
+    0
+  );
+
+  const totalAmendmentDocs = tenants.reduce(
+    (sum, tenant) => sum + Number(tenant.total_amendment_docs || 0),
+    0
+  );
+
+
   // Calculate critical items (<= 30 days)
   // Calculate critical items (<= 30 days) - flattened list of specific units
   const criticalItems = tenants.flatMap(tenant => {
@@ -262,10 +277,11 @@ const Dashboard = () => {
         </Row>
 
         {/* KPI CARDS */}
-        <Row className="mb-4">
+        <Row className="mb-4 gy-4">
+
           {/* TOTAL TENANTS */}
-          <Col md={4}>
-            <Card className="kpi-card purple-border">
+          <Col md={6} lg={3}>
+            <Card className="kpi-card purple-border h-100">
               <Card.Body>
                 <div className="kpi-header">
                   <span className="kpi-title">Total Tenants</span>
@@ -278,24 +294,76 @@ const Dashboard = () => {
             </Card>
           </Col>
 
+          {/* TOTAL UNITS - WITH FLIP ANIMATION */}
+          <Col md={6} lg={3}>
+            <div className={`flip-card ${isUnitsFlipped ? "flipped" : ""}`}>
+              <div className="flip-card-inner">
+                {/* Front Side: Units */}
+                <div className="flip-card-front">
+                  <Card className="kpi-card purple-border h-100">
+                    <Card.Body className="d-flex flex-column">
+                      <div className="kpi-header">
+                        <span className="kpi-title">Overall Units</span>
+                        <Building2 className="kpi-icon purple" />
+                      </div>
+                      <h2 className="kpi-value">{totalUnits}</h2>
+                      <div className="mt-auto d-flex justify-content-between align-items-center">
+                        <small className="text-muted">Total units managed</small>
+                        <Button
+                          variant="link"
+                          className="p-0 text-decoration-none kpi-toggle-btn"
+                          onClick={() => setIsUnitsFlipped(true)}
+                        >
+                          Documents <ChevronRight size={14} className="ms-1" />
+                        </Button>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </div>
+
+                {/* Back Side: Documents */}
+                <div className="flip-card-back">
+                  <Card className="kpi-card purple-border h-100" onClick={() => setIsUnitsFlipped(false)} style={{ cursor: 'pointer' }}>
+                    <Card.Body className="d-flex flex-column">
+                      <div className="kpi-header">
+                        <span className="kpi-title">Total Documents</span>
+                        <ScrollText className="kpi-icon purple" />
+                      </div>
+                      <div className="doc-counts-grid">
+                        <div className="doc-item">
+                          <span className="doc-label">Main Lease</span>
+                          <span className="doc-value">{totalMainLeaseDocs}</span>
+                        </div>
+                        <div className="doc-item">
+                          <span className="doc-label">Amendments</span>
+                          <span className="doc-value">{totalAmendmentDocs}</span>
+                        </div>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </Col>
+
           {/* MONTHLY REVENUE */}
-          <Col md={4}>
-            <Card className="kpi-card purple-border">
+          <Col md={6} lg={3}>
+            <Card className="kpi-card purple-border h-100">
               <Card.Body>
                 <div className="kpi-header">
                   <span className="kpi-title">Monthly Revenue</span>
                   <DollarSign className="kpi-icon purple" />
                 </div>
 
-                <h2 className="kpi-value">{totalMonthlyRent}</h2>
+                <h2 className="kpi-value">$ {totalMonthlyRent.toLocaleString()}</h2>
                 <small className="text-muted">Total rent collection</small>
               </Card.Body>
             </Card>
           </Col>
 
           {/* CRITICAL ITEMS */}
-          <Col md={4}>
-            <Card className="kpi-card purple-border">
+          <Col md={6} lg={3}>
+            <Card className="kpi-card purple-border h-100">
               <Card.Body>
                 <div className="kpi-header">
                   <span className="kpi-title">Critical Items</span>
@@ -444,7 +512,7 @@ const Dashboard = () => {
           filteredTenants
             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
             .map((tenant) => (
-              <div className="lease-card-wrapper mb-3" key={tenant._id}>
+              <div className="lease-card-wrapper mb-4" key={tenant._id}>
                 {/* 🔽 KEEP YOUR EXISTING TENANT CARD UI AS IS */}
                 <Card
                   className={`shadow-sm lease-card ${activeActionCardId === tenant._id ? "actions-open" : ""}`}
