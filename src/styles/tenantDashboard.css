@@ -293,14 +293,20 @@
   font-weight: 500;
 }
 
-.status-badge.active {
-  background-color: #dcfce7;
-  color: #166534;
+.status-badge.active,
+.status-badge.verified {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #15803d;
+  border: 1px solid rgba(21, 128, 61, 0.1);
+  box-shadow: 0 2px 4px rgba(22, 101, 52, 0.05);
 }
 
-.status-badge.expiring {
-  background-color: #fef3c7;
-  color: #92400e;
+.status-badge.expiring,
+.status-badge.pending {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #b45309;
+  border: 1px solid rgba(180, 83, 9, 0.1);
+  box-shadow: 0 2px 4px rgba(146, 64, 14, 0.05);
 }
 
 /* Rent Section */
@@ -356,6 +362,89 @@
   height: 32px;
   padding: 6px;
   border-radius: 8px;
+}
+
+/* Tenant Dashboard Flip Card Styles - Isolated with td- prefix */
+.td-flip-card {
+  perspective: 1000px;
+  height: 165px;
+  /* Specific height for tenant dashboard KPI cards */
+}
+
+.td-flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.td-flip-card.flipped .td-flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.td-flip-card-front,
+.td-flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 12px;
+}
+
+.td-flip-card-back {
+  transform: rotateY(180deg);
+}
+
+.td-flip-card .kpi-toggle-btn {
+  font-size: 10px;
+  font-weight: 700;
+  color: #8b5cf6 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(139, 92, 246, 0.08) !important;
+  padding: 4px 10px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(139, 92, 246, 0.2) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.td-flip-card .kpi-toggle-btn:hover {
+  background: rgba(139, 92, 246, 0.15) !important;
+  border-color: #8b5cf6 !important;
+  transform: translateY(-1px);
+}
+
+/* Document Counts Grid - Scoped to back card */
+.td-flip-card .doc-counts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.doc-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.doc-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.doc-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
 }
 
 .kpi-card.purple-border:hover {

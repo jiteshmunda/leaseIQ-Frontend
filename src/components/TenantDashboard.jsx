@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Building2, LandPlot, DollarSign, TrendingUp } from "lucide-react";
 import { Container, Row, Col, Card, Button, Badge, Navbar, Form, InputGroup } from "react-bootstrap";
-import { ArrowLeft, Plus, ChevronLeft, ChevronRight, Archive, Trash2, MoreVertical } from "lucide-react";
+import { ArrowLeft, Plus, ChevronLeft, ChevronRight, Archive, Trash2, MoreVertical, ScrollText } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom"
 import AddUnit from "../components/AddUnit";
 import FloatingSignOut from "./FloatingSingout";
@@ -25,6 +25,7 @@ const TenantDashboard = () => {
   const [activeActionCardId, setActiveActionCardId] = useState(null);
   const [searchUnit, setSearchUnit] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isUnitsFlipped, setIsUnitsFlipped] = useState(false);
 
 
   // Pagination state
@@ -100,6 +101,16 @@ const TenantDashboard = () => {
     0
   );
 
+  const totalMainLeaseDocs = leases.reduce(
+    (sum, lease) => sum + Number(lease.main_lease_count || 0),
+    0
+  );
+
+  const totalAmendmentDocs = leases.reduce(
+    (sum, lease) => sum + Number(lease.amendment_count || 0),
+    0
+  );
+
   const avgRentPerSqFt = totalSqFt > 0 ? totalMonthlyRent / totalSqFt : 0;
 
   const formatDateOnly = (value) => {
@@ -163,22 +174,61 @@ const TenantDashboard = () => {
 
 
         {/* KPI CARDS */}
-        <Row className="mb-4">
+        <Row className="mb-4 gy-4">
           <Col md={3}>
-            <Card className="kpi-card purple-border">
-              <Card.Body className="kpi-body">
-                <div className="kpi-header">
-                  <small>Total Units</small>
-                  <Building2 size={18} className="kpi-icon purple" />
+            <div className={`td-flip-card ${isUnitsFlipped ? "flipped" : ""}`}>
+              <div className="td-flip-card-inner">
+                {/* Front Side: Units */}
+                <div className="td-flip-card-front">
+                  <Card className="kpi-card purple-border h-100">
+                    <Card.Body className="kpi-body d-flex flex-column">
+                      <div className="kpi-header">
+                        <small>Total Units</small>
+                        <Building2 size={18} className="kpi-icon purple" />
+                      </div>
+                      <h4 className="mt-2">{leases.length}</h4>
+                      <div className="mt-auto d-flex justify-content-between align-items-center">
+                        <span className="kpi-sub">Occupied units</span>
+                        <Button
+                          variant="link"
+                          className="p-0 text-decoration-none kpi-toggle-btn"
+                          onClick={() => setIsUnitsFlipped(true)}
+                        >
+                          Documents <ChevronRight size={14} className="ms-1" />
+                        </Button>
+                      </div>
+                    </Card.Body>
+                  </Card>
                 </div>
-                <h4>{leases.length}</h4>
-                <span className="kpi-sub">Occupied units</span>
-              </Card.Body>
-            </Card>
+
+                {/* Back Side: Documents */}
+                <div className="td-flip-card-back">
+                  <Card className="kpi-card purple-border h-100" onClick={() => setIsUnitsFlipped(false)} style={{ cursor: 'pointer' }}>
+                    <Card.Body className="kpi-body d-flex flex-column">
+                      <div className="kpi-header">
+                        <small>Total Documents</small>
+                        <ScrollText size={18} className="kpi-icon purple" />
+                      </div>
+                      <div className="doc-counts-grid mt-2">
+                        <div className="doc-item">
+                          <span className="doc-label">Main Lease</span>
+                          <span className="doc-value">{totalMainLeaseDocs}</span>
+                        </div>
+                        <div className="doc-item">
+                          <span className="doc-label">Amendments</span>
+                          <span className="doc-value">{totalAmendmentDocs}</span>
+                        </div>
+                      </div>
+
+                    </Card.Body>
+                  </Card>
+                </div>
+              </div>
+            </div>
           </Col>
 
           <Col md={3}>
-            <Card className="kpi-card purple-border">
+            <Card className="kpi-card purple-border h-100">
               <Card.Body className="kpi-body">
                 <div className="kpi-header">
                   <small>Total Sq Ft</small>
@@ -191,7 +241,7 @@ const TenantDashboard = () => {
           </Col>
 
           <Col md={3}>
-            <Card className="kpi-card purple-border">
+            <Card className="kpi-card purple-border h-100">
               <Card.Body className="kpi-body">
                 <div className="kpi-header">
                   <small>Monthly Rent</small>
@@ -204,7 +254,7 @@ const TenantDashboard = () => {
           </Col>
 
           <Col md={3}>
-            <Card className="kpi-card purple-border">
+            <Card className="kpi-card purple-border h-100">
               <Card.Body className="kpi-body">
                 <div className="kpi-header">
                   <small>Avg Rent / Sq Ft</small>
@@ -258,7 +308,7 @@ const TenantDashboard = () => {
             {filteredLeases
               .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
               .map((lease) => (
-                <div className="unit-card-wrapper mb-3" key={lease._id}>
+                <div className="unit-card-wrapper mb-4" key={lease._id}>
                   <Card
                     className={`unit-card ${activeActionCardId === lease._id ? "actions-open" : ""}`}
                     onClick={(e) => {
@@ -292,7 +342,9 @@ const TenantDashboard = () => {
                             <div className="unit-title">
                               <h6>{lease.unit_number || "Unit 01"}</h6>
                               <span
-                                className={`status-badge ${lease.status === "Active" ? "active" : "expiring"
+                                className={`status-badge ${lease.status === "Verified" ? "verified" :
+                                    lease.status === "Pending" ? "pending" :
+                                      lease.status === "Active" ? "active" : "expiring"
                                   }`}
                               >
                                 {lease.status || "Active"}
