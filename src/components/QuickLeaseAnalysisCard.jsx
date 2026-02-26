@@ -72,7 +72,7 @@ const QuickLeaseAnalysisCard = () => {
       }, 2000);
     } catch (err) {
       console.error(err);
-      showError("Lease analysis failed");
+      showError(err?.message || "Lease analysis failed");
       setIsAnalyzing(false);
     }
   };

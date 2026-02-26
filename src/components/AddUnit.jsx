@@ -252,7 +252,7 @@ const AddUnit = ({ show, onClose, onSuccess, tenantName = " ", tenantId }) => {
       onSuccess();
       onClose();
     } catch (err) {
-      showError(err.response?.data?.error || "Something went wrong");
+      showError(err?.message || err.response?.data?.error || "Something went wrong");
     } finally {
       setLoading(false);
     }

@@ -95,7 +95,7 @@ const BuildPortfolio = () => {
       }, 2000);
     } catch (err) {
       console.error(err);
-      showError("Lease analysis failed");
+      showError(err?.message || "Lease analysis failed");
       setStep(3);
     } finally {
       setLoading(false);
