@@ -242,7 +242,7 @@ const LeaseMainContent = ({
       }
     } catch (error) {
       console.error("CAM analysis failed:", error);
-      showError("Failed to analyze CAM provisions. Please try again.");
+      showError(error?.message || "Failed to analyze CAM provisions. Please try again.");
     } finally {
       setIsLoadingCam(false);
     }

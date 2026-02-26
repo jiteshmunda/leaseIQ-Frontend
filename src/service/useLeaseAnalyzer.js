@@ -22,6 +22,13 @@ export const useLeaseAnalyzer = () => {
   const triggerProcessAbstract = async (event) => {
     try {
       await api.post("/api/subscriptions/process-abstract", { event });
+
+      // Force a subscription check to update the remaining abstracts badge
+      try {
+        await api.get("/api/subscriptions/status", { _skipSubCheck: true });
+      } catch (statusErr) {
+        console.warn("Failed to update subscription status after process-abstract", statusErr);
+      }
     } catch (error) {
       console.error("Failed to trigger process-abstract:", error);
       throw error;
